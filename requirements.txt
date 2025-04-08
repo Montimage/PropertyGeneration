@@ -1,0 +1,7 @@
+psycopg2-binary==2.9.10
+langchain==0.3.22
+langchain-core==0.3.49
+langchain-text-splitters==0.3.7
+langchain-community==0.3.20
+langchain-ollama==0.3.0
+lxml==5.3.2
