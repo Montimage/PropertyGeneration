@@ -1,0 +1,18 @@
+The system under test consists of an electric vehicle charging station (evcs) that communicates
+with a central station management system (csms) using the open charge point protocol (ocpp).
+This property ensures that the charging station correctly tracks and reports energy consumption 
+during an active charging session. The generated XML should define expected message exchanges, time constraints, and error recovery
+mechanisms for ensuring compliance with ocpp-based communication, and message structure.
+
+Protocol: Open Charge Point Protocol (ocpp) 1.6
+Property: The charging station must provide accurate energy consumption data during a charging session.
+
+Trigger: At regular intervals during an active charging session, the charging station sends MeterValues messages containing energy usage data to the CSMS.
+
+Response:
+- The CSMS must validate and log the received energy consumption data in real time.
+- The reported data must have an accuracy of ±0.5 kWh to ensure compliance with energy tracking requirements.
+
+Error Handling:
+If the CSMS detects missing or inaccurate energy data, it must trigger a corrective action alert within 10 seconds.
+The system must log the issue and notify the network monitoring system for further analysis.

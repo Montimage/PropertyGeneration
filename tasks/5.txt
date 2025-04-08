@@ -1,0 +1,22 @@
+The system under test consists of an electric vehicle charging station (evcs) that communicates
+with a central station management system (csms) using the open charge point protocol (ocpp).
+This property ensures that the charging station correctly terminates a charging session when requested 
+by the user or vehicle, following the expected message flow and logging procedures.
+The generated XML should define expected message exchanges, time constraints, and error recovery
+mechanisms for ensuring compliance with ocpp-based communication, and message structure.
+
+Protocol: Open Charge Point Protocol (ocpp) 1.6
+Property: The charging station must safely terminate a charging session when requested by the user or the vehicle.
+
+Trigger: The user initiates a stop transaction via:
+- The charging point interface (e.g., pressing a stop button).
+- The vehicle interface (e.g., stopping charging via the in-vehicle system).
+
+Response:
+- The charging station must send a StopTransaction message to the CSMS.
+- The CSMS must log the session as completed and store relevant transaction data.
+
+Error Handling:
+- If the charging session is not properly terminated within 5 seconds, the system must retry sending the StopTransaction message.
+- If retries fail, the system must issue a warning to the user and the operator, indicating a session termination failure.
+- The warning must be logged and sent to the network monitoring system for further analysis.

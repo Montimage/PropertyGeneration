@@ -1,0 +1,22 @@
+The system under test consists of an electric vehicle charging station (evcs) that communicates
+with a central station management system (csms) using the open charge point protocol (ocpp).
+The charging station must correctly handle session initialization requests, send the appropriate ocpp
+messages, and respond to network failures according to protocol specifications.
+The generated XML should define expected message exchanges, time constraints, and error recovery
+mechanisms for ensuring compliance with ocpp-based communication, and message structure.
+
+Protocol: Open Charge Point Protocol (ocpp) 1.6
+Property: The charging station must initiate a charging session when it receives a valid charging request from a vehicle.
+
+Trigger: The charging station sends a BootNotification message to the Central System (CSMS) as defined in the OCPP protocol.
+- The BootNotification message contains metadata about the charging station, such as model, vendor, and firmware version.
+- The CSMS must process this message and determine if the station is authorized to initiate a session.
+
+Response:
+- The CSMS must respond with a BootNotificationResponse, including a status field (Accepted, Pending, or Rejected).
+- If the status is Accepted, the CSMS must send an Authorization request within 2 seconds to confirm the charging session start.
+
+Error Handling:
+- If the CSMS does not respond within 2 seconds, the charging station must retry sending the BootNotification message up to 3 times.
+- If the station does not receive a valid response after 3 retries, it must raise an alert event indicating a failed connection.
+- The alert must be logged and reported to the network monitoring system.

@@ -1,0 +1,14 @@
+The system under test consists of an electric vehicle charging station (evcs) that communicates
+with a central station management system (csms) using the open charge point protocol (ocpp).
+This property ensures that the charging station maintains continuous communication with the csms through
+periodic Heartbeat messages. The generated XML should define expected message exchanges, time constraints, and error recovery
+mechanisms for ensuring compliance with ocpp-based communication, and message structure.
+
+Protocol: Open Charge Point Protocol (ocpp) 1.6
+Property: The charging point must send periodic Heartbeat messages to the CSMS to ensure continuous communication.
+Trigger: A Heartbeat message is sent by the charging station every 60 seconds as per OCPP specifications.
+Response:
+- The CSMS must respond within 5 seconds of receiving a Heartbeat, confirming system connectivity.
+Error Handling:
+- If the CSMS does not respond to 3 consecutive Heartbeat messages, the charging station must trigger an alert event signaling a potential communication breakdown.
+- The alert must be logged and reported to the network monitoring system for further investigation.
