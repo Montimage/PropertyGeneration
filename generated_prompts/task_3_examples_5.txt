@@ -1,0 +1,279 @@
+
+You are an AI that generates XML properties for deep packet inspection.
+
+### MMT Property Context:
+XML Rules:
+- A <property> defines a security rule (SECURITY_RULE) or an attack rule (ATTACK).
+- Each property begins with a <property> tag and ends with </property>
+- A property is a "general ordered tree"
+- The nodes of the property tree are:
+  - <property> node (required)
+  - <operator> nodes (optional)
+  - <event> nodes (required)
+- The <property> node is forcibly the root node and the <event> nodes are forcibly leaf nodes.
+- The left branch represents the context and the right branch represents the trigger.
+- The property is found valid when the trigger is found valid; and the trigger is checked only if the context is valid.
+
+- <beginning> tag:
+  - Container tag for defining multiple properties
+  - Holds one or more <property> definitions
+  - Includes optional embedded functions.
+
+- A <property> tag contains:
+  - value (optional): THEN, defines the logical relationship between context and the trigger
+  - delay_min (optional), attribute sets a time constraint on when the trigger must occur relative to the context. A negative delay (-1) means the trigger must have occurred before the context. A zero delay (0) means the trigger must occur simultaneously with the context. A positive delay (+N) means the trigger must occur after the context.
+  - property_id (required): attribute uniquely identifies the property.
+  - description (required): Textual description of the property.
+  - if_satisfied, (optional) specifies an action to be executed when the property condition is met, through the reactive function.
+  - type_property (required) can be SECURITY_RULE, ATTACK, EVASION, or TEST
+
+- An <event> tag contains:
+  - value:COMPUTE, indicates that this event is evaluated based on a boolean expression.
+  - event_id, assigns a unique identifier to the event, allowing it to be referenced within the security property.
+  - description: Textual description of the event.
+  - boolean_expression, attribute that defines the conditions that determines when the event is triggered. Packet or message attributes are identified by <protocol_name>”.”<field_name>[“.”<event_id>]. Protocol_name is either BASE (containing packet metadata, e.g., protocol id, time slot of message) or the message/protocol identifier (e.g., SPHY_DATA_REQ, IP, TCP, UDP...). Field_name is the name of the attribute. Event_id allows identifying data captured when another event (identified using its id) of the property occurred. Expressions can use packet fields, protocol attributes, or embedded functions.
+
+- <embedded_functions> tag:
+  - Contains custom embedded logic (C functions) that can be used within the boolean_expression in <event> tags.
+  - One can either use existing embedded functions or implement a new function.
+  - They can be used in the boolean_expression by using the syntax #<name_of_function>(<list of parameters>)
+  - To avoid any confusion, a new embedded function name should start by a prefix em_
+  - Inside the tag, one can also implement 2 other functions as the followings:
+    - void on_load(){ ... } being called when the rules inside the xml file being loaded into MMT-Security
+    - void on_unload(){ ... } being called when exiting MMT-Security
+  - Note that, before using a C function the library containing that embedded functions need to be included. The following libraries have been pre-included:
+    -#include <string.h>
+    -#include <stdio.h>
+    -#include <stdlib.h>
+    -#include "mmt_lib.h"
+    -#include "pre_embedded_functions.h"
+
+- Reactive functions
+  - They allow user perform some action when a rule is satisfied. The functions will be called each time rules are satisfied.
+  - To implement and use a reactive function, one need to implement a C function inside <embedded_functions> tag, the function name should be prefixed by em_ to avoid confusion with the ones existing in MMT.
+  - The function has the following format:
+typedef void (*mmt_rule_satisfied_callback)(
+		const rule_t *rule,		          //rule being validated
+		int verdict,                     //DETECTED, NOT_RESPECTED
+		uint64_t timestamp,              //moment (by time) the rule is validated
+		uint64_t counter,                //moment (by order of message) the rule is validated
+		const mmt_array_t * const trace  //historic of messages that validates the rule
+);
+
+- In the XML file of a rule, if an attribute is absent then its value is set by default
+  - property, operator:
+    - value: COMPUTE (=> only one <event> is required. Thus delay_min and delay_max must be 0)
+    - delay_units: 0
+    - delay_max: 0
+
+## Scenario Description:
+The system under test consists of an electric vehicle charging station (evcs) that communicates
+with a central station management system (csms) using the open charge point protocol (ocpp).
+This property ensures that the charging station accurately reports real-time charging status updates 
+to the CSMS, allowing the system to reflect the current state of charging operations.
+The generated XML should define expected message exchanges, time constraints, and error recovery
+mechanisms for ensuring compliance with ocpp-based communication, and message structure.
+
+Protocol: Open Charge Point Protocol (ocpp) 1.6
+Property: The charging station must report its current charging status (Charging, Paused, Finished) to the CSMS.
+
+Trigger: A StatusNotification message must be sent whenever the charging status changes, including events such as:
+- Charging session starts.
+- Charging session is paused.
+- Charging session is completed due to a full charge or user intervention.
+
+Response:
+- The CSMS must log and acknowledge the status update within 3 seconds to confirm receipt.
+
+Error Handling:
+- If the status update is not acknowledged, the charging station must retry sending the update within 5 seconds.
+- If 3 consecutive retries fail, the system must raise an alert, signaling a communication failure in status reporting.
+- The alert must be logged and reported to the network monitoring system for diagnostic purposes.
+
+## Protocol Context:
+Protocol: ocpp
+Attributes: ['message', 'type', 'id', 'action', 'payload']
+
+## Example XML Properties:
+### Example 1:
+**Description:** Rule checks the dimension of the header length. If it is greater then a threshold an alert is launched
+**Protocol(s):** http2, ip
+**XML Property:**
+<beginning>
+<!-- 
+Compression attack involve the use of the compression in order to put a great amount of data in a single packet, in order to use a huge amount of 
+computational resources by the server after the decompression. In this case the rule checks the length of the packet. 
+Since http2 tends to merge multiple packets, an upper limit is also set so as not to confuse the attack with the coalescing operated by the protocol
+-->
+<embedded_functions><![CDATA[
+
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "mmt_lib.h"
+#include "tcpip/mmt_tcpip_protocols.h"
+#include "pre_embedded_functions.h"
+
+
+static int em_check(
+	double header_length,double packet_id){	
+
+	//printf( " Rule 97:Recognized suspect packet. Length %f , packet id %d\n",header_length,(int)packet_id);
+	return 0;
+}
+
+
+]]></embedded_functions>
+
+<property value="THEN"  property_id="97" type_property="ATTACK" 
+    description="5G Http2 Compression Attack" if_satisfied="">
+    <event value="COMPUTE" event_id="1" 
+        description="Rule checks the dimension of the header length. If it is greater then a threshold an alert is launched"
+        boolean_expression="( ((http2.header_length>350) &amp;&amp; (16384>http2.header_length ) &amp;&amp; ( http2.header_method == 131)) &amp;&amp; ( ip.src != ip.dst ) )"/>
+
+ <event value="COMPUTE" event_id="2" 
+        description="Nothing"
+        boolean_expression="( http2.header_method != 0)"/>  
+</property>
+</beginning>
+
+
+### Example 2:
+**Description:** Detect HTTP double compression
+**Protocol(s):** ip, tcp
+**XML Property:**
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- MMT_Security Copyright (C) 2014-->
+<beginning>
+<embedded_functions><![CDATA[
+//each function name should be prefixed by em_
+/**
+* Return:
+* - 0: ok
+* - 1: invalid
+* - 2: NULL
+*/
+static inline int em_check_double_compression_http(const char *str){
+   
+   
+   const char* c = str;
+   while( *c != '\0' ){
+      if (*c=='C' && c[1]=='o' && c[2]=='n' && c[3]=='t' && c[4]=='e'){
+      	if (strstr(c, "Content-Encoding") != NULL) {
+      		while( *c != '\0' ){
+      			if (*c=='C' && c[1]=='o' && c[2]=='n' && c[3]=='t' && c[4]=='e'){
+     			 	if (strstr(c, "Content-Encoding") != NULL) return 1;
+     			 	break;
+     			 	}
+      		c++;
+      		}
+      	}
+      	break;
+      	} 
+      c ++;
+   }
+   return 0;
+}
+]]></embedded_functions>
+<!-- Property 69: Detect HTTP double compression -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="69" type_property="ATTACK" 
+     description="Detect HTTP double compression" >
+   <event event_id="1" value="COMPUTE" 
+           description="IP addresses"
+           boolean_expression="((ip.packet_count != 0) &amp;&amp; (ip.src != ip.dst))"/>
+   <event event_id="2" value="COMPUTE" 
+           description="HTTP double compression"
+           boolean_expression="(#em_check_double_compression_http(tcp.p_payload)==1)"/>
+ </property>
+</beginning>
+
+
+### Example 3:
+**Description:** Bogus IP version
+**Protocol(s):** ip
+**XML Property:**
+<beginning>
+<!-- Property 59: Bogus IP version.
+-->
+	<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="59" type_property="EVASION" 
+    description="Bogus IP version (different from 4 and 6)">
+      <event value="COMPUTE" event_id="1" 
+             description="IP version different from 4 and 6"
+             boolean_expression="((ip.version != 4)&amp;&amp;(ip.version != 6))"/>
+      <event value="COMPUTE" event_id="2" 
+             description="True"
+             boolean_expression="(1==1)"/>
+</property>
+</beginning>
+
+
+### Example 4:
+**Description:** ICMP redirect flood detection
+**Protocol(s):** icmp, ip
+**XML Property:**
+<beginning>
+<!-- Property 20: C4_Analyse_04i: ICMP redirect flood detection-->
+<!-- Depending on OS implementation, these host based routes can have the characteristic of being short lived.  
+Solaris implements aggressive aging where redirects will only last for a specified amount of time.  
+Each redirect is given a short lifetime value and will be automatically removed from the routing table when the timer expires.   
+This is to ensure that redirects do not remain the routing table indefinitely at the risk of further sub optimal routing.  
+In BSD networking code, redirects will be removed if they are being used by TCP and only after the fourth consecutive retransmission attempt.  
+Routed and Gated perform similar forms of redirect expiration.  
+Since ICMP redirects are dynamic and may not reflect the most current topology 
+it is nice to have an automated method of redirect expiration.
+-->
+
+<property value="THEN" delay_units="s" delay_min="0" delay_max="6" property_id="20" type_property="ATTACK" 
+    description="4 consecutive ICMP redirect packets. Possibly ICMP redirect flood."
+    >
+   <operator value="THEN" delay_units="s" delay_min="0+" delay_max="3">
+   <event value="COMPUTE" event_id="1" 
+           description="Context: ICMP redirect"
+           boolean_expression="((icmp.type == 5)&amp;&amp;((ip.dst == ip.dst)&amp;&amp;(ip.src == ip.src)))"/>
+   <event value="COMPUTE" event_id="2" 
+           description="Trigger: 2nd consecutive ICMP redirect packet"
+           boolean_expression="((icmp.type == 5)&amp;&amp;((ip.dst == ip.dst.1)&amp;&amp;(ip.src == ip.src.1)))"/>
+   </operator>
+   <operator value="THEN" delay_units="s" delay_min="0+" delay_max="3">
+   <event value="COMPUTE" event_id="3" 
+           description="Trigger: 3rd consecutive ICMP redirect packet"
+           boolean_expression="((icmp.type == 5)&amp;&amp;((ip.dst == ip.dst.1)&amp;&amp;(ip.src == ip.src.1)))"/>
+   <event value="COMPUTE" event_id="4" 
+           description="Trigger: 4th consecutive ICMP redirect packet"
+           boolean_expression="((icmp.type == 5)&amp;&amp;((ip.dst == ip.dst.1)&amp;&amp;(ip.src == ip.src.1)))"/>
+   </operator>
+</property>
+</beginning>
+
+
+### Example 5:
+**Description:** Probable TCP Maimon scan (4 different attempts in a row on different ports).
+**Protocol(s):** tcp, ip
+**XML Property:**
+<beginning>
+<!-- Property 45: Probable TCP Maimon scan (4 different attempts in a row on different ports).
+-->
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="45" type_property="ATTACK" 
+    description="Probable TCP Maimon scan (4 different attempts in a row on different ports).">
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="1" 
+             description="TCP FIN/ACK packet header with a destination port field set (1)"
+             boolean_expression="((tcp.flags == 17)&amp;&amp;(ip.src != ip.dst))"/>
+      <event value="COMPUTE" event_id="2" 
+             description="TCP FIN/ACK packet header with another destination port field set (2)"
+             boolean_expression="((tcp.flags == 17)&amp;&amp;((tcp.dest_port != tcp.dest_port.1)&amp;&amp;((ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1))))"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="3" 
+             description="TCP FIN/ACK packet header with another destination port field set (3)"
+             boolean_expression="((tcp.flags == 17)&amp;&amp;((tcp.dest_port != tcp.dest_port.1)&amp;&amp;((tcp.dest_port != tcp.dest_port.2)&amp;&amp;((ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1)))))"/>
+      <event value="COMPUTE" event_id="4"
+             description="TCP FIN/ACK packet header with another destination port field set (4)"
+             boolean_expression="((tcp.flags == 17)&amp;&amp;((tcp.dest_port != tcp.dest_port.1)&amp;&amp;((tcp.dest_port != tcp.dest_port.2)&amp;&amp;((tcp.dest_port != tcp.dest_port.3)&amp;&amp;((ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1)))))"/>
+    </operator>
+</property>
+</beginning>
+
+
+### Task:
+Generate a new XML property that matches the scenario and adheres to the protocol(s) context.

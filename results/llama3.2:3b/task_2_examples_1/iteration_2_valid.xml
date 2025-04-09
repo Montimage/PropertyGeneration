@@ -1,0 +1,27 @@
+<beginning>
+  <!-- Property 43: Continuous OCPP Heartbeat Communication -->
+  <property value="THEN" delay_units="s" delay_min="-1" delay_max="5" property_id="43" type_property="SECURITY_RULE"
+           description="The charging station must send periodic Heartbeat messages to the CSMS to ensure continuous communication.">
+    <event value="COMPUTE" event_id="3" 
+          description="Charging Station Heartbeat message sent within 60 seconds"
+          boolean_expression="((message.type == 'heartbeat')&amp;&amp;((message.id &gt;= 0)&amp;&amp;(timestamp - message.timestamp) &lt; 60))"/>
+    <event value="COMPUTE" event_id="4" 
+          description="CSMS response within 5 seconds of receiving a Heartbeat"
+          boolean_expression="((message.type == 'response')&amp;&amp;((message.id &gt;= 0)&amp;&amp;(timestamp - message.timestamp) &lt; 5))"/>
+    <event value="COMPUTE" event_id="5" 
+          description="3 consecutive CSMS failure to respond"
+          boolean_expression="(((message.type == 'heartbeat')&amp;&amp;((message.id &gt;= 0)&amp;&amp;(timestamp - message.timestamp) &lt; 60))&amp;&amp;
+                             ((message.type != 'response')&amp;&amp;((message.id &gt;= 0)&amp;&amp;(timestamp - message.timestamp) &lt; 5))&amp;&amp;
+                             (count(5, timestamp) == 3))"/>
+    <event value="COMPUTE" event_id="6" 
+          description="Alert triggered due to potential communication breakdown"
+          boolean_expression="(((message.type == 'heartbeat')&amp;&amp;((message.id &gt;= 0)&amp;&amp;(timestamp - message.timestamp) &lt; 60))&amp;&amp;
+                             ((message.type != 'response')&amp;&amp;((message.id &gt;= 0)&amp;&amp;(timestamp - message.timestamp) &lt; 5))&amp;&amp;
+                             (count(5, timestamp) == 3))"/>
+    <event value="COMPUTE" event_id="7" 
+          description="Alert logged and reported to network monitoring system"
+          boolean_expression="(((message.type == 'heartbeat')&amp;&amp;((message.id &gt;= 0)&amp;&amp;(timestamp - message.timestamp) &lt; 60))&amp;&amp;
+                             ((message.type != 'response')&amp;&amp;((message.id &gt;= 0)&amp;&amp;(timestamp - message.timestamp) &lt; 5))&amp;&amp;
+                             (count(5, timestamp) == 3))"/>
+</property>
+</beginning>

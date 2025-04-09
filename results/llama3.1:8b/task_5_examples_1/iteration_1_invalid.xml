@@ -1,0 +1,85 @@
+<beginning>
+  <embedded_functions>
+    <![CDATA[
+      // Add a new function to add items to the hash table
+      void on_add_new_rule() {
+        int i;
+        const char* uri;
+
+        // Get the number of URIs in the list_trojan_uri array
+        int length = sizeof(list_trojan_uri) / sizeof(list_trojan_uri[0]);
+
+        // Create a new URI that matches the scenario and adheres to the protocol(s) context
+        const char* new_uri = "https://example.com/trojan/new";
+
+        // Add the new URI to the list of known trojans
+        mmt_hash_add(table, new_uri, strlen(new_uri), (void*) new_uri, false);
+
+        // Update the length variable with the new number of URIs in the table
+        length++;
+      }
+
+      // Add a new function to remove items from the hash table when exiting MMT-Security
+      void on_remove_old_rule() {
+        int i;
+        const char* uri;
+
+        // Get the number of URIs in the list_trojan_uri array
+        int length = sizeof(list_trojan_uri) / sizeof(list_trojan_uri[0]);
+
+        // Iterate over each URI in the table and remove the old ones
+        for (i = 0; i < length - 1; i++) {
+          uri = list_trojan_uri[i];
+          mmt_hash_remove(table, uri);
+        }
+
+        // Update the length variable with the new number of URIs in the table
+        length--;
+      }
+    ]]>
+  </embedded_functions>
+
+  <!-- Add a new XML property that matches the scenario and adheres to the protocol(s) context -->
+  <new_trojan_uri>
+    <uri>https://example.com/trojan/new</uri>
+  </new_trojan_uri>
+
+  <on_load>
+    <![CDATA[
+      // Call the new function to add items to the hash table
+      on_add_new_rule();
+
+      // Call the original on_load function
+      void on_load() {
+        int i;
+        const char* uri;
+
+        // Create a new hash table with the updated length
+        table = mmt_hash_create(length);
+
+        // Add items to the hash table
+        for (i = 0; i < length; i++) {
+          uri = list_trojan_uri[i];
+          mmt_hash_add(table, uri, strlen(uri), (void*) uri, false);
+        }
+      }
+
+      on_load();
+    ]]>
+  </on_load>
+
+  <on_unload>
+    <![CDATA[
+      // Call the new function to remove items from the hash table
+      on_remove_old_rule();
+
+      // Call the original on_unload function
+      void on_unload() {
+        mmt_hash_free(table);
+      }
+
+      on_unload();
+    ]]>
+  </on_unload>
+
+</beginning>

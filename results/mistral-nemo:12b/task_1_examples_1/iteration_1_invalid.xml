@@ -1,0 +1,57 @@
+<beginning>
+  <embedded_functions><![CDATA[
+    // Each function name should be prefixed by em_
+
+    int em_check_boot_notification_status(const char* status) {
+      if (strcmp(status, "Accepted") == 0) return 1;
+      return 0;
+    }
+
+    int em_check_authorization_request_delay(uint64_t timestamp, uint64_t counter) {
+      static uint64_t prev_counter = 0;
+      if (counter > prev_counter && (timestamp - prev_counter) <= 2 * MMT_TIME_UNIT_MS) return 1;
+      prev_counter = counter;
+      return 0;
+    }
+  ]]></embedded_functions>
+
+  <!-- Property 1: OCPP BootNotification and Authorization Request -->
+  <property value="THEN" delay_units="ms" delay_min="-500" delay_max="0" property_id="1" type_property="SECURITY_RULE"
+            description="Charging station initiates a charging session">
+    <event value="COMPUTE" event_id="1"
+           description="Receive BootNotification message from EVCS"
+           boolean_expression="(ocpp.message == 'BootNotification' && ocpp.type == 'Request')"/>
+    <event value="THEN" delay_units="ms" delay_min="0" delay_max="5000"
+           description="Receive BootNotificationResponse with status Accepted within 5 seconds">
+      <event value="COMPUTE" event_id="2"
+              boolean_expression="(ocpp.message == 'BootNotification' && ocpp.type == 'Response') &&
+                                      (#em_check_boot_notification_status(ocpp.payload.status) == 1))"/>
+      <event value="THEN" delay_units="ms" delay_min="-5000" delay_max="5000"
+             description="Receive AuthorizationRequest within 2 seconds">
+        <event value="COMPUTE" event_id="3"
+                boolean_expression="(ocpp.message == 'Authorization' && ocpp.type == 'Request') &&
+                                        (#em_check_authorization_request_delay(ocpp.timestamp, ocpp.counter) == 1))"/>
+    </event>
+    <event value="ELSE" delay_units="ms" delay_min="5000" delay_max="0"
+           description="Failed to receive AuthorizationRequest within 2 seconds">
+      <event value="COMPUTE" event_id="4"
+              boolean_expression="(ocpp.message != 'Authorization' || ocpp.type != 'Request') &&
+                                      (ocpp.timestamp - prev_timestamp > 5 * MMT_TIME_UNIT_MS))"/>
+    </event>
+  </property>
+
+  <!-- Property 2: Retry BootNotification on timeout or failure -->
+  <property value="THEN" delay_units="ms" delay_min="-5000" delay_max="0" property_id="2" type_property="EVASION"
+            description="Retry sending BootNotification message">
+    <event value="COMPUTE" event_id="1"
+           boolean_expression="(ocpp.message != 'BootNotification' || ocpp.type != 'Request') &&
+                                   (ocpp.timestamp - prev_timestamp > 5 * MMT_TIME_UNIT_MS))"/>
+    <event value="THEN" delay_units="ms" delay_min="0" delay_max="0"
+           description="Send BootNotification message again">
+      <event value="COMPUTE" event_id="2"
+              boolean_expression="(ocpp.message == 'BootNotification' && ocpp.type == 'Request') &&
+                                      (ocpp.counter <= 3))"/>
+    </event>
+  </property>
+
+</beginning>

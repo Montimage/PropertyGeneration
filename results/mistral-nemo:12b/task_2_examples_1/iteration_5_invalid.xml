@@ -1,0 +1,24 @@
+<beginning>
+  <!-- Property 101: Periodic Heartbeat with Error Recovery -->
+  <property value="THEN" delay_units="s" delay_min="-60+" delay_max="5" property_id="101" type_property="SECURITY_RULE"
+    description="Charging point sends periodic Heartbeat messages to CSMS with error recovery mechanism.">
+    <event value="COMPUTE" event_id="1" description="Heartbeat message sent by charging station">
+      <boolean_expression>ocpp.message == 'Heartbeat' &amp;&amp; ocpp.action == 'BootNotification'</boolean_expression>
+    </event>
+
+    <event value="COMPUTE" event_id="2" description="CSMS responds to Heartbeat within 5 seconds">
+      <boolean_expression>ocpp.message == 'HeartbeatResponse' &amp;&amp; ocpp.id == ocpp.id.1 &amp;&amp;
+        (timestamp - timestamp.1) <= 5000</boolean_expression>
+    </event>
+
+    <event value="COMPUTE" event_id="3" description="CSMS does not respond to Heartbeat for three consecutive messages">
+      <boolean_expression>ocpp.message != 'HeartbeatResponse' &amp;&amp; ocpp.id == ocpp.id.1 &amp;&amp;
+        count(ocpp.id == ocpp.id.1) >= 3</boolean_expression>
+    </event>
+
+    <!-- Trigger alert event on CSMS non-response -->
+    <event value="COMPUTE" event_id="4">
+      <boolean_expression>ocpp.message == 'Alert' &amp;&amp; ocpp.action == 'RemoteStartTransaction'</boolean_expression>
+    </event>
+  </property>
+</beginning>

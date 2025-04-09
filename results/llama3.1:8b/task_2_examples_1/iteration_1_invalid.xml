@@ -1,0 +1,43 @@
+<beginning>
+    <!-- Property 24: Heartbeat message exchange between EVCS and CSMS -->
+    <property value="THEN" delay_units="s" delay_min="60+" delay_max="61" property_id="24" type_property="SECURITY_RULE"
+        description="The charging point must send periodic Heartbeat messages to the CSMS">
+        
+        <!-- Event 1: Charging station sends a Heartbeat message -->
+        <event value="COMPUTE" event_id="1" 
+            description="Heartbeat message sent by the charging station"
+            boolean_expression="(ocpp.message == 'Heartbeat' &amp;&amp; ocpp.type == 'Request')"/>
+        
+        <!-- Event 2: CSMS responds within 5 seconds -->
+        <event value="COMPUTE" event_id="2" 
+            description="CSMS responds to a Heartbeat message"
+            boolean_expression="(ocpp.message == 'Heartbeat' &amp;&amp; ocpp.type == 'Response' &amp;&amp; timestamp - last_heartbeat_timestamp <= 5)"/>
+        
+        <!-- Event 3: CSMS does not respond within 5 seconds (error handling) -->
+        <event value="COMPUTE" event_id="3" 
+            description="CSMS does not respond to a Heartbeat message"
+            boolean_expression="(ocpp.message == 'Heartbeat' &amp;&amp; ocpp.type == 'Request' &amp;&amp; timestamp - last_heartbeat_timestamp > 5)">
+            
+            <!-- Embedded function: count consecutive Heartbeat messages without response -->
+            <embedded_functions>
+                void em_count_consecutive_heartbeats(uint64_t* count, uint64_t last_heartbeat_timestamp) {
+                    if (timestamp - last_heartbeat_timestamp <= 60) {
+                        (*count)++;
+                    } else {
+                        (*count) = 1;
+                    }
+                }
+            </embedded_functions>
+            
+            <!-- Event 4: Charging station triggers an alert event -->
+            <event value="COMPUTE" event_id="4" 
+                description="Charging station triggers an alert event for potential communication breakdown"
+                boolean_expression="(*count >= 3)">
+                
+                <!-- Log and report the alert to the network monitoring system -->
+                <action>LogAlert(communication_breakdown)</action>
+                <action>ReportToMonitoringSystem(communication_breakdown)</action>
+            </event>
+        </event>
+    </property>
+</beginning>

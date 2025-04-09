@@ -1,0 +1,42 @@
+<beginning>
+  <embedded_functions><![CDATA[
+  //each function name should be prefixed by em_
+
+  static inline int em_check_ocpp_message(uint8_t msg_type){
+    if(msg_type==0x01) return 1; //BootNotification
+    if (msg_type==0x02) return 1; //BootNotificationResponse
+    if (msg_type==0x03) return 1; //AuthorizationRequest
+    return 0;
+  }
+
+  static inline int em_check_ocpp_status(uint8_t status){
+    if(status==0x01) return 1; //Accepted
+    return 0;
+  }
+  ]]></embedded_functions>
+
+  <property value="THEN" delay_units="ms" delay_min="-1" delay_max="2" property_id="123" type_property="SECURITY_RULE" 
+    description="Charging station initiates a charging session when it receives a valid charging request from a vehicle">
+      <operator>
+        <event value="COMPUTE" event_id="1" 
+               description="CSMS responds with BootNotificationResponse"
+               boolean_expression="#em_check_ocpp_message(msg.type) && #em_check_ocpp_status(msg.status) == 0x01"/>
+      </operator>
+
+      <operator>
+        <event value="COMPUTE" event_id="2" 
+               description="CSMS sends Authorization request within 2 seconds to confirm the charging session start"
+               boolean_expression="#em_check_ocpp_message(msg.type) && (msg.timestamp - prev_msg.timestamp <= 2000)"/>
+      </operator>
+
+      <operator>
+        <event value="COMPUTE" event_id="3" 
+               description="CSMS does not respond within 2 seconds, charging station retries sending BootNotification message up to 3 times"
+               boolean_expression="#em_check_ocpp_message(msg.type) && (msg.timestamp - prev_msg.timestamp > 2000 && retry_count <= 3)"/>
+      </operator>
+
+      <event value="COMPUTE" event_id="4" 
+             description="CSMS does not respond after 3 retries, charging station raises an alert event indicating a failed connection"
+             boolean_expression="#em_check_ocpp_message(msg.type) && (retry_count > 3 || msg.timestamp - prev_msg.timestamp > 2000)"/>
+  </property>
+</beginning>

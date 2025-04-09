@@ -1,0 +1,11 @@
+<beginning>
+  <property value="COMPUTE" delay_units="s" delay_min="0" delay_max="0" property_id="1001" type_property="SECURITY_RULE"
+             description="Charging station must provide accurate energy consumption data during a charging session.">
+    <event value="COMPUTE" event_id="1" description="MeterValues message sent during active charging session"
+           boolean_expression="ocpp.message.type == 'MeterValues' &amp;&amp; ocpp.message.action == 'report'"/>
+    <event value="COMPUTE" event_id="2" description="Energy consumption data accuracy within ±0.5 kWh"
+           boolean_expression="abs(ocpp.message.payload.energy_consumption - ocpp.message.payload.last_energy_consumption) &lt;= 0.5"/>
+    <event value="COMPUTE" event_id="3" description="Corrective action alert triggered within 10 seconds for inaccurate data"
+           boolean_expression="ocpp.message.payload.error_code != null &amp;&amp; ocpp.message.payload.error_code == 'inaccurate_data'"/>
+  </property>
+</beginning>

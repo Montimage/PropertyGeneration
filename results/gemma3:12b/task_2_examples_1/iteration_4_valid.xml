@@ -1,0 +1,16 @@
+<beginning>
+  <!-- Property: Charging point sends periodic Heartbeat messages to CSMS. -->
+  <property value="COMPUTE" delay_units="s" delay_min="0" delay_max="0" property_id="1" type_property="SECURITY_RULE" description="Charging point sends periodic Heartbeat messages to CSMS.">
+    <event value="COMPUTE" event_id="1" description="Heartbeat message sent by charging station." boolean_expression="ocpp.message.type == 'Heartbeat'"/>
+  </property>
+
+  <!-- Property: CSMS responds to Heartbeat message within 5 seconds. -->
+  <property value="COMPUTE" delay_units="s" delay_min="0" delay_max="5" property_id="2" type_property="SECURITY_RULE" description="CSMS responds to Heartbeat message within 5 seconds.">
+    <event value="COMPUTE" event_id="2" description="CSMS responds to Heartbeat message." boolean_expression="ocpp.message.type == 'HeartbeatResponse'"/>
+  </property>
+
+  <!-- Property: Charging station triggers an alert if CSMS does not respond to 3 consecutive Heartbeat messages. -->
+  <property value="COMPUTE" delay_units="s" delay_min="0" delay_max="0" property_id="3" type_property="SECURITY_RULE" description="Charging station triggers an alert if CSMS does not respond to 3 consecutive Heartbeat messages.">
+    <event value="COMPUTE" event_id="4" description="Alert triggered due to lack of response from CSMS." boolean_expression="count(ocpp.message.type == 'HeartbeatResponse') &lt; 3"/>
+  </property>
+</beginning>

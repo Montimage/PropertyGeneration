@@ -1,0 +1,15 @@
+<beginning>
+<!--
+This rule detects a high rate of SYN packets within a short time window, potentially indicating a SYN flood attack.
+-->
+<property value="THEN" delay_units="mms" delay_min="0" delay_max="100" property_id="95" type_property="ATTTACK"
+    description="High rate of SYN packets detected (potential SYN flood)">
+    <event event_id="1" value="COMPUTE"
+        description="TCP SYN packet detected"
+        boolean_expression="(tcp.flags.syn == 1)"/>
+
+    <event event_id="2" value="COMPUTE"
+        description="Another TCP SYN packet within a short window"
+        boolean_expression="(tcp.flags.syn == 1 AND meta.time_delta &lt; 500)"/>
+</property>
+</beginning>

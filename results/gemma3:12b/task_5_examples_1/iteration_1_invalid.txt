@@ -1,0 +1,55 @@
+Okay, here's an XML property designed to complement the provided JavaScript code, focusing on defining the hash table within the MMT-Security environment. This XML property will be used to initialize and manage the hash table created by the JavaScript code.  I'm including explanations for each element to clarify its purpose.
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<mmt_property version="1.0">
+  <name>trojan_uri_hash_table</name>
+  <description>Defines and initializes the hash table for Trojan URI detection.</description>
+  <type>hash_table</type>
+  <initialization>
+    <table_name>trojan_uri_hash_table</table_name>
+    <table_size>256</table_size>  <!--  Initial table size.  Can be adjusted based on expected number of entries. -->
+    <load_function>on_load</load_function>  <!--  References the JavaScript function to populate the table. -->
+    <unload_function>on_unload</unload_function> <!-- References the JavaScript function to free the table. -->
+    <key_type>string</key_type>
+    <value_type>void_ptr</value_type>
+    <collision_resolution>separate_chaining</collision_resolution> <!-- Common collision resolution strategy -->
+  </initialization>
+
+  <metadata>
+    <author>MMT-Security Development</author>
+    <version>1.0</version>
+    <creation_date>2024-02-29</creation_date>
+    <dependencies>
+      <dependency>javascript_engine</dependency>  <!--  Indicates reliance on a JavaScript engine -->
+    </dependencies>
+  </metadata>
+</mmt_property>
+```
+
+**Explanation of Elements:**
+
+*   **`<mmt_property>`:**  The root element, indicating this is a property definition for MMT-Security.
+*   **`<name>`:** A unique name for this property.
+*   **`<description>`:**  A brief explanation of what the property does.
+*   **`<type>`:**  Specifies the type of property; in this case, a `hash_table`.
+*   **`<initialization>`:** Contains the configuration details for the hash table.
+    *   **`<table_name>`:**  The name of the hash table within the MMT-Security environment.  This *must* match the name used in the JavaScript `mmt_hash_create()` call.
+    *   **`<table_size>`:**  The initial size of the hash table.  This is a crucial parameter for performance.  It should be large enough to accommodate the expected number of entries with a reasonable load factor.  A prime number is often used for better distribution.
+    *   **`<load_function>`:** The name of the JavaScript function that will populate the hash table. This links the XML configuration to the JavaScript code.
+    *   **`<unload_function>`:** The name of the JavaScript function that will free the hash table when MMT-Security is unloaded.
+    *   **`<key_type>`:** Specifies the data type of the keys in the hash table.  Here, it's a `string`.
+    *   **`<value_type>`:** Specifies the data type of the values associated with the keys. `void_ptr` is used because the JavaScript code is passing a pointer to the URI itself.
+    *   **`<collision_resolution>`:**  Specifies the method used to handle collisions when multiple keys hash to the same index.  `separate_chaining` is a common and effective strategy.
+*   **`<metadata>`:** Contains information about the property itself.
+    *   **`<author>`:**  The author of the property definition.
+    *   **`<version>`:**  The version number of the property definition.
+    *   **`<creation_date>`:**  The date the property definition was created.
+    *   **`<dependencies>`:**  Lists any dependencies that this property has on other MMT-Security components.  In this case, it depends on the `javascript_engine`.
+
+**How this integrates with the JavaScript:**
+
+1.  **Loading:**  When MMT-Security loads this XML property, it will:
+    *   Create a hash table named `trojan_uri_hash_table` with an initial size of 256.
+    *   Call the `on_load()` JavaScript function to populate the table.
+2.  **Unloading:** When MMT-Security is unloaded, it will call the `on_unload()` JavaScript function to free the

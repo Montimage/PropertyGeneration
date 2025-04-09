@@ -1,0 +1,132 @@
+
+You are an AI that generates XML properties for deep packet inspection.
+
+### MMT Property Context:
+XML Rules:
+- A <property> defines a security rule (SECURITY_RULE) or an attack rule (ATTACK).
+- Each property begins with a <property> tag and ends with </property>
+- A property is a "general ordered tree"
+- The nodes of the property tree are:
+  - <property> node (required)
+  - <operator> nodes (optional)
+  - <event> nodes (required)
+- The <property> node is forcibly the root node and the <event> nodes are forcibly leaf nodes.
+- The left branch represents the context and the right branch represents the trigger.
+- The property is found valid when the trigger is found valid; and the trigger is checked only if the context is valid.
+
+- <beginning> tag:
+  - Container tag for defining multiple properties
+  - Holds one or more <property> definitions
+  - Includes optional embedded functions.
+
+- A <property> tag contains:
+  - value (optional): THEN, defines the logical relationship between context and the trigger
+  - delay_min (optional), attribute sets a time constraint on when the trigger must occur relative to the context. A negative delay (-1) means the trigger must have occurred before the context. A zero delay (0) means the trigger must occur simultaneously with the context. A positive delay (+N) means the trigger must occur after the context.
+  - property_id (required): attribute uniquely identifies the property.
+  - description (required): Textual description of the property.
+  - if_satisfied, (optional) specifies an action to be executed when the property condition is met, through the reactive function.
+  - type_property (required) can be SECURITY_RULE, ATTACK, EVASION, or TEST
+
+- An <event> tag contains:
+  - value:COMPUTE, indicates that this event is evaluated based on a boolean expression.
+  - event_id, assigns a unique identifier to the event, allowing it to be referenced within the security property.
+  - description: Textual description of the event.
+  - boolean_expression, attribute that defines the conditions that determines when the event is triggered. Packet or message attributes are identified by <protocol_name>”.”<field_name>[“.”<event_id>]. Protocol_name is either BASE (containing packet metadata, e.g., protocol id, time slot of message) or the message/protocol identifier (e.g., SPHY_DATA_REQ, IP, TCP, UDP...). Field_name is the name of the attribute. Event_id allows identifying data captured when another event (identified using its id) of the property occurred. Expressions can use packet fields, protocol attributes, or embedded functions.
+
+- <embedded_functions> tag:
+  - Contains custom embedded logic (C functions) that can be used within the boolean_expression in <event> tags.
+  - One can either use existing embedded functions or implement a new function.
+  - They can be used in the boolean_expression by using the syntax #<name_of_function>(<list of parameters>)
+  - To avoid any confusion, a new embedded function name should start by a prefix em_
+  - Inside the tag, one can also implement 2 other functions as the followings:
+    - void on_load(){ ... } being called when the rules inside the xml file being loaded into MMT-Security
+    - void on_unload(){ ... } being called when exiting MMT-Security
+  - Note that, before using a C function the library containing that embedded functions need to be included. The following libraries have been pre-included:
+    -#include <string.h>
+    -#include <stdio.h>
+    -#include <stdlib.h>
+    -#include "mmt_lib.h"
+    -#include "pre_embedded_functions.h"
+
+- Reactive functions
+  - They allow user perform some action when a rule is satisfied. The functions will be called each time rules are satisfied.
+  - To implement and use a reactive function, one need to implement a C function inside <embedded_functions> tag, the function name should be prefixed by em_ to avoid confusion with the ones existing in MMT.
+  - The function has the following format:
+typedef void (*mmt_rule_satisfied_callback)(
+		const rule_t *rule,		          //rule being validated
+		int verdict,                     //DETECTED, NOT_RESPECTED
+		uint64_t timestamp,              //moment (by time) the rule is validated
+		uint64_t counter,                //moment (by order of message) the rule is validated
+		const mmt_array_t * const trace  //historic of messages that validates the rule
+);
+
+- In the XML file of a rule, if an attribute is absent then its value is set by default
+  - property, operator:
+    - value: COMPUTE (=> only one <event> is required. Thus delay_min and delay_max must be 0)
+    - delay_units: 0
+    - delay_max: 0
+
+## Scenario Description:
+The system under test consists of an electric vehicle charging station (evcs) that communicates
+with a central station management system (csms) using the open charge point protocol (ocpp).
+The charging station must correctly handle session initialization requests, send the appropriate ocpp
+messages, and respond to network failures according to protocol specifications.
+The generated XML should define expected message exchanges, time constraints, and error recovery
+mechanisms for ensuring compliance with ocpp-based communication, and message structure.
+
+Protocol: Open Charge Point Protocol (ocpp) 1.6
+Property: The charging station must initiate a charging session when it receives a valid charging request from a vehicle.
+
+Trigger: The charging station sends a BootNotification message to the Central System (CSMS) as defined in the OCPP protocol.
+- The BootNotification message contains metadata about the charging station, such as model, vendor, and firmware version.
+- The CSMS must process this message and determine if the station is authorized to initiate a session.
+
+Response:
+- The CSMS must respond with a BootNotificationResponse, including a status field (Accepted, Pending, or Rejected).
+- If the status is Accepted, the CSMS must send an Authorization request within 2 seconds to confirm the charging session start.
+
+Error Handling:
+- If the CSMS does not respond within 2 seconds, the charging station must retry sending the BootNotification message up to 3 times.
+- If the station does not receive a valid response after 3 retries, it must raise an alert event indicating a failed connection.
+- The alert must be logged and reported to the network monitoring system.
+
+## Protocol Context:
+Protocol: ocpp
+Attributes: ['message', 'type', 'id', 'action', 'payload']
+
+## Example XML Properties:
+### Example 1:
+**Description:** Non standard IP type of service value
+**Protocol(s):** ip
+**XML Property:**
+<beginning>
+<embedded_functions><![CDATA[
+//each function name should be prefixed by em_
+
+static inline int em_check_ip_proto_id(int i){
+  //printf("IP proto ID:%d\n", i);
+  
+  if(i>143 && i<252) return 1;
+  if (i==255) return 1;
+  return 0;
+}
+]]></embedded_functions>
+
+<!-- Property 62: Non standard IP type of service value -->
+<!--              according to: 
+					https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers
+-->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="62" type_property="EVASION" 
+    description="Non standard IP protocol number">
+      <event value="COMPUTE" event_id="1" 
+             description="IP packet with non-standard IP protocol ID (unassigned yet or reserved for extra)"
+             boolean_expression="(#em_check_ip_proto_id(ip.proto_id) == 1)"/>
+      <event value="COMPUTE" event_id="2" 
+             description="Print source and destination of IP"
+             boolean_expression="(ip.src != ip.dst)"/>
+</property>
+</beginning>
+
+
+### Task:
+Generate a new XML property that matches the scenario and adheres to the protocol(s) context.

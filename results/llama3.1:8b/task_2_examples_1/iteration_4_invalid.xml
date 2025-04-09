@@ -1,0 +1,31 @@
+<beginning>
+  <!-- Property: The charging point must send periodic Heartbeat messages to the CSMS to ensure continuous communication. -->
+  <property value="THEN" delay_units="s" delay_min="60+" delay_max="0" property_id="1" type_property="SECURITY_RULE"
+    description="Periodic Heartbeat message exchange between EVCS and CSMS">
+    <!-- Context: A Heartbeat message is sent by the charging station every 60 seconds as per OCPP specifications. -->
+    <event value="COMPUTE" event_id="1" description="Heartbeat message sent by EVCS to CSMS"
+           boolean_expression="#ocpp_heartbeat_sent(0)">
+      <!-- Trigger: The CSMS must respond within 5 seconds of receiving a Heartbeat, confirming system connectivity. -->
+      <operator value="AND">
+        <event value="COMPUTE" event_id="2" description="CSMS responds to Heartbeat message"
+               boolean_expression="#ocpp_csms_response_received(0)">
+          <!-- Delay: The CSMS must respond within 5 seconds of receiving a Heartbeat, confirming system connectivity. -->
+          <delay delay_units="s" delay_min="5+" delay_max="0"/>
+        </event>
+      </operator>
+    </event>
+
+    <!-- Error Handling: If the CSMS does not respond to 3 consecutive Heartbeat messages, the charging station must trigger an alert event signaling a potential communication breakdown. -->
+    <event value="COMPUTE" event_id="3" description="CSMS fails to respond to 3 consecutive Heartbeats"
+           boolean_expression="#ocpp_csms_response_failed(0)">
+      <!-- Trigger: The alert must be logged and reported to the network monitoring system for further investigation. -->
+      <operator value="AND">
+        <event value="COMPUTE" event_id="4" description="Alert triggered by EVCS, logged and reported to NMS"
+               boolean_expression="#ocpp_alert_triggered(0)">
+          <!-- Delay: The alert must be logged and reported to the network monitoring system for further investigation. -->
+          <delay delay_units="s" delay_min="+inf"/>
+        </event>
+      </operator>
+    </event>
+  </property>
+</beginning>

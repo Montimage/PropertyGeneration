@@ -1,0 +1,23 @@
+<beginning>
+  <!-- Property: Charging point sends periodic Heartbeat messages. -->
+  <property value="T THEN" delay_units="s" delay_min="0" delay_max="5" property_id="1" type_property="SECURITY_RULE"
+     description="Charging point sends periodic Heartbeat messages to the CSMS.">
+    <event value="COMPUTE" event_id="1"
+           description="Heartbeat message sent by the charging station."
+           boolean_expression="ocpp.message.type == 'Heartbeat'"/>
+    <event value="COMPUTE" event_id="2"
+           description="CSMS responds to the Heartbeat message within 5 seconds."
+           boolean_expression="ocpp.message.type == 'HeartbeatResponse' &amp;&amp; (BASE.timestamp - BASE.timestamp.1) &lt; 5"/>
+  </property>
+
+  <!-- Property: Alert triggered if CSMS does not respond to 3 consecutive Heartbeat messages. -->
+  <property value="T THEN" delay_units="s" delay_min="0" delay_max="0" property_id="2" type_property="SECURITY_RULE"
+     description="Alert triggered if CSMS does not respond to 3 consecutive Heartbeat messages.">
+    <event value="COMPUTE" event_id="3"
+           description="Heartbeat message sent without a response."
+           boolean_expression="ocpp.message.type == 'Heartbeat' &amp;&amp; (BASE.timestamp - BASE.timestamp.1) &gt; 5"/>
+    <event value="COMPUTE" event_id="4"
+           description="Alert event triggered after 3 consecutive missed Heartbeat responses."
+           boolean_expression="count(BASE.timestamp - BASE.timestamp.1 &gt; 5) &gt;= 3"/>
+  </property>
+</beginning>

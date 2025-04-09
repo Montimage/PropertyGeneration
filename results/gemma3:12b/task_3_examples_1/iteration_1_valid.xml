@@ -1,0 +1,27 @@
+<beginning>
+<!-- Property to ensure charging station reports charging status updates to CSMS -->
+<!-- This property monitors the OCPP communication between the charging station and the CSMS, 
+     verifying that the charging station sends StatusNotification messages when the charging status changes. -->
+
+<property value="THEN" delay_units="s" delay_min="0" delay_max="3" property_id="1" type_property="SECURITY_RULE" 
+         description="Charging station must report charging status updates to CSMS within 3 seconds.">
+    <event value="COMPUTE" event_id="1" 
+           description="Charging station sends StatusNotification message"
+           boolean_expression="ocpp.message.type == 'StatusNotification'"/>
+</property>
+
+<property value="THEN" delay_units="s" delay_min="0" delay_max="5" property_id="2" type_property="SECURITY_RULE"
+         description="Charging station retries sending StatusNotification if not acknowledged within 5 seconds.">
+    <event value="COMPUTE" event_id="2"
+           description="StatusNotification not acknowledged (simulated by lack of acknowledgement message within 3 seconds)"
+           boolean_expression="false"/>
+</property>
+
+<property value="THEN" delay_units="s" delay_min="0" delay_max="5" property_id="3" type_property="SECURITY_RULE"
+         description="Charging station raises an alert if 3 consecutive StatusNotification retries fail.">
+    <event value="COMPUTE" event_id="4"
+           description="Third consecutive StatusNotification retry failure."
+           boolean_expression="false"/>
+</property>
+
+</beginning>

@@ -1,0 +1,18 @@
+<beginning>
+    <property value="THEN" delay_units="ms" delay_min="0" delay_max="10000" property_id="52" type_property="ATTACK" 
+              description="Energy Consumption Attack">
+        <event value="COMPUTE" event_id="1" 
+               description="Active Charging Session Started"
+               boolean_expression="evcs.status == 'charging'"/>
+        <event value="COMPUTE" event_id="2" 
+               description<｜begin▁of▁sentence｜>
+               description="MeterValues Message Received"
+               boolean_expression="(ocpp.type == 'MeterValues') &amp;&amp; (csms.validate(ocpp.payload) == 0)"/>
+        <event value="COMPUTE" event_id="3" 
+               description="Energy Data Accuracy Check"
+               boolean_expression="(abs(meta.energy_consumed - csms.logged_data) &lt;= 0.5)"/>
+        <event value="COMPUTE" event_id="4" 
+               description="Missing or Inaccurate Energy Data Detected"
+               boolean_expression="(csms.validate(meta.energy_consumed) != 0) | (abs(meta.energy_consumed - csms.logged_data) &gt; 0.5)"/>
+    </property>
+</beginning>

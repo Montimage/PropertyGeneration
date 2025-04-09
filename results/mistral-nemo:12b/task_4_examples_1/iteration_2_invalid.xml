@@ -1,0 +1,33 @@
+<beginning>
+  <!-- Property ID: 101 - Accurate Energy Consumption Tracking -->
+  <property value="THEN" delay_units="s" delay_min="-5" delay_max="0" property_id="101" type_property="SECURITY_RULE"
+            description="Charging station must provide accurate energy consumption data during a charging session">
+    <!-- Context: Active Charging Session -->
+    <event value="COMPUTE" event_id="1" description="Active Charging Session"
+           boolean_expression="(ocpp.message.type == 'ChargePointService' &amp;&amp; ocpp.action == 'BootNotification') |
+                                (ocpp.message.type == 'ChargePointService' &amp;&amp; ocpp.action == 'DataTransfer' &
+                                 ocpp.payload contains 'StatusUpdate')" />
+
+    <!-- Trigger: MeterValues message at regular intervals -->
+    <event value="COMPUTE" event_id="2" description="MeterValues Message"
+           boolean_expression="(ocpp.message.type == 'ChargePointService' &amp;&amp; ocpp.action == 'MeterValues') &
+                                ocpp.payload contains 'energyWh'" />
+
+    <!-- Validation: Energy consumption data accuracy -->
+    <event value="COMPUTE" event_id="3" description="Energy Data Accuracy"
+           boolean_expression="(abs(ocpp.payload.energyWh - prev_energyWh) <= 0.5) |
+                                (ocpp.payload.energyWh == 0 &amp;&amp; prev_energyWh == 0)" />
+
+    <!-- Error Handling: Corrective Action Alert -->
+    <event value="COMPUTE" event_id="4" description="Missing or Inaccurate Energy Data"
+            boolean_expression="(prev_energyWh != ocpp.payload.energyWh) &
+                                   (abs(ocpp.payload.energyWh - prev_energyWh) > 0.5))" />
+    <event value="COMPUTE" event_id="5" description="Trigger Corrective Action Alert"
+            boolean_expression="timestamp - timestamp(prev_event) <= 10000" />
+
+    <!-- Recovery Mechanism: Log issue and notify network monitoring system -->
+    <event value="COMPUTE" event_id="6" description="Notify Network Monitoring System"
+            boolean_expression="(prev_energyWh != ocpp.payload.energyWh) &
+                                   (abs(ocpp.payload.energyWh - prev_energyWh) > 0.5))" />
+  </property>
+</beginning>

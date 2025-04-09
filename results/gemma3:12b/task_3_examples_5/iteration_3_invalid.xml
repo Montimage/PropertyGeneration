@@ -1,0 +1,13 @@
+<beginning>
+  <property value="TWHEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="50" type_property="SCAN">
+    <description>Probable TCP Xmas scan (FIN, PSH, URG flags set in a row).</description>
+    <operator value="TWHEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="1" description="TCP FIN packet header with flags set (1)" boolean_expression="(tcp.flags == 0x0002) &amp; (ip.src != ip.dst)"/>
+      <event value="COMPUTE" event_id="2" description="TCP PSH packet header with flags set (2)" boolean_expression="(tcp.flags == 0x0010) &amp; ((tcp.dest_port != tcp.dest_port.1) &amp; (ip.src == ip.src.1) &amp; (ip.dst == ip.dst.1))"/>
+    </operator>
+    <operator value="TWHEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="3" description="TCP URG packet header with flags set (3)" boolean_expression="(tcp.flags == 0x0020) &amp; ((tcp.dest_port != tcp.dest_port.1) &amp; (tcp.dest_port != tcp.dest_port.2) &amp; (ip.src == ip.src.1) &amp; (ip.dst == ip.dst.1))"/>
+      <event value="COMPUTE" event_id="4" description="TCP FIN packet header with flags set (4)" boolean_expression="(tcp.flags == 0x0002) &amp; ((tcp.dest_port != tcp.dest_port.1) &amp; (tcp.dest_port != tcp.dest_port.2) &amp; (tcp.dest_port != tcp.dest_port.3) &amp; (ip.src == ip.src.1) &amp; (ip.dst == ip.dst.1))"/>
+    </operator>
+  </property>
+</beginning>

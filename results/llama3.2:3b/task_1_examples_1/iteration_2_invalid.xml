@@ -1,0 +1,24 @@
+<beginning>
+  <property value="THEN" delay_units="s" delay_min="1" delay_max="2" property_id="103" type_property="TEST"
+           description="The charging station sends BootNotification message to the Central Station (CSMS) as defined in the OCPP protocol">
+    <event value="COMPUTE" event_id="3" 
+           description="Charging Station initiates a session when it receives a valid Charging Request from a vehicle">
+      <boolean_expression>(#CSMS_ValidBootNotification(ip.src,ip.dst) && #session_start)</boolean_expression>
+  </property>
+
+  <embedded_functions><![CDATA[
+    // Function to check if the BootNotification is sent successfully
+    static inline int em_CSMS_ValidBootNotification(const char* src, const char* dst){
+      return strcmp(src,"CSMS") == 0;
+    }
+    //Function to start a session when the valid request received
+    static inline void em_session_start(void) {
+      printf("Session started\n");
+    }
+
+    // Function to check if the BootNotification is sent successfully
+    static inline int em_CSMS_ValidBootNotification(const char* src, const char* dst){
+      return strcmp(src,"CSMS") == 0;
+    }
+  </embedded_functions>
+</beginning>

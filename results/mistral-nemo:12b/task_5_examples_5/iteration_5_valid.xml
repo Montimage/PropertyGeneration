@@ -1,0 +1,11 @@
+<beginning>
+  <property value="THEN" delay_units="mms" delay_min="0" delay_max="1000" property_id="95" type_property="ATTACK"
+             description="Potential GTPv2 DoS attack: Two consecutive messages from the same UE within 1 ms">
+    <event event_id="1" value="COMPUTE"
+            description="GTPv2 message (not a heartbeat) and not from the same UE as previous"
+            boolean_expression="(gtpv2.message_type != 0x1C) &amp;&amp; ((sctp.destination_port == 38416) |amp;|(sctp.source_port == 38416)) &amp;&amp; (ip.src != ip.dst) &amp;&amp; (gtpv2.imsgi != gtpv2.imsgi.1))"/>
+    <event event_id="2" value="COMPUTE"
+            description="Another GTPv2 message from the same UE within 1 ms"
+            boolean_expression="(gtpv2.message_type != 0x1C) &amp;&amp; ((sctp.destination_port == 38416) |amp;|(sctp.source_port == 38416)) &amp;&amp; (ip.src != ip.dst) &amp;&amp; (gtpv2.imsgi == gtpv2.imsgi.1))"/>
+  </property>
+</beginning>

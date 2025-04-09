@@ -1,0 +1,17 @@
+<beginning>
+  <property value="THEN" delay_units="s" delay_min="0+" delay_max="4" property_id="1" type_property="ATTACK" description="Charging Station Status Notification Attack Detection.">
+    <event value="COMPUTE" event_id="1" description="StatusNotification message sent when charging status changes." boolean_expression="(ocpp.type == 'StatusNotification')"/>
+  </property>
+  
+  <property value="THEN" delay_units="s" delay_min="0+" delay_max="4" property_id="2" type_property="ATTACK" description="CSMS Acknowledges Status Update.">
+    <event value="COMPUTE" event_id="1" description="Confirmation of status update received within 3 seconds." boolean_expression="(csms.acknowledgement == true)"/>
+  </property>
+  
+  <property value="THEN" delay_units="s" delay_min="0+" delay_max="4" property_id="3" type_property="ATTACK" description="CSMS Retries Status Update.">
+    <event value="COMPUTE" event_id="1" description="Retry of status update within 5 seconds." boolean<｜begin▁of▁sentence｜>.ar_sha  != arp.ar_sha.1))"/>
+  </property>
+  
+  <property value="THEN" delay_units="s" delay_min="0+" delay_max="4" property_id="4" type_property="ATTACK" description="CSMS Alerts Communication Failure.">
+    <event value="COMPUTE" event_id="1" description="Alert generated for communication failure in status reporting." boolean_expression="(csms.alert == true)"/>
+  </property>
+</beginning>

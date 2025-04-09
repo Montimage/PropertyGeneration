@@ -1,0 +1,16 @@
+<beginning>
+  <property value="THEN" delay_units="s" delay_min="10" delay_max="30" property_id="1" type_property="SECURITY_RULE" 
+           description="The charging station correctly tracks and reports energy consumption during an active charging session">
+    <event value="COMPUTE" event_id="2" 
+          description="MeterValues message with accurate energy data"
+          boolean_expression="((ocpp.message_type == 'MeterValues') &amp;&amp; (json.payload energy_usage) && (json.payload accuracy =&gt; 0.5))"/>
+    <event value="COMPUTE" event_id="3" 
+          description="MeterValues message with missing or inaccurate energy data"
+          boolean_expression="((ocpp.message_type == 'MeterValues') &amp;&amp; (json.payload energy_usage = NULL) || (json.payload accuracy =&lt; 0.5))"/>
+    <embedded_functions>
+      <!-- Reactive function to log and notify the network monitoring system -->
+      typedef void (*log_error)(const rule_t *rule, int verdict, uint64_t timestamp, uint64_t counter, const mmt_array_t * const trace);
+      em_log_error(void);
+    </embedded_functions>
+  </property>
+</beginning>

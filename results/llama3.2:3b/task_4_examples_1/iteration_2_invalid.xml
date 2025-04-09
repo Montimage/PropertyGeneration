@@ -1,0 +1,12 @@
+<beginning>
+  <property value="THEN" delay_units="s" delay_min="-10" delay_max="0" property_id="52" type_property="SECURITY_RULE"
+           description="Charging station tracks energy consumption accurately">
+    <event value="COMPUTE" event_id="3" 
+           description="Active charging session with MeterValues message received from CSMS">
+              <boolean_expression>(ocpp.message != NULL) &amp;&amp; (ocpp.action == 'Request') &amp;&amp; (ocpp.payload != NULL)</boolean_expression>
+    </event>
+    <event value="COMPUTE" event_id="4" 
+           description="CSMS validates and logs received energy consumption data">
+              <boolean_expression>(csms.validation_result == 'Valid') &amp;&amp; (csms.log_level != NULL)</boolean_expression>
+  </property>
+</beginning>

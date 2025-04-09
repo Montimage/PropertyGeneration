@@ -1,0 +1,57 @@
+To generate a new XML property, I'll need more information about the specific scenario you'd like me to create. However, based on the examples provided earlier, it seems like you're looking for a detection of a certain malware or threat.
+
+Here's an example of a new XML property that matches the "Detection of WannaCry Ransomware" scenario and adheres to the HTTP and IP protocols:
+
+```xml
+<property value="THEN" delay_units="s" delay_min="0" delay_max="0" property_id="39" type_property="ATTACK"
+          description="Detection of EternalBlue Exploit">
+    <event value="COMPUTE" event_id="1" 
+           description="SMB client/server intend connecting EternalBlue host"
+           boolean_expression="#em_check_EternalBlue(http.host) == 1"/>
+     <event value="COMPUTE" event_id="2" 
+           description="Print IP addresses"
+           boolean_expression="(ip.src != ip.dst)"/> 
+</property>
+
+<embedded_functions><![CDATA[
+static mmt_hash_t *table = NULL;
+
+static inline int em_check_EternalBlue(const char * str){
+   return ( mmt_hash_search( table, str, strlen( str ) ) != NULL );
+}
+
+const char* domain_lst[] = {
+"ms08-067.microsoft.com",
+"microsoft.com",
+"smb1.microsoft.com", 
+};
+
+//This fuction is called when the rules in this files being loaded into MMT-Security
+void on_load(){   
+   int i;
+   int length = sizeof( domain_lst ) / sizeof( domain_lst[0] );
+   const char*str;
+   
+   //create a new hash table
+   table = mmt_hash_create( length );
+   mmt_debug("Rule 39.EternalBlue: Created a table for checking EternalBlue having %d URI", length );
+   
+   //add items to the hash table
+   for( i=0; i<length; i++ ){
+      str = domain_lst[i];
+      
+      if( !mmt_hash_add( table, str, strlen(str), (void*) str, false ) )
+         break; 
+   } 
+}//end on_load()
+
+//This fuction is called when exiting MMT-Security
+void on_unload(){
+   mmt_hash_free( table );
+}//end on_unload()
+]]></embedded_functions>
+```
+
+Note that the `em_check_EternalBlue` function checks if a given host name matches any of the known EternalBlue exploit hosts. The `on_load` and `on_unload` functions create and free a hash table used to store the known EternalBlue exploit hosts.
+
+Please replace the domain list with your own list of targets you would like to detect. This is just an example and should be adjusted according to your specific requirements.

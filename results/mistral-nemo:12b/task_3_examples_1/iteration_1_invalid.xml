@@ -1,0 +1,20 @@
+<beginning>
+  <!-- Property: ocpp_status_reporting -->
+  <property value="THEN" delay_units="s" delay_min="-1+" delay_max="0" property_id="1" type_property="SECURITY_RULE"
+            description="Ensure charging station accurately reports real-time charging status to CSMS">
+    <event value="COMPUTE" event_id="1" description="StatusNotification message sent by EVCS"
+           boolean_expression="(ocpp.message == 'StatusNotification')"/>
+    <event value="COMPUTE" event_id="2" description="Charging status change"
+           boolean_expression="(ocpp.payload.chargePointService.status &lt;&gt; ocpp.payload.chargePointService.status.1)"/>
+  </property>
+
+  <!-- Retry and error handling property -->
+  <property value="THEN" delay_units="s" delay_min="0+" delay_max="5" property_id="2" type_property="SECURITY_RULE"
+            description="Retry sending status update if not acknowledged, raise alert on failure">
+    <event value="COMPUTE" event_id="3" description="StatusNotification message sent but not acknowledged"
+           boolean_expression="(ocpp.message == 'StatusNotification') &amp;&amp; (not ocpp.acknowledged)"/>
+    <event value="COMPUTE" event_id="4" description="Retry count exceeds threshold"
+           boolean_expression="(retry_count > 3)"/>
+    <action event_id="4">Raise alert, log error and report to network monitoring system</action>
+  </property>
+</beginning>

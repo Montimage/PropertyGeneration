@@ -1,0 +1,6 @@
+<beginning>
+  <property value="TWHEN" delay_units="ms" delay_min="0" delay_max="100" property_id="95" type_property="ANOMALY" description="Detect unusual TCP window size">
+    <event event_id="1" value="COMPUTE" description="TCP window size is larger than expected" boolean_expression="(tcp.window_size > 500)"/>
+    <event event_id="2" value="COMPUTE" description="Print source and destination IP addresses" boolean_expression="(ip.src != ip.dst)"/>
+  </property>
+</beginning>

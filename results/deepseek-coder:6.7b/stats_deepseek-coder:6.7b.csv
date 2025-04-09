@@ -1,0 +1,16 @@
+prompt_file,model_name,iterations,valid_xml,elapsed_time
+task_1_examples_5.txt,deepseek-coder:6.7b,1,False,19.97
+task_1_examples_7.txt,deepseek-coder:6.7b,1,False,4.59
+task_1_examples_1.txt,deepseek-coder:6.7b,4,False,34.79
+task_5_examples_7.txt,deepseek-coder:6.7b,1,False,5.24
+task_2_examples_5.txt,deepseek-coder:6.7b,1,False,5.73
+task_3_examples_1.txt,deepseek-coder:6.7b,4,False,81.67
+task_2_examples_7.txt,deepseek-coder:6.7b,1,False,4.55
+task_5_examples_5.txt,deepseek-coder:6.7b,1,False,5.84
+task_4_examples_1.txt,deepseek-coder:6.7b,5,False,46.52
+task_4_examples_5.txt,deepseek-coder:6.7b,1,False,5.76
+task_5_examples_1.txt,deepseek-coder:6.7b,1,False,8.08
+task_3_examples_7.txt,deepseek-coder:6.7b,1,False,5.4
+task_3_examples_5.txt,deepseek-coder:6.7b,1,False,6.63
+task_2_examples_1.txt,deepseek-coder:6.7b,1,True,19.03
+task_4_examples_7.txt,deepseek-coder:6.7b,1,False,5.25

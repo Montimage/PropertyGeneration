@@ -1,0 +1,25 @@
+<beginning>
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="3" property_id="1" type_property="SECURITY_RULE" 
+          description="The charging station must report its current charging status (Charging, Paused, Finished) to the CSMS in a timely manner">
+    <event value="COMPUTE" event_id="3" 
+           description="A StatusNotification message is sent from the charging station to the CSMS">
+        <boolean_expression>(((ocpp.message.type == "StatusNotification")&amp;&amp;(ocpp.payload.charging_status != ocpp.payload.previous_charging_status)))</boolean_expression>
+    </event>
+    <event value="COMPUTE" event_id="4" 
+           description="The CSMS logs and acknowledges the status update within 3 seconds">
+        <boolean_expression>(((ocpp.message.type == "StatusNotification")&amp;&amp;(ocpp.payload.acknowledged)))</boolean_expression>
+    </event>
+</property>
+
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="5" property_id="2" type_property="ATTACK" 
+          description="The charging station fails to report its current charging status within 3 seconds, or fails to receive an acknowledgement within 5 seconds">
+    <event value="COMPUTE" event_id="5" 
+           description="The charging station retries sending the status update within 5 seconds if it was not acknowledged within 3 seconds">
+        <boolean_expression>(((ocpp.message.type == "StatusNotification")&amp;&amp;((ocpp.payload.acknowledged != ocpp.payload.acknowledged.1)))</boolean_expression>
+    </event>
+    <event value="COMPUTE" event_id="6" 
+           description="The CSMS logs and reports a communication failure in status reporting">
+        <boolean_expression>(((ocpp.message.type == "StatusNotification")&amp;&amp;((ocpp.payload.acknowledged != ocpp.payload.acknowledged.2))&amp;&amp;(ocpp.payload.retries >= 3)))</boolean_expression>
+    </event>
+</property>
+</beginning>

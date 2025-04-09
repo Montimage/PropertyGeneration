@@ -1,0 +1,11 @@
+I can help you generate a new XML property that matches the scenario and adheres to the protocol(s) context. However, I need more information about the scenario you want me to match.
+
+Could you please provide the following details:
+
+1. What is the description of the new XML property?
+2. Which protocols (e.g., http, ip, etc.) does this property relate to?
+3. Are there any specific events or boolean expressions that should be included in the property?
+
+Once I have this information, I'll generate a valid XML structure for you.
+
+**Note:** Please provide the details in a clear and concise manner so that I can accurately understand your requirements.

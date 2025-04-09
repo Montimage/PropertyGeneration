@@ -1,0 +1,24 @@
+<beginning>
+    <property value="THEN" delay_units="s" delay_min="-1" delay_max="2" property_id="63" type_property="SECURITY_RULE"
+             description="Charging station must send BootNotification message within 2 seconds after receiving a valid charging request from a vehicle">
+        <event value="COMPUTE" event_id="3" 
+               description="Send BootNotification message to CSMS within 2 seconds of the charging request"
+               boolean_expression="(timestamp - charging_request_timestamp) <= delay_min && (timestamp - charging_request_timestamp) >= delay_max"/>
+        
+        <event value="COMPUTE" event_id="4" 
+               description="Check for valid response from CSMS after sending BootNotification message"
+               boolean_expression="#(CSMS_response_status == Accepted)"/>
+    </property>
+    
+    <embedded_functions><![CDATA[
+        // Check if the CSMS has sent an Authorization request within 2 seconds of receiving the BootNotification message
+        static inline int em_check_csms_request(int timestamp, int charging_request_timestamp){
+            return (timestamp - charging_request_timestamp) <= 2;
+        }
+        
+        // Check if the CSMS response status is valid after sending the Authorization request
+        static inline int em_check_csms_response_status(char CSMS_response_status){
+            return CSMS_response_status == "Accepted";
+        }
+    ]]></embedded_functions>
+</beginning>

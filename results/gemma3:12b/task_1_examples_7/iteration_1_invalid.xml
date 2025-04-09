@@ -1,0 +1,20 @@
+<beginning>
+<!-- Property 98: Possible UDP Flood Attack Detection -->
+<property value="TREN" property_id="98" type_property="ATTACT"
+           description="Detects a potential UDP flood attack based on packet rate and source IP diversity.">
+  <operator value="AND">
+    <event value="COMPUTE" event_id="1"
+            description="Check if the packet rate exceeds a threshold within a time window.">
+      <boolean_expression>(udp.packet_rate > 1000 && time.window_seconds = 5)</boolean_expression>
+    </event>
+    <event value="COMPUTE" event_id="2"
+            description="Check for limited source IP diversity.">
+      <boolean_expression>(ip.src_count &lt; 10 && udp.packet_rate > 500)</boolean_expression>
+    </event>
+    <event value="COMPUTE" event_id="3"
+            description="Check if destination port is a common service port">
+        <boolean_expression>(udp.dest_port in (53, 67, 161, 162) )</boolean_expression>
+    </event>
+  </operator>
+</property>
+</beginning>

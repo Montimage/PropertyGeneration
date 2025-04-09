@@ -94,16 +94,46 @@ project-root/
 ├── notebooks/
 │   └── generate_property.ipynb        # Jupyter notebook for running and testing experiments
 ├── src/
-│   ├── generate_prompt.py             # Builds few-shot prompts using scenario, examples, and protocol context
+│   └── generate_prompt.py             # Builds few-shot prompts using scenario, examples, and protocol context
 │   ├── llm_interaction.py             # Interacts with the LLM to generate and validate XML properties
 │   ├── retrieve_data.py               # Connects to PostgreSQL to retrieve protocol and example data
 │   ├── syntax_validation.py           # Validates XML structure and content according to MMT rules
 │   └── utils.py                       # Utility functions (e.g., XML extraction)
 ├── tasks/
-│   ├── 1.txt ... 5.txt                # Text files containing example scenarios for OCPP
+│   └── 1.txt ... 5.txt                # Text files containing example scenarios for OCPP
+├── generated_prompts/
+│   └── task_X_examples_Y.txt          # Prompt used for scenario X with Y examples
+├── results/
+│   └── <model_name>/
+│       ├──── task_X_examples_Y/       # Folder for each scenario/shot configuration results
+│       └──── stats_<model_name>.csv   # Summary of performance per model
 ├── requirements.txt                   # Python dependencies
-├── .env                               # (Not tracked) Environment variables for DB config
+└── .env                               # (Not tracked) Environment variables for DB config
 ```
+
+## Experiments Outputs
+
+### `results/`
+Contains the logged results of each model's output for every scenario tested.
+
+- Each subfolder is named after a model (e.g., `deepseek-coder:6.7b`).
+- Inside each model folder:
+    - Each `task_X_examples_Y/` folder corresponds to a scenario (`task_X`) run with Y example properties.
+    - Each folder contains:
+        - All LLM responses (whether valid or not), one per iteration.
+        - The final valid XML file (if generated).
+        - Intermediate invalid XMLs or textual outputs.
+- A CSV file (e.g., `stats_deepseek-coder:6.7b.csv`) summarizes:
+    - Number of iterations per scenario.
+    - Validity of the result
+    - Time taken per run
+
+### `generated_prompts/`
+Contains the actual prompts given to the LLM during the experiments.
+
+- File format: `task_X_examples_Y.txt`, where:
+    - `X` is the task/scenario number (from `tasks/`)
+    - `Y` is the number of few-shot examples used (1, 5, or 7)
 
 ## How the Components Work Together
 1. **Scenarios** (in `tasks/`) describe use cases to generate properties for.

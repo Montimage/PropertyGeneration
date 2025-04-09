@@ -1,0 +1,42 @@
+<beginning>
+<!-- Property 101: Ensure accurate energy consumption data during charging session -->
+<property value="THEN" delay_units="s" delay_min="-10" delay_max="0" property_id="101" type_property="SECURITY_RULE"
+          description="Ensure accurate energy consumption data during charging session">
+      <event value="COMPUTE" event_id="1"
+             description="MeterValues message sent by CSMS"
+             boolean_expression="(ocpp.message == 'MeterValues' &amp;&amp; ocpp.type == 'Request')"/>
+      <event value="COMPUTE" event_id="2"
+             description="Energy data accuracy check"
+             boolean_expression="(abs(ocpp.payload.energy_kWh - expected_energy) <= 0.5)"/>
+</property>
+
+<embedded_functions>
+#include &lt;stdio.h&gt;
+#include &lt;stdlib.h&gt;
+
+double expected_energy = 0.0;
+
+void on_load() {
+    printf("Property loaded\n");
+}
+
+void on_unload() {
+    printf("Property unloaded\n");
+}
+
+void em_update_expected_energy(double new_energy) {
+    expected_energy = new_energy;
+}
+</property>
+
+<!-- Corrective action alert property -->
+<property value="THEN" delay_units="s" delay_min="0" delay_max="10" property_id="102" type_property="ERROR_RECOVERY"
+          description="Trigger corrective action alert for missing/inaccurate energy data">
+      <event value="COMPUTE" event_id="3"
+              description="Missing or inaccurate energy data"
+              boolean_expression="(ocpp.message == 'MeterValues' &amp;&amp; ocpp.type == 'Request') &amp;&amp; (abs(ocpp.payload.energy_kWh - expected_energy) > 0.5))"/>
+      <event value="ACTION" event_id="4"
+             description="Trigger corrective action alert"
+             boolean_expression="em_send_alert('Missing/inaccurate energy data', 'CSMS')"/>
+</property>
+</beginning>

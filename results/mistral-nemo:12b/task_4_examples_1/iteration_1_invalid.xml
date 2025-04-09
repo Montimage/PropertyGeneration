@@ -1,0 +1,31 @@
+<beginning>
+  <!-- Property ID: 101 - Ensure accurate energy consumption data -->
+  <property value="THEN" delay_units="s" delay_min="-10" delay_max="0" property_id="101" type_property="SECURITY_RULE"
+            description="Ensure charging station provides accurate energy consumption data">
+    <!-- Context: MeterValues message received -->
+    <event value="COMPUTE" event_id="1"
+           description="MeterValues message received"
+           boolean_expression="(ocpp.message == 'MeterValues')"/>
+
+    <!-- Trigger: Energy consumption data validation -->
+    <event value="COMPUTE" event_id="2"
+           description="Energy consumption data validation"
+           boolean_expression="((abs(ocpp.payload.energy_kwh - prev_energy_kwh) <= 0.5) &amp;&amp; ocpp.payload.energy_kwh >= prev_energy_kwh)">
+      <embedded_functions>
+        <!-- Keep track of previous energy value -->
+        uint64_t prev_energy_kwh = 0;
+
+        void on_load() {
+          prev_energy_kwh = 0;
+        }
+
+        void on_unload() {
+          // No action needed
+        }
+      </embedded_functions>
+
+      <!-- Reactive function: Log error and trigger corrective action alert -->
+      <if_satisfied>em_log_error("Incorrect energy consumption data")</if_satisfied>
+    </event>
+  </property>
+</beginning>

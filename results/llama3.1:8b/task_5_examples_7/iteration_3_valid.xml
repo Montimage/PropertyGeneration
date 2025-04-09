@@ -1,0 +1,12 @@
+<beginning>
+  <!-- Property [new property id]: Overlapping TCP sequence numbers : difference in sequence number of concomitant segments less than segment length (allowed but could be an evasion).-->
+  <property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="[new property id]" type_property="EVASION" 
+    description="Overlapping TCP sequence numbers : difference in sequence number of concomitant segments less than segment length (allowed but could be an evasion).">
+    <event value="COMPUTE" event_id="1" 
+           description="TCP segment followed by another"
+           boolean_expression="((tcp.sequence &gt; 0)&amp;&amp;((tcp.syn_flag == 1)&amp;&amp;((tcp.ack_flag == 1)&amp;&amp;(tcp.src != tcp.dst))))"/>
+    <event value="COMPUTE" event_id="2" 
+           description="TCP segment with same sequence numbers and differences in offsets less than length"
+           boolean_expression="((tcp.sequence == tcp.sequence.1)&amp;&amp;((tcp.ack_offset &gt; tcp.ack_offset.1)&amp;&amp;(((tcp.ack_offset - tcp.ack_offset.1) &lt; tcp.tot_len)&amp;&amp;(tcp.src != tcp.dst))))"/>
+  </property>
+</beginning>

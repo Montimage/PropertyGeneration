@@ -1,0 +1,312 @@
+
+You are an AI that generates XML properties for deep packet inspection.
+
+### MMT Property Context:
+XML Rules:
+- A <property> defines a security rule (SECURITY_RULE) or an attack rule (ATTACK).
+- Each property begins with a <property> tag and ends with </property>
+- A property is a "general ordered tree"
+- The nodes of the property tree are:
+  - <property> node (required)
+  - <operator> nodes (optional)
+  - <event> nodes (required)
+- The <property> node is forcibly the root node and the <event> nodes are forcibly leaf nodes.
+- The left branch represents the context and the right branch represents the trigger.
+- The property is found valid when the trigger is found valid; and the trigger is checked only if the context is valid.
+
+- <beginning> tag:
+  - Container tag for defining multiple properties
+  - Holds one or more <property> definitions
+  - Includes optional embedded functions.
+
+- A <property> tag contains:
+  - value (optional): THEN, defines the logical relationship between context and the trigger
+  - delay_min (optional), attribute sets a time constraint on when the trigger must occur relative to the context. A negative delay (-1) means the trigger must have occurred before the context. A zero delay (0) means the trigger must occur simultaneously with the context. A positive delay (+N) means the trigger must occur after the context.
+  - property_id (required): attribute uniquely identifies the property.
+  - description (required): Textual description of the property.
+  - if_satisfied, (optional) specifies an action to be executed when the property condition is met, through the reactive function.
+  - type_property (required) can be SECURITY_RULE, ATTACK, EVASION, or TEST
+
+- An <event> tag contains:
+  - value:COMPUTE, indicates that this event is evaluated based on a boolean expression.
+  - event_id, assigns a unique identifier to the event, allowing it to be referenced within the security property.
+  - description: Textual description of the event.
+  - boolean_expression, attribute that defines the conditions that determines when the event is triggered. Packet or message attributes are identified by <protocol_name>”.”<field_name>[“.”<event_id>]. Protocol_name is either BASE (containing packet metadata, e.g., protocol id, time slot of message) or the message/protocol identifier (e.g., SPHY_DATA_REQ, IP, TCP, UDP...). Field_name is the name of the attribute. Event_id allows identifying data captured when another event (identified using its id) of the property occurred. Expressions can use packet fields, protocol attributes, or embedded functions.
+
+- <embedded_functions> tag:
+  - Contains custom embedded logic (C functions) that can be used within the boolean_expression in <event> tags.
+  - One can either use existing embedded functions or implement a new function.
+  - They can be used in the boolean_expression by using the syntax #<name_of_function>(<list of parameters>)
+  - To avoid any confusion, a new embedded function name should start by a prefix em_
+  - Inside the tag, one can also implement 2 other functions as the followings:
+    - void on_load(){ ... } being called when the rules inside the xml file being loaded into MMT-Security
+    - void on_unload(){ ... } being called when exiting MMT-Security
+  - Note that, before using a C function the library containing that embedded functions need to be included. The following libraries have been pre-included:
+    -#include <string.h>
+    -#include <stdio.h>
+    -#include <stdlib.h>
+    -#include "mmt_lib.h"
+    -#include "pre_embedded_functions.h"
+
+- Reactive functions
+  - They allow user perform some action when a rule is satisfied. The functions will be called each time rules are satisfied.
+  - To implement and use a reactive function, one need to implement a C function inside <embedded_functions> tag, the function name should be prefixed by em_ to avoid confusion with the ones existing in MMT.
+  - The function has the following format:
+typedef void (*mmt_rule_satisfied_callback)(
+		const rule_t *rule,		          //rule being validated
+		int verdict,                     //DETECTED, NOT_RESPECTED
+		uint64_t timestamp,              //moment (by time) the rule is validated
+		uint64_t counter,                //moment (by order of message) the rule is validated
+		const mmt_array_t * const trace  //historic of messages that validates the rule
+);
+
+- In the XML file of a rule, if an attribute is absent then its value is set by default
+  - property, operator:
+    - value: COMPUTE (=> only one <event> is required. Thus delay_min and delay_max must be 0)
+    - delay_units: 0
+    - delay_max: 0
+
+## Scenario Description:
+The system under test consists of an electric vehicle charging station (evcs) that communicates
+with a central station management system (csms) using the open charge point protocol (ocpp).
+This property ensures that the charging station correctly tracks and reports energy consumption 
+during an active charging session. The generated XML should define expected message exchanges, time constraints, and error recovery
+mechanisms for ensuring compliance with ocpp-based communication, and message structure.
+
+Protocol: Open Charge Point Protocol (ocpp) 1.6
+Property: The charging station must provide accurate energy consumption data during a charging session.
+
+Trigger: At regular intervals during an active charging session, the charging station sends MeterValues messages containing energy usage data to the CSMS.
+
+Response:
+- The CSMS must validate and log the received energy consumption data in real time.
+- The reported data must have an accuracy of ±0.5 kWh to ensure compliance with energy tracking requirements.
+
+Error Handling:
+If the CSMS detects missing or inaccurate energy data, it must trigger a corrective action alert within 10 seconds.
+The system must log the issue and notify the network monitoring system for further analysis.
+
+## Protocol Context:
+Protocol: ocpp
+Attributes: ['message', 'type', 'id', 'action', 'payload']
+
+## Example XML Properties:
+### Example 1:
+**Description:** This rule aims to detect 'Ping of death' attack.
+**Protocol(s):** icmp, ip
+**XML Property:**
+<beginning>
+<!-- Property 51: This rule aims to detect "Ping of death" attack. Ref: https://en.wikipedia.org/wiki/Ping_of_death
+The maximum packet length of an IPv4 packet is 65 535 bytes (2^16 - 1)
+The attacker sends a number of IP fragments with the regrouped payload at the end will be an ICMP packet bigger than 65 535 bytes 
+that can probably lead to buffer overflow / system crash.
+-->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="51" type_property="ATTACK" 
+          description="Ping of death attack">
+      <event value="COMPUTE" event_id="1" 
+             description="A defragmented ICMP packet"
+             boolean_expression="((icmp.packet_count != 0) &amp;&amp; ((ip.df_flag + ip.mf_flag) ==0))"/>
+      <event value="COMPUTE" event_id="2" 
+             description="Packet length greater than 65 535"
+             boolean_expression="((ip.src != ip.dst)&amp;&amp;(meta.packet_len &gt; 65535))"/>
+</property>
+</beginning>
+
+
+### Example 2:
+**Description:** Web scan with Nikto. User-Agent based detection
+**Protocol(s):** http, ip
+**XML Property:**
+<beginning>
+<!-- Property 15: Web scan with Nikto. User-Agent based detection-->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="15" type_property="ATTACK" 
+     description="Nikto detection" >
+   <event event_id="1" value="COMPUTE" 
+           description="Context: an user agent in the HTTP header"
+           boolean_expression="((http.method != '') &amp;&amp; ((http.user_agent != '') &amp;&amp; (ip.src != ip.dst)))"/>
+   <event event_id="2" value="COMPUTE" 
+           description="Trigger: Nikto detected. "
+           boolean_expression="(#strstr(http.user_agent, 'Nikto') != 0)"/>
+ </property>
+</beginning>
+
+
+### Example 3:
+**Description:** Forwarding NAS security mode COMPLETE that answers to NAS security mode COMMAND.
+**Protocol(s):** nas_5g, ngap, ip, sctp_data
+**XML Property:**
+<beginning>
+<!-- Property 90: Forwarding NAS security mode COMPLETE that answers to NAS security mode COMMAND.-->
+<property value="THEN"  delay_units="ms" delay_min="0" delay_max="100" property_id="90" type_property="ATTACK" 
+    description="NAS security mode complete messages with the same NAS-SQN, possible replay attack" >
+	    <event value="COMPUTE" event_id="1" 
+	           description="NAS Security mode COMPLETE"
+	           boolean_expression="(nas_5g.security_type == 4)"/>
+	    <event value="COMPUTE" event_id="2" 
+	            description="NAS Security mode COMPLETE msg, coming from the same UE but with different payload"
+	            boolean_expression="((ngap.amf_ue_id == ngap.amf_ue_id.1)&amp;&amp;(nas_5g.message_authentication_code == nas_5g.message_authentication_code.1)&amp;&amp;(nas_5g.security_type == 4)&amp;&amp;(nas_5g.sequence_number == nas_5g.sequence_number.1)&amp;&amp;(ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1)&amp;&amp;(nas_5g.p_data != nas_5g.p_data.1)&amp;&amp;(sctp_data.data_tsn != sctp_data.data_tsn.1))"/>
+</property>
+</beginning>
+
+
+### Example 4:
+**Description:** Detect EICAR virus test file within the TCP IPv6 payload
+**Protocol(s):** ipv6, tcp
+**XML Property:**
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!-- MMT_Security Copyright (C) 2014-->
+<beginning>
+<embedded_functions><![CDATA[
+//each function name should be prefixed by em_
+/**
+* Return:
+* - 0: ok
+* - 1: invalid
+* - 2: NULL
+*/
+static inline int em_check_eicar_virus(const char *str){
+   // X5O!P%@AP[4\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*
+   
+   const char* c = str;
+   while( *c != '\0' ){
+      if (*c=='X' && c[1]=='5' && c[2]=='O' && c[3]=='!' && c[4]=='P'){
+      	if (strstr(c, "X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*") != NULL) return 1;
+      	// "\\" represents "\"
+      	break;
+      	} 
+      c ++;
+   }
+   return 0;
+}
+]]></embedded_functions>
+<!-- Property 72: Detect EICAR virus test file within the TCP IPv6 payload-->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="72" type_property="ATTACK" 
+     description="Detect EICAR virus test file within the TCP/IPv6 payload" >
+   <event event_id="1" value="COMPUTE" 
+           description="An IP packet"
+           boolean_expression="((ipv6.packet_count != 0) &amp;&amp; (ipv6.src != ipv6.dst))"/>
+   <event event_id="2" value="COMPUTE" 
+           description="EICAR virus test file in the payload"
+           boolean_expression="(#em_check_eicar_virus(tcp.p_payload)==1)"/>
+ </property>
+</beginning>
+
+
+### Example 5:
+**Description:** The minimum size of an IP fragment is 28 bytes and for an IP fragment with offset 0 it is 40.
+**Protocol(s):** ip
+**XML Property:**
+<beginning>
+<!-- Property 9: C4_Analyse_03h : The minimum size of an IP fragment is 28 bytes and for an IP fragment with offset 0 it is 40.-->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="9" type_property="EVASION" 
+    description="The minimum size of an IP fragment is 28 bytes and for an IP fragment with offset 0 it is 40.">
+    <event value="COMPUTE" event_id="1" 
+           description="IP segment and packet size"
+           boolean_expression="((ip.mf_flag &gt; 0)&amp;&amp;((ip.tot_len &lt; 28)||((ip.frag_offset == 0)&amp;&amp;(ip.tot_len &lt; 40))))"/>
+    <event value="COMPUTE" event_id="2" 
+           description="IP segment"
+           boolean_expression="(ip.src != ip.dst)"/>
+</property>
+</beginning>
+
+
+### Example 6:
+**Description:** Ensure INT is valid
+**Protocol(s):** int
+**XML Property:**
+<beginning>
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="78" type_property="TEST" 
+    description="Ensure INT is valid">
+      <event value="COMPUTE" event_id="1" 
+             description="Having INT"
+             boolean_expression="( int.packet_count > 0 )"/>
+      <event value="COMPUTE" event_id="2" 
+             description="INT Data"
+             boolean_expression="(int.hop_switch_ids != '')"/>
+</property>
+</beginning>
+
+### Example 7:
+**Description:** Ensure DTLS traffic is using v1.2 and strong ciphersuite which is set via MMT_SEC_DTLS_CIPHER_ALLOWLIST environment variable which contains a comma-separated list of cipher numbers.
+**Protocol(s):** dtls, ip
+**XML Property:**
+<beginning>
+
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="79" type_property="SECURITY" 
+    description="Ensure DTLS traffic is using v1.2 and strong ciphersuite which is set via 
+    MMT_SEC_DTLS_CIPHER_ALLOWLIST environment variable which contains a comma-separated list of cipher numbers.
+    Example MMT_SEC_DTLS_CIPHER_ALLOWLIST='0xc0a4,0xc0a5' will allow TLS_PSK_WITH_AES_128_CCM and TLS_PSK_WITH_AES_256_CCM ciphers">
+      <event value="COMPUTE" event_id="1" 
+             description="DTLS packet"
+             boolean_expression="( ( dtls.packet_count > 0 ) &amp;&amp; #em_print(ip.client_addr, ip.server_addr, ip.client_port, ip.server_port))"/>
+      <event value="COMPUTE" event_id="2" 
+             description="DTLS version and ciphersuites in client hello handshake messages"
+             boolean_expression="(( #em_is_strong_version( dtls.version )  
+                         &amp;&amp; #em_is_strong_ciphers( dtls.client_hello_cipher_suite ) )"/>
+</property>
+
+<embedded_functions><![CDATA[
+#include <stdlib.h>
+#include <mmt_core.h>
+#include <tcpip/mmt_tcpip.h>
+
+static inline bool em_print( const void * data, ...){
+	return true;
+}
+
+static inline bool em_is_strong_version( double version ){
+	return (version == DTLS_VERSION_1_2 ) || (version == DTLS_VERSION_1_3 );
+}
+
+
+static size_t    allow_ciphers_size = 0;
+static uint16_t *allow_ciphers_list = NULL;
+
+void on_load(){
+	const char *str = getenv("MMT_SEC_DTLS_CIPHER_ALLOWLIST");
+	if( str == NULL ){
+		mmt_info("Rule 79.dtls_v12_ciphersuites: no value of MMT_SEC_DTLS_CIPHER_ALLOWLIST" );
+		return;
+	}
+	char **str_ciphers = NULL;
+	allow_ciphers_size = str_split( str, ',', &str_ciphers );
+	if( allow_ciphers_size == 0 )
+		return;
+	
+	allow_ciphers_list = mmt_mem_alloc( sizeof( uint16_t ) * allow_ciphers_size );
+	size_t i;
+	for( i=0; i<allow_ciphers_size; i++ )
+		allow_ciphers_list[i] = strtol( str_ciphers[i], NULL, 0 );
+	
+	mmt_mem_force_free( str_ciphers );
+	
+	//print info
+	mmt_info("Rule 79.dtls_v12_ciphersuites: allow %zu ciphers", allow_ciphers_size );
+	for( i=0; i<allow_ciphers_size; i++ )
+		mmt_info("Rule 79.dtls_v12_ciphersuites: %zu: %hu", i, allow_ciphers_list[i] );
+}
+
+void on_unload(){
+	if( allow_ciphers_list )
+		mmt_mem_force_free( allow_ciphers_list );
+}
+
+static inline bool em_is_strong_ciphers( const void *data ){
+	const mmt_u16_array_t *ciphers = (mmt_u16_array_t *) data;
+	size_t i, j;
+	for( i=0; i<ciphers->len; i++ ){
+		for( j=0; j<allow_ciphers_size; j++ )
+			if( allow_ciphers_list[j] == ciphers->data[i] )
+				break;
+		
+		//when we visited all allow_ciphers_list but not found
+		if( j >= allow_ciphers_size )
+			return false;
+	}
+	return true;
+}
+]]></embedded_functions>
+</beginning>
+
+### Task:
+Generate a new XML property that matches the scenario and adheres to the protocol(s) context.

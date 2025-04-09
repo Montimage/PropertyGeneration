@@ -1,0 +1,11 @@
+<beginning>
+  <property value="THEN" delay_units="ms" delay<｜begin▁of▁sentence｜>min="0" delay_max="0" property_id="63" type_property="EVASION" 
+    description="Unauthorized Charging Station Attempts to Initiate a Session">
+    <event value="COMPUTE" event_id="1" 
+           description="Charging Station Sends BootNotification Message"
+           boolean_expression="(ocpp.message == 'BootNotification')"/>
+    <event value="COMPUTE" event_id="2" 
+           description<｜begin▁of▁sentence｜>description="CSMS Responds with BootNotificationResponse Status Rejected"
+           boolean_expression="(ocpp.type == 'BootNotificationResponse' && ocpp.payload.status == 'Rejected')"/>
+  </property>
+</beginning>

@@ -1,0 +1,29 @@
+<beginning>
+  <!-- Property: Status Notification Reporting -->
+  <property value="THEN" delay_units="s" delay_min="-3+" delay_max="0" property_id="1"
+            type_property="SECURITY_RULE" description="Charging station must report charging status updates to CSMS.">
+    <event value="COMPUTE" event_id="1" description="StatusNotification message sent">
+      <boolean_expression>(ocpp.message == "StatusNotification")</boolean_expression>
+    </event>
+    <event value="COMPUTE" event_id="2" description="CSMS acknowledges status update within 3 seconds">
+      <boolean_expression>((ocpp.type == "CSMS") &amp;&amp; (ocpp.action == "StatusUpdateAcknowledged") &amp;&amp;
+        (ocpp.id == ocpp.id.1) &amp;&amp; ((now - ocpp.timestamp).toSecond() <= 3))</boolean_expression>
+    </event>
+    <event value="COMPUTE" event_id="3" description="Status update retry after 5 seconds">
+      <boolean_expression>((ocpp.type == "CSMS") &amp;&amp; (ocpp.action != "StatusUpdateAcknowledged") &amp;&amp;
+        ((now - ocpp.timestamp).toSecond() >= 5))</boolean_expression>
+    </event>
+    <event value="COMPUTE" event_id="4" description="Communication failure alert after 3 consecutive failed retries">
+      <boolean_expression>((ocpp.type == "CSMS") &amp;&amp; (ocpp.action != "StatusUpdateAcknowledged") &amp;&amp;
+        ((retries.1 + retries.2 + retries.3).toSecond() >= 5))</boolean_expression>
+    </event>
+  </property>
+
+  <!-- Error Recovery Mechanism -->
+  <error_recovery>
+    <retry_count>3</retry_count>
+    <retry_interval>5s</retry_interval>
+    <alert_threshold>3</alert_threshold>
+  </error_recovery>
+
+</beginning>

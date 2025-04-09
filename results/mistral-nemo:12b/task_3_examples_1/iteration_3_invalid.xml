@@ -1,0 +1,18 @@
+<beginning>
+  <!-- Property: Charging Station Status Reporting -->
+  <property value="THEN" delay_units="s" delay_min="0+" delay_max="3" property_id="1" type_property="SECURITY_RULE"
+            description="CSMS must acknowledge status updates within 3 seconds">
+    <event value="COMPUTE" event_id="1"
+           description="StatusNotification message sent by Charging Station"
+           boolean_expression="(ocpp.message == &quot;StatusNotification&quot;)"/>
+    <event value="COMPUTE" event_id="2"
+           description="CSMS acknowledges status update within 3 seconds"
+           boolean_expression="(ocpp.message == &quot;StatusNotification&quot;.1) &amp;&amp; (ocpp.type == &quot;CSMS_Ack&quot;) &amp;&amp; (now - ocpp.time) <= 3"/>
+    <event value="COMPUTE" event_id="3"
+           description="CSMS does not acknowledge status update after 3 retries"
+           boolean_expression="(retries &gt;= 3) &amp;&amp; (ocpp.message == &quot;StatusNotification&quot;) &amp;&amp; (ocpp.type != &quot;CSMS_Ack&quot;))"/>
+    <event value="COMPUTE" event_id="4"
+           description="System raises alert due to communication failure in status reporting"
+           boolean_expression="(alert_raised == true) &amp;&amp; (ocpp.message == &quot;StatusNotification&quot;) &amp;&amp; (retries >= 3))"/>
+  </property>
+</beginning>

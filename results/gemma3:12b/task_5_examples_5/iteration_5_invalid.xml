@@ -1,0 +1,5 @@
+<beginning>
+  <property value="TREAT" delay_units="ms" delay_min="0" delay_max="100" property_id="95" type_property="ANOMALY" description="Detect unusual TCP window size">
+    <event event_id="1" value="COMPUTE" description="TCP Window Size Exceeds Threshold" boolean_expression="(tcp.window_size > 65535)"/>
+  </property>
+</beginning>

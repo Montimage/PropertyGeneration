@@ -1,0 +1,57 @@
+<beginning>
+  <!-- Property ID: 101 - Session Initiation Request -->
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="101" type_property="SECURITY_RULE"
+    description="Initiate charging session upon valid charging request">
+    <!-- Context: Receive ChargePointService::StartTransactionRequest -->
+    <event value="COMPUTE" event_id="1"
+      description="Receive StartTransactionRequest message from vehicle"
+      boolean_expression="(ocpp.message.type == 'ChargePointService' && ocpp.message.action == 'StartTransaction')"/>
+    <!-- Trigger: Send BootNotification to CSMS within 2 seconds -->
+    <event value="COMPUTE" event_id="2"
+      delay_min="-2000"
+      description="Send BootNotification message to CSMS"
+      boolean_expression="(ocpp.message.type == 'ChargePointService' && ocpp.message.action == 'BootNotification')"/>
+  </property>
+
+  <!-- Property ID: 102 - Authorization Request Expectation -->
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="102" type_property="SECURITY_RULE"
+    description="Expect AuthorizationRequest after BootNotificationResponse(Accepted)">
+    <!-- Context: Receive ChargePointService::BootNotificationResponse with status Accepted -->
+    <event value="COMPUTE" event_id="3"
+      description="Receive BootNotificationResponse message from CSMS with Accepted status"
+      boolean_expression="(ocpp.message.type == 'ChargePointService' && ocpp.message.action == 'BootNotificationResponse') && (ocpp.payload.status == 'Accepted')"/>
+    <!-- Trigger: Receive ChargePointService::Authorize within 2 seconds -->
+    <event value="COMPUTE" event_id="4"
+      delay_min="-2000"
+      description="Receive Authorize message from CSMS for charging session start"
+      boolean_expression="(ocpp.message.type == 'ChargePointService' && ocpp.message.action == 'Authorize')"/>
+  </property>
+
+  <!-- Property ID: 103 - Retry BootNotification on timeout -->
+  <property value="ELSE" delay_units="ms" delay_min="2000" delay_max="5000" property_id="103" type_property="SECURITY_RULE"
+    description="Retry sending BootNotification if CSMS doesn't respond within expected timeframe">
+    <!-- Context: No response from CSMS after sending BootNotification -->
+    <event value="COMPUTE" event_id="5"
+      description="No response received from CSMS after sending BootNotification"
+      boolean_expression="(ocpp.message.type != 'ChargePointService' || ocpp.message.action != 'BootNotificationResponse') && (time_passed_since_last_message > 5000))"/>
+    <!-- Trigger: Retry sending BootNotification -->
+    <event value="COMPUTE" event_id="6"
+      delay_min="2000"
+      description="Retry sending BootNotification message to CSMS"
+      boolean_expression="(ocpp.message.type == 'ChargePointService' && ocpp.message.action == 'BootNotification')"/>
+  </property>
+
+  <!-- Property ID: 104 - Failed Connection Alert -->
+  <property value="ELSE" delay_units="ms" delay_min="6000" delay_max="0" property_id="104" type_property="SECURITY_RULE"
+    description="Raise alert event if no valid response after 3 retries">
+    <!-- Context: Retry limit exceeded without successful response -->
+    <event value="COMPUTE" event_id="7"
+      description="Retry limit exceeded without receiving a valid BootNotificationResponse message"
+      boolean_expression="(retries_count > 3) && !(ocpp.message.type == 'ChargePointService' && ocpp.message.action == 'BootNotificationResponse'))"/>
+    <!-- Trigger: Raise alert event -->
+    <event value="COMPUTE" event_id="8"
+      delay_min="6000"
+      description="Raise alert event indicating failed connection and log the error"
+      boolean_expression="(ocpp.message.type == 'ChargePointService' && ocpp.message.action == 'Alert')"/>
+  </property>
+</beginning>

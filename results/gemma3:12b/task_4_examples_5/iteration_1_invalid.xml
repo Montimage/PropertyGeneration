@@ -1,0 +1,47 @@
+<beginning>
+<!-- Property 52: DNS Tunneling Detection - Large DNS Response Sizes -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="500" property_id="52" type_property="ANOMALY"
+   description="DNS Tunneling Detection:  Detects unusually large DNS response sizes, a common characteristic of DNS tunneling.">
+   <event value="COMPUTE" event_id="1"
+          description="Check for large DNS response size"
+          boolean_expression="(dns.response_size > 2048)"/>  <!-- Threshold of 2048 bytes - adjust as needed -->
+    <event value="COMPUTE" event_id="2"
+          description="Check if response size is consistently large"
+          boolean_expression="(#em_check_dns_size_history(dns.response_size, 5) )"/>
+</property>
+
+<embedded_functions><![CDATA[
+static mmt_hash_t *dns_size_history = NULL;
+
+static inline int em_check_dns_size_history(double current_size, int window_size) {
+  // Simple moving average check.  More sophisticated statistical methods could be used.
+  double sum = 0;
+  int count = 0;
+
+  // Retrieve the last 'window_size' DNS response sizes from the history.
+  for (int i = 0; i < window_size; i++) {
+    double size = mmt_hash_get(dns_size_history, i);
+    if (size != 0) {
+      sum += size;
+      count++;
+    }
+  }
+
+  if (count > 0) {
+    double average = sum / count;
+    return (average > (current_size * 1.5)); //Consider 1.5 times the current size as significant.
+  }
+  return 0;
+}
+
+// This function is called when the rules are loaded into MMT-Security
+void on_load() {
+    dns_size_history = mmt_hash_create(10); //History of last 10 DNS responses
+}
+
+// This function is called when exiting MMT-Security
+void on_unload() {
+    mmt_hash_free(dns_size_history);
+}
+]]></embedded_functions>
+</beginning>

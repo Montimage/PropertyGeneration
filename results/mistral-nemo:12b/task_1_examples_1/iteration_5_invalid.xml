@@ -1,0 +1,47 @@
+<beginning>
+  <!-- Property ID: 101 - Charging Session Initiation -->
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0"
+            property_id="101" type_property="SECURITY_RULE"
+            description="Charging station initiates charging session">
+    <!-- Context: Receive charging request from vehicle -->
+    <event value="COMPUTE" event_id="C1"
+           description="Receive ChargePointService::StartTransactionRequest from vehicle">
+      <boolean_expression>(ocpp.message.type == 'ChargePointService' AND
+                             ocpp.message.action == 'StartTransaction')</boolean_expression>
+    </event>
+
+    <!-- Trigger: Send BootNotification to CSMS -->
+    <event value="COMPUTE" event_id="T1"
+           description="Send ChargingStationService::BootNotification to CSMS">
+      <boolean_expression>(ocpp.message.type == 'ChargingStationService' AND
+                               ocpp.message.action == 'BootNotification')</boolean_expression>
+    </event>
+
+    <!-- Response: Receive BootNotificationResponse from CSMS -->
+    <event value="COMPUTE" event_id="R1"
+            description="Receive ChargingStationService::BootNotificationResponse from CSMS">
+      <boolean_expression>(ocpp.message.type == 'ChargingStationService' AND
+                               ocpp.message.action == 'BootNotification')</boolean_expression>
+    </event>
+
+    <!-- Error Handling: Retry BootNotification on timeout -->
+    <operator value="AND" delay_units="ms" delay_min="2000">
+      <event value="COMPUTE" event_id="E1"
+              description="Timeout waiting for BootNotificationResponse">
+        <boolean_expression>(NOT EXISTS(R1) AND TIMEOUT(2000))</boolean_expression>
+      </event>
+
+      <!-- Retry BootNotification -->
+      <event value="COMPUTE" event_id="RT1"
+              description="Retry sending ChargingStationService::BootNotification to CSMS">
+        <boolean_expression>(NOT EXISTS(R1) AND TIMEOUT(2000))</boolean_expression>
+      </event>
+    </operator>
+
+    <!-- Alert on failed connection -->
+    <event value="COMPUTE" event_id="ALERT"
+            description="Failed connection alert after 3 retries">
+      <boolean_expression>(EXISTS(RT1) AND COUNT(RT1) > 3)</boolean_expression>
+    </event>
+  </property>
+</beginning>

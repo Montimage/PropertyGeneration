@@ -1,0 +1,9 @@
+<beginning>
+<!-- Property 99: DDoS Attack Detected -->
+<property value="THEN" delay_units="s" delay_min="0" delay_max="1" property_id="99" type_property="ATTACK"
+     description="DDoS attack detected with more than 1000 packets sent by any source IP address within a second">
+   <event event_id="1" value="COMPUTE"
+           description="Count packets per source IP"
+           boolean_expression="(ip.src != ip.dst) && (#packets_by_ip_src(ip.src) > 1000))"/>
+ </property>
+</beginning>

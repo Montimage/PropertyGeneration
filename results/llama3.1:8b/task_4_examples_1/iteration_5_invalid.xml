@@ -1,0 +1,21 @@
+<beginning>
+  <!-- Property: The charging station must provide accurate energy consumption data during a charging session -->
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="1" type_property="SECURITY_RULE" description="Accurate Energy Consumption">
+    <event value="COMPUTE" event_id="1" description="Charging Station sends MeterValues message" boolean_expression="(ocpp.message == 'MeterValues' &amp;&amp; ocpp.payload['energy_consumption'] != null)"/>
+    
+    <!-- Validate and log the received energy consumption data in real time -->
+    <event value="COMPUTE" event_id="2" description="CSMS validates and logs energy consumption data" boolean_expression="(ocpp.message == 'MeterValues' &amp;&amp; ocpp.payload['energy_consumption'] != null)"/>
+    
+    <!-- Error Handling: If the CSMS detects missing or inaccurate energy data, it must trigger a corrective action alert within 10 seconds -->
+    <event value="COMPUTE" event_id="3" description="CSMS triggers corrective action alert for missing/inaccurate energy data" boolean_expression="(ocpp.message == 'MeterValues' &amp;&amp; (ocpp.payload['energy_consumption'] == null || ocpp.payload['energy_consumption'] > 0.5))"/>
+    
+    <!-- The reported data must have an accuracy of ±0.5 kWh to ensure compliance with energy tracking requirements -->
+    <event value="COMPUTE" event_id="4" description="Energy consumption data has accuracy of ±0.5 kWh" boolean_expression="(ocpp.payload['energy_consumption'] != null &amp;&amp; abs(ocpp.payload['energy_consumption']) <= 0.5)"/>
+    
+    <!-- Trigger corrective action alert within 10 seconds if energy data is missing or inaccurate -->
+    <event value="COMPUTE" event_id="5" description="Trigger corrective action alert for missing/inaccurate energy data" boolean_expression="(ocpp.message == 'MeterValues' &amp;&amp; (ocpp.payload['energy_consumption'] == null || ocpp.payload['energy_consumption'] > 0.5))"/>
+    
+    <!-- Log the issue and notify the network monitoring system for further analysis -->
+    <event value="COMPUTE" event_id="6" description="Log issue and notify network monitoring system" boolean_expression="(ocpp.message == 'MeterValues' &amp;&amp; (ocpp.payload['energy_consumption'] == null || ocpp.payload['energy_consumption'] > 0.5))"/>
+  </property>
+</beginning>

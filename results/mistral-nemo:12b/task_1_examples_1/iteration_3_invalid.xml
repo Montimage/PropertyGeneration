@@ -1,0 +1,23 @@
+<beginning>
+  <property value="THEN" delay_units="ms" delay_min="-2000" delay_max="0" property_id="1" type_property="SECURITY_RULE" description="CSMS sends AuthorizationRequest after BootNotificationResponse with Accepted status">
+    <event value="COMPUTE" event_id="1" description="CSMS sends BootNotificationResponse with Accepted status">
+      <operator value="AND">
+        <protocol_name>ocpp</protocol_name>
+        <field_name>message</field_name>
+        <event_id>BootNotificationResponse</event_id>
+        <field_name>status</field_name>
+        <operator_value>Accepted</operator_value>
+      </operator>
+    </event>
+    <event value="COMPUTE" event_id="2" description="CSMS sends AuthorizationRequest within 2 seconds">
+      <operator value="AND">
+        <protocol_name>ocpp</protocol_name>
+        <field_name>message</field_name>
+        <event_id>AuthorizationRequest</event_id>
+        <delay_units>ms</delay_units>
+        <delay_min>-2000</delay_min>
+        <delay_max>0</delay_max>
+      </operator>
+    </event>
+  </property>
+</beginning>

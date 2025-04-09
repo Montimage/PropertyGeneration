@@ -1,0 +1,8 @@
+<beginning>
+    <property value="THEN" delay_units="ms" delay<｜begin▁of▁sentence｜>_min="0" delay_max="10000" property_id="52" type_property="ATTACK" 
+          description="Energy Consumption Monitoring Attack">
+      <event value="COMPUTE" event_id="1" 
+             description="A regular interval of energy consumption data being sent by the charging station to CSMS."
+             boolean_expression="(ocpp.message == 'MeterValues') &amp;&amp; (abs(meta.energy_consumed - csms.last_reported_value) > 0.5)"/>
+    </property>
+</beginning>

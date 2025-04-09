@@ -1,0 +1,3 @@
+Sure, I'd be happy to help you generate an XML property for this scenario. However, without more specific details about the scenario and the protocols involved, it's difficult to provide a precise solution. 
+
+Could you please provide me with these details? For example, what is the context of the new property? What are its triggers or events? Which protocol(s) does it adhere to? Are there any specific conditions that should be met for this property to trigger? Please provide as much detail as possible so I can assist you better.

@@ -1,0 +1,31 @@
+I can guide you through generating a new XML property based on a scenario. Let's assume we want to create an XML property for detecting a "Possible DNS Amplification Attack" in the DNS protocol.
+
+**Scenario:** A DNS server is receiving a large number of requests with spoofed source IP addresses, which could be used to amplify the attack and overwhelm the targeted system.
+
+**Protocol(s):**
+
+*   Protocol: DNS
+*   Context: This property should detect potential amplification attacks by monitoring the frequency and source IP addresses of DNS requests.
+
+Here's an example XML property that matches this scenario:
+
+```xml
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="5" property_id="100" type_property="ATTACK"
+          description="Possible DNS Amplification Attack">
+    <operator value="THEN" delay_units="s" delay_min="0+" delay_max="3">
+        <event value="COMPUTE" event_id="1"
+               description="High frequency of DNS requests from different source IP addresses within a short period"
+               boolean_expression="#count(dns.request_source_ip) > 10 &amp;&amp; #elapsed_time(dns.request_timestamp) < 5"/>
+    </operator>
+</property>
+```
+
+This XML property will trigger an alert when there are more than 10 DNS requests from different source IP addresses within a 5-second window. You can adjust the thresholds and parameters according to your specific needs.
+
+**Additional Notes:**
+
+*   The `#count` function is used to count the number of unique source IP addresses in the DNS requests.
+*   The `#elapsed_time` function calculates the time elapsed between the first and last request timestamps.
+*   You can adjust the `delay_units`, `delay_min`, and `delay_max` attributes to change the trigger conditions.
+
+Feel free to modify this example according to your specific requirements.

@@ -1,0 +1,23 @@
+<beginning>
+    <!-- Property 123: Periodic Heartbeat Messages -->
+    <property value="THEN" delay_units="s" delay_min="60+" delay_max="65" property_id="123" type_property="SECURITY_RULE"
+        description="Periodic Heartbeat messages for continuous communication">
+        <!-- Context: Charging Station sends a Heartbeat message to CSMS every 60 seconds -->
+        <event value="COMPUTE" event_id="1" 
+               description="Charging station sends Heartbeat message"
+               boolean_expression="#ocpp_get_message_type(0) == 'Heartbeat' &amp;&amp; #ocpp_get_timestamp() - #ocpp_get_previous_heartbeat_timestamp() >= 60"/>
+        
+        <!-- Trigger: CSMS responds to Heartbeat within 5 seconds -->
+        <event value="COMPUTE" event_id="2" 
+               description="CSMS responds to Heartbeat within 5 seconds"
+               boolean_expression="#ocpp_get_timestamp() - #ocpp_get_heartbeat_timestamp() <= 5"/>
+        
+        <!-- Error Handling: Alert if CSMS does not respond to 3 consecutive Heartbeats -->
+        <event value="COMPUTE" event_id="3" 
+               description="CSMS does not respond to 3 consecutive Heartbeats"
+               boolean_expression="#ocpp_get_unresponded_heartbeats() >= 3"/>
+        
+        <!-- Reactive Function: Log and report alert if CSMS does not respond -->
+        <if_satisfied>em_log_and_report_alert()</if_satisfied>
+    </property>
+</beginning>

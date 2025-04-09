@@ -1,0 +1,81 @@
+Based on the examples provided, I will create a new XML property for a scenario where you want to ensure that HTTPS traffic is using TLS version 1.2 and strong ciphersuites.
+
+**Protocol(s):** https, ip
+
+**XML Property:**
+```xml
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" protocol="https" property_id="80" type_property="SECURITY" description="Ensure HTTPS traffic is using TLS version 1.2 and strong ciphersuites">
+    <event value="COMPUTE" event_id="1" description="HTTPS packet">
+        <boolean_expression>( ( https.packet_count > 0 ) &amp;&amp; #em_print(ip.client_addr, ip.server_addr, ip.client_port, ip.server_port))</boolean_expression>
+    </event>
+    <event value="COMPUTE" event_id="2" description="TLS version and ciphersuites in client hello handshake messages">
+        <boolean_expression>(( #em_is_strong_version( https.version )  
+                             &amp;&amp; #em_is_strong_ciphers( https.client_hello_cipher_suite ) )</boolean_expression>
+    </event>
+</property>
+
+<embedded_functions><![CDATA[
+#include <stdlib.h>
+#include <mmt_core.h>
+#include <tcpip/mmt_tcpip.h>
+
+static inline bool em_print( const void * data, ...){
+	return true;
+}
+
+static inline bool em_is_strong_version( double version ){
+	return (version == TLS_VERSION_1_2 ) || (version == TLS_VERSION_1_3 );
+}
+
+
+static size_t    allow_ciphers_size = 0;
+static uint16_t *allow_ciphers_list = NULL;
+
+void on_load(){
+	const char *str = getenv("MMT_SEC_HTTPS_CIPHER_ALLOWLIST");
+	if( str == NULL ){
+		mmt_info("Rule 80.https_v12_ciphersuites: no value of MMT_SEC_HTTPS_CIPHER_ALLOWLIST" );
+		return;
+	}
+	char **str_ciphers = NULL;
+	allow_ciphers_size = str_split( str, ',', &str_ciphers );
+	if( allow_ciphers_size == 0 )
+		return;
+	
+	allow_ciphers_list = mmt_mem_alloc( sizeof( uint16_t ) * allow_ciphers_size );
+	size_t i;
+	for( i=0; i<allow_ciphers_size; i++ )
+		allow_ciphers_list[i] = strtol( str_ciphers[i], NULL, 0 );
+	
+	mmt_mem_force_free( str_ciphers );
+	
+	//print info
+	mmt_info("Rule 80.https_v12_ciphersuites: allow %zu ciphers", allow_ciphers_size );
+	for( i=0; i<allow_ciphers_size; i++ )
+		mmt_info("Rule 80.https_v12_ciphersuites: %zu: %hu", i, allow_ciphers_list[i] );
+}
+
+void on_unload(){
+	if( allow_ciphers_list )
+		mmt_mem_force_free( allow_ciphers_list );
+}
+
+static inline bool em_is_strong_ciphers( const void *data ){
+	const mmt_u16_array_t *ciphers = (mmt_u16_array_t *) data;
+	size_t i, j;
+	for( i=0; i<ciphers->len; i++ ){
+		for( j=0; j<allow_ciphers_size; j++ )
+			if( allow_ciphers_list[j] == ciphers->data[i] )
+				break;
+		
+		//when we visited all allow_ciphers_list but not found
+		if( j >= allow_ciphers_size )
+			return false;
+	}
+	return true;
+}
+]]></embedded_functions>
+```
+This new XML property ensures that HTTPS traffic is using TLS version 1.2 and strong ciphersuites, just like the original examples. The `on_load()` function retrieves the list of allowed ciphers from the environment variable `MMT_SEC_HTTPS_CIPHER_ALLOWLIST` and stores them in the `allow_ciphers_list`. The `em_is_strong_ciphers()` function checks if the client_hello_cipher_suite is among the allowed ciphers.
+
+Note that you'll need to modify the `on_load()` function to retrieve the correct environment variable name (`MMT_SEC_HTTPS_CIPHER_ALLOWLIST`) and set it to a comma-separated list of cipher numbers (e.g., "0xc0a4,0xc0a5").

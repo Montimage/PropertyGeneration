@@ -1,0 +1,9 @@
+<beginning>
+<!-- Property 101: Detection of suspicious user-agent strings -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="100" property_id="101" type_property="MALWARE"
+   description="Detection of suspicious user-agent strings">
+   <event value="COMPUTE" event_id="1"
+          description="Check for presence of known malicious user-agent strings"
+          boolean_expression="(http.user_agent_contains('malicious_string1') || http.user_agent_contains('malicious_string2'))"/>
+</property>
+</beginning>

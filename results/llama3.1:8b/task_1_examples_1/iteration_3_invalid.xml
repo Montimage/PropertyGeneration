@@ -1,0 +1,74 @@
+<beginning>
+  <embedded_functions><![CDATA[
+    // each function name should be prefixed by em_
+    
+    static inline int em_check_BootNotification_response(uint8_t status){
+      if(status == 0x01) return 1; // Accepted
+      else return 0;
+    }
+    
+    void on_load(){
+      printf("Rule loaded\n");
+    }
+    
+    void on_unload(){
+      printf("Rule unloaded\n");
+    }
+    
+    typedef void (*mmt_rule_satisfied_callback)(
+        const rule_t *rule,          
+        int verdict,                
+        uint64_t timestamp,           
+        uint64_t counter,             
+        const mmt_array_t * const trace  
+    );
+    
+    static inline void em_reactive_function(const rule_t *rule, int verdict, uint64_t timestamp, uint64_t counter, const mmt_array_t * const trace){
+      if(verdict == DETECTED){
+        printf("Charging session initiated successfully\n");
+      }
+    }
+  ]]></embedded_functions>
+  
+  <!-- Property 123: Charging station initiates a charging session -->
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="123" type_property="SECURITY_RULE"
+    description="Charging station initiates a charging session">
+    <event value="COMPUTE" event_id="1"
+           description="CSMS responds with BootNotificationResponse and status is Accepted"
+           boolean_expression="(#em_check_BootNotification_response(csms.status) == 1)">
+      <condition>ocpp.boot_notification_response</condition>
+    </event>
+    
+    <event value="COMPUTE" event_id="2"
+           description="CSMS sends Authorization request within 2 seconds after receiving BootNotificationResponse with status Accepted"
+           boolean_expression="(csms.action == 'Authorization' && timestamp - csms.receive_time <= 2000)">
+      <condition>ocpp.authorization_request</condition>
+    </event>
+    
+    <event value="COMPUTE" event_id="3"
+           description="CSMS does not respond within 2 seconds after receiving BootNotificationResponse with status Accepted"
+           boolean_expression="(timestamp - csms.receive_time > 2000)">
+      <condition>ocpp.boot_notification_response</condition>
+    </event>
+    
+    <!-- Error handling: CSMS does not respond within 2 seconds -->
+    <event value="COMPUTE" event_id="4"
+           description="CSMS does not respond within 2 seconds after receiving BootNotificationResponse with status Accepted (retry)"
+           boolean_expression="(timestamp - csms.receive_time > 2000 && retry_count <= 3)">
+      <condition>ocpp.boot_notification_response</condition>
+    </event>
+    
+    <!-- Error handling: CSMS responds with invalid status -->
+    <event value="COMPUTE" event_id="5"
+           description="CSMS responds with BootNotificationResponse and status is not Accepted (retry)"
+           boolean_expression="(csms.status != 0x01)">
+      <condition>ocpp.boot_notification_response</condition>
+    </event>
+    
+    <!-- Trigger: CSMS sends BootNotification message -->
+    <trigger value="COMPUTE" event_id="6"
+             description="CSMS sends BootNotification message"
+             boolean_expression="ocpp.boot_notification">
+    </trigger>
+  </property>
+</beginning>

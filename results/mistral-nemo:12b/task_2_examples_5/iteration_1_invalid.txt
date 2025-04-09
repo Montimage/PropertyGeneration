@@ -1,0 +1,27 @@
+**Scenario:** Detecting an OCPP (Open Charge Point Protocol) Charge Point (CP) Heartbeat Stop event, indicating a possible CP failure.
+
+**Protocol(s):** ocpp
+
+**XML Property:**
+
+```xml
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="60" property_id="123" type_property="ERROR">
+  <event value="COMPUTE" event_id="1"
+          description="CP Heartbeat starts"
+          boolean_expression="(ocpp.heartbeat_start != '')"/>
+  <event value="COMPUTE" event_id="2"
+          description="CP Heartbeat stops without error"
+          boolean_expression="((ocpp.heartbeat_stop != '') &amp;&amp; (strstr(ocpp.error, 'OK') == -1))"/>
+</property>
+```
+
+This property checks for two events:
+1. The start of a CP heartbeat.
+2. The stop of the CP heartbeat without an error message ('OK' not found in the error string).
+
+If both events occur within 60 seconds (configurable), it indicates that the CP heartbeat has stopped, likely due to an error or failure at the Charge Point. This could help in detecting potential issues with OCPP charge points.
+
+**Notes:**
+- The actual boolean expressions and properties might vary depending on the specific implementation of OCPP.
+- You might need to adjust the delay units, minimum, and maximum values based on your network's heartbeat interval and expected error response time.
+- This property is marked as "ERROR" type, but you can change it according to your logging or alerting system.

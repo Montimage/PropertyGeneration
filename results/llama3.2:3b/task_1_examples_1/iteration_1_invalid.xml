@@ -1,0 +1,49 @@
+<beginning>
+  <embedded_functions><![CDATA[
+    //each function name should be prefixed by em_
+
+    static inline int em_is_valid_charging_request(int i) {
+      //printf("Charging request protocol ID:%d\n", i);
+      
+      if (i == 12345) return 1; //valid protocol ID for charging requests
+      return 0;
+    }
+
+    static inline void em_send_boot_notification(mmt_array_t *trace, const mmt_rule_satisfied_callback callback) {
+      //printf("Sending BootNotification...\n");
+      // implementation to send BootNotification message to CSMS
+      printf("BootNotification sent\n");
+      callback(NULL, 1, 0, 0, trace);
+    }
+  ]]></embedded_functions>
+
+<!-- Property 63: Charging station initiates a charging session upon receiving a valid charging request -->
+<property value="THEN" delay_units="s" delay_min="-2" delay_max="0" property_id="63" type_property="SECURITY_RULE" 
+          description="Charging station initiates a charging session when receiving a valid charging request">
+    <event value="COMPUTE" event_id="3" 
+           description="IP packet with valid charging request protocol ID"
+           boolean_expression="#em_is_valid_charging_request(ip.proto_id) == 1"/>
+    <event value="COMPUTE" event_id="4" 
+           description="Send BootNotification message to CSMS"
+           boolean_expression="(ip.src != ip.dst)">
+      <action value="send_boot_notification">
+        <!-- implementation to send BootNotification message to CSMS -->
+      </action>
+    </event>
+    <event value="COMPUTE" event_id="5" 
+           description="CSMS responds with BootNotificationResponse"
+           boolean_expression="#em_check_csms_response(mmt_array_t *trace) == 1">
+      <!-- implementation to check CSMS response -->
+    </event>
+    <event value="COMPUTE" event_id="6" 
+           description="CSMS sends Authorization request within 2 seconds"
+           boolean_expression="#em_check_authorization_request(mmt_array_t *trace, int timestamp) == 1">
+      <!-- implementation to check Authorization request -->
+    </event>
+    <event value="COMPUTE" event_id="7" 
+           description="Alert if CSMS does not respond within 2 seconds or station does not receive valid response"
+           boolean_expression="#em_check_alert(mmt_array_t *trace) == 1">
+      <!-- implementation to check alert conditions -->
+    </event>
+</property>
+</beginning>

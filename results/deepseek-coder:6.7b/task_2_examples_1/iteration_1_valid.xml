@@ -1,0 +1,25 @@
+<beginning>
+  <!-- Property 24: OCPP Heartbeat Message -->
+  <property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="24" type_property="EVASION" 
+      description="OCPP Heartbeat Message: The charging station sends a Heartbeat message to the CSMS every 60 seconds.">
+    <event value="COMPUTE" event_id="1" 
+           description="Heartbeat message sent by the charging station every 60 seconds"
+           boolean_expression="(ocpp.message == 'Heartbeat') &amp;&amp; (ocpp.type == 'call')"/>
+  </property>
+  
+  <!-- Property 25: OCPP Heartbeat Response -->
+  <property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="25" type_property="EVASION" 
+      description="OCPP Heartbeat Response: The CSMS responds within 5 seconds of receiving a Heartbeat.">
+    <event value="COMPUTE" event_id="1" 
+           description="Heartbeat response received by the CSMS within 5 seconds"
+           boolean_expression="(ocpp.message == 'Confirmation') &amp;&amp; (ocpp.type == 'call')"/>
+  </property>
+  
+  <!-- Property 26: OCPP Heartbeat Error Handling -->
+  <property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="26" type_property="EVASION" 
+      description="OCPP Heartbeat Error Handling: If the CSMS does not respond to 3 consecutive Heartbeat messages, an alert event is triggered.">
+    <event value="COMPUTE" event_id="1" 
+           description="Alert event triggered after 3 consecutive unsuccessful Heartbeat responses"
+           boolean_expression="(ocpp.message == 'Error') &amp;&amp; (ocpp.type == 'call')"/>
+  </property>
+</beginning>

@@ -1,0 +1,5 @@
+<beginning>
+  <property value="THEN" delay_units="ms" delay<｜begin▁of▁sentence｜> min="0" property_id="123456" type_property="ATTACK" description="Energy Consumption Tracking">
+    <event value="COMPUTE" event_id="1" description="MeterValues message sent during active charging session" boolean_expression="((ocpp.message == 'MeterValues') &amp;&amp; (csms.action == 'Send'))"/>
+  </property>
+</beginning>

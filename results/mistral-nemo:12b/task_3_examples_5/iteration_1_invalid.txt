@@ -1,0 +1,31 @@
+**Scenario:** Detecting UDP port scanning by observing at least 5 consecutive UDP packets with different destination ports on the same IP address.
+
+**Protocol(s):** udp, ip
+
+**XML Property:**
+
+```xml
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="5" property_id="60" type_property="ATTACK"
+    description="UDP port scanning suspected (at least 5 consecutive UDP packets with different destination ports)">
+  <operator value="THEN" delay_units="s" delay_min="0+" delay_max="1">
+    <event value="COMPUTE" event_id="1"
+            description="First UDP packet header with a unique destination port"
+            boolean_expression="(udp.dest_port != udp.dest_port.1) &amp;&amp; (ip.src == ip.src) &amp;&amp; (ip.dst == ip.dst))"/>
+  </operator>
+  <operator value="THEN" delay_units="s" delay_min="0+" delay_max="1">
+    <event value="COMPUTE" event_id="2"
+            description="Second UDP packet header with a unique destination port"
+            boolean_expression="(udp.dest_port != udp.dest_port.1) &amp;&amp; (udp.dest_port != udp.dest_port.2) &amp;&amp; (ip.src == ip.src.1) &amp;&amp; (ip.dst == ip.dst.1))"/>
+  </operator>
+  <operator value="THEN" delay_units="s" delay_min="0+" delay_max="1">
+    <event value="COMPUTE" event_id="3"
+            description="Third UDP packet header with a unique destination port"
+            boolean_expression="(udp.dest_port != udp.dest_port.1) &amp;&amp; (udp.dest_port != udp.dest_port.2) &amp;&amp; (udp.dest_port != udp.dest_port.3) &amp;&amp; (ip.src == ip.src.1) &amp;&amp; (ip.dst == ip.dst.1))"/>
+  </operator>
+  <operator value="THEN" delay_units="s" delay_min="0+" delay_max="1">
+    <event value="COMPUTE" event_id="4"
+            description="Fourth UDP packet header with a unique destination port"
+            boolean_expression="(udp.dest_port != udp.dest_port.1) &amp;&amp; (udp.dest_port != udp.dest_port.2) &amp;&amp; (udp.dest_port != udp.dest_port.3) &amp;&amp; (udp.dest_port != udp.dest_port.4) &amp;&amp; (ip.src == ip.src.1) &amp;&amp; (ip.dst == ip.dst.1))"/>
+  </operator>
+</property>
+```

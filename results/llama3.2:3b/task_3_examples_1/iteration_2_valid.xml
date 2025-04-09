@@ -1,0 +1,14 @@
+<beginning>
+    <property value="THEN" delay_units="s" delay_min="0+" delay_max="5" property_id="6" type_property="SECURITY_RULE" 
+              description="The charging station must report its current charging status (Charging, Paused, Finished) to the CSMS">
+        <event value="COMPUTE" event_id="3" 
+               description="A StatusNotification message is sent with a Charging state"
+               boolean_expression="(message.type == 'StatusNotification' &amp;&amp; message.action == 'StartCharging')"/>
+        <event value="COMPUTE" event_id="4" 
+               description="A StatusNotification message is sent with a Paused state"
+               boolean_expression="(message.type == 'StatusNotification' &amp;&amp; message.action == 'PauseCharging')"/>
+        <event value="COMPUTE" event_id="5" 
+               description="A StatusNotification message is sent with a Finished state"
+               boolean_expression="(message.type == 'StatusNotification' &amp;&amp; message.action == 'EndCharging')"/>
+    </property>
+</beginning>

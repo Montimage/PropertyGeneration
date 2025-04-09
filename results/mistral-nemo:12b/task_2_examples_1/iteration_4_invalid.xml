@@ -1,0 +1,15 @@
+<beginning>
+  <!-- Property 101: Periodic Heartbeat with Error Handling -->
+  <property value="THEN" delay_units="s" delay_min="60+" delay_max="5" property_id="101" type_property="SECURITY_RULE"
+    description="Periodic Heartbeat messages to ensure continuous communication with CSMS">
+    <event value="COMPUTE" event_id="1" description="Heartbeat message sent by charging station"
+      boolean_expression="(ocpp.message == 'Heartbeat' &amp;&amp; ocpp.type == 'Request')"/>
+    <event value="COMPUTE" event_id="2" description="CSMS response to Heartbeat message"
+      boolean_expression="(ocpp.message == 'HeartbeatResponse' &amp;&amp; ocpp.type == 'Response' &amp;&amp;
+        ocpp.id == ocpp.id.1 &amp;&amp; timestamp - timestamp.1 <= 5000)"/>
+    <event value="COMPUTE" event_id="3" description="Three consecutive Heartbeat timeouts"
+      boolean_expression="(ocpp.message == 'Heartbeat' &amp;&amp; ocpp.type == 'Request' &amp;&amp;
+        timestamp - timestamp.2 >= 180000 &amp;&amp; timestamp - timestamp.3 >= 180000)"/>
+    <if_satisfied>em_triggerAlert("Potential communication breakdown", "networkMonitoringSystem")</if_satisfied>
+  </property>
+</beginning>

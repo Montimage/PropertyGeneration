@@ -1,0 +1,17 @@
+```xml
+<property value="THEN" delay_units="s" delay_min="0" delay_max="5" property_id="54" type_property="MALWARE">
+  <description>Detects suspicious DNS queries for known malware domains.</description>
+  <operator value="THEN" delay_units="s" delay_min="0" delay_max="2">
+    <event value="COMPUTE" event_id="1" description="DNS query for malware domain 1">
+      <boolean_expression>
+        (dns.query_name == "examplemalware1.com")
+      </boolean_expression>
+    </event>
+    <event value="COMPUTE" event_id="2" description="DNS query for malware domain 2">
+      <boolean_expression>
+        (dns.query_name == "examplemalware2.net")
+      </boolean_expression>
+    </event>
+  </operator>
+</property>
+```

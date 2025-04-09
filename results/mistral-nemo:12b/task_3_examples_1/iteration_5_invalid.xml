@@ -1,0 +1,30 @@
+<beginning>
+  <property value="THEN" delay_units="s" delay_min="-3+" delay_max="0" property_id="101" type_property="SECURITY_RULE">
+    <event value="COMPUTE" event_id="start_charge" description="Charging session starts">
+      <boolean_expression>(ocpp.message == 'StatusNotification' &amp;&amp; ocpp.type == 'BootNotification' &amp;&amp; ocpp.action == 'Start')</boolean_expression>
+    </event>
+    <event value="COMPUTE" event_id="pause_charge" description="Charging session is paused">
+      <boolean_expression>(ocpp.message == 'StatusNotification' &amp;&amp; ocpp.type == 'BootNotification' &amp;&amp; ocpp.action == 'Pause')</boolean_expression>
+    </event>
+    <event value="COMPUTE" event_id="finish_charge" description="Charging session is completed">
+      <boolean_expression>(ocpp.message == 'StatusNotification' &amp;&amp; ocpp.type == 'BootNotification' &amp;&amp; (ocpp.action == 'Stop' || ocpp.action == 'Reset'))</boolean_expression>
+    </event>
+    <event value="COMPUTE" event_id="acknowledge_status_update" description="CSMS acknowledges status update">
+      <boolean_expression>(ocpp.message == 'StatusNotification' &amp;&amp; ocpp.type == 'AcknowledgeStatusUpdate')</boolean_expression>
+    </event>
+  </property>
+
+  <!-- Retry mechanism for failed acknowledgments -->
+  <property value="THEN" delay_units="s" delay_min="5+" delay_max="0" property_id="102" type_property="ATTACK">
+    <event value="COMPUTE" event_id="retry_status_update" description="Charging station retries sending status update">
+      <boolean_expression>(ocpp.message == 'StatusNotification' &amp;&amp; ocpp.type == 'RetryStatusUpdate')</boolean_expression>
+    </event>
+  </property>
+
+  <!-- Alert mechanism for communication failure -->
+  <property value="THEN" delay_units="s" delay_min="15+" delay_max="0" property_id="103" type_property="ATTACK">
+    <event value="COMPUTE" event_id="raise_alert" description="System raises alert due to communication failure">
+      <boolean_expression>(ocpp.message == 'StatusNotification' &amp;&amp; ocpp.type == 'AlertCommunicationFailure')</boolean_expression>
+    </event>
+  </property>
+</beginning>

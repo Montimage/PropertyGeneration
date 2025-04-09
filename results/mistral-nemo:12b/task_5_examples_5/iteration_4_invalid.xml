@@ -1,0 +1,14 @@
+<beginning>
+  <!-- Property 95: Spoofed DHCP Discover messages -->
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="95" type_property="ATTACK">
+    <description>Spoofed DHCP Discover messages with invalid source IP addresses</description>
+    <event event_id="1" value="COMPUTE">
+      <description>DHCP Discover message</description>
+      <boolean_expression>(dhcp.op_code == 1)</boolean_expression>
+    </event>
+    <event event_id="2" value="COMPUTE">
+      <description>Invalid source IP address</description>
+      <boolean_expression>(ip.src != ip.src.1) AND (ip.src == "0.0.0.0") OR (ip.src !~ "^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$")</boolean_expression>
+    </event>
+  </property>
+</beginning>

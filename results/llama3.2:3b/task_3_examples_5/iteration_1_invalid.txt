@@ -1,0 +1,26 @@
+Here is a new XML property that matches the scenario of a probable DNS tunneling attack (e.g., using DNS queries to transfer data):
+
+**Property Name:** Probable DNS Tunneling Attack
+**Protocol(s):** dns, ip
+**Description:** Probable DNS tunneling attack (using DNS queries to transfer data).
+
+```xml
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="10" property_id="46" type_property="ATTACK" 
+  description="Probable DNS tunneling attack (using DNS queries to transfer data).">
+  <operator value="THEN" delay_units="s" delay_min="0+" delay_max="10">
+    <event value="COMPUTE" event_id="1" 
+           description="DNS query for a specific domain"
+           boolean_expression="((dns.qd.domain == 'example.com')&amp;&amp;((ip.src != ip.dst)))"/>
+    <event value="COMPUTE" event_id="2" 
+           description="DNS query for another domain"
+           boolean_expression="((dns.qd.d.domain == 'otherdomain.com')&amp;&amp;((ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1)))"/>
+  </operator>
+  <operator value="THEN" delay_units="s" delay_min="0+" delay_max="10">
+    <event value="COMPUTE" event_id="3" 
+           description="Multiple DNS queries for different domains"
+           boolean_expression="((dns.qd.d.domain == 'example.com')&amp;&amp;((dns.qd.domain == 'otherdomain.com')&amp;&amp;((ip.src != ip.dst)))"/>
+  </operator>
+</property>
+```
+
+This property would trigger if the system detects multiple DNS queries with different domains in a short period of time, which could be an indication of a DNS tunneling attack. The `delay_units` attribute is set to "s" (seconds) and the `delay_min` and `delay_max` attributes are set to 0+ and 10 respectively, indicating that this property will trigger if the event occurs within the next 10 seconds.

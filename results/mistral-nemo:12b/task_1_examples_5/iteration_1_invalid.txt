@@ -1,0 +1,24 @@
+**Scenario:** Detecting DDoS attacks using UDP packets with high frequency.
+
+**Protocol(s):** udp, ip
+
+**XML Property:**
+
+```xml
+<property id="42" type="ATTACK">
+  <description>Detects potential UDP-based DDoS attacks</description>
+  <operator delay_units="ms" delay_min="0" delay_max="1000">
+    <event id="1" description="High frequency of UDP packets">
+      <boolean_expression>(udp.dst_port == udp.src_port) AND
+                           (udp.total_length > 1000) AND
+                           (ip.packet_count > 50) AND
+                           (ip.interval < 100)</boolean_expression>
+    </event>
+    <event id="2" description="Print IP addresses">
+      <boolean_expression>(ip.src != ip.dst)</boolean_expression>
+    </event>
+  </operator>
+</property>
+```
+
+In this XML property, we're looking for a high frequency of UDP packets with a total length greater than 1000 bytes and an interval between packets less than 100 milliseconds. If these conditions are met, it suggests a potential UDP-based DDoS attack is occurring. The second event simply prints the IP addresses for reference.

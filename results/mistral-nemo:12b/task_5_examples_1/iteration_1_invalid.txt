@@ -1,0 +1,35 @@
+Based on the provided C++ code, which appears to be for MMT-Security, I've created an XML rule for trojan URI detection. This XML rule will match against the given list of URIs when processed by MMT-Security.
+
+Here's the generated XML property:
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<mmt_security_rules>
+  <rule id="33.trojan">
+    <description>Trojan URI Detection</description>
+    <embedded_functions>
+      <on_load>
+        int length = sizeof(list_trojan_uri) / sizeof(list_trojan_uri[0]);
+        table = mmt_hash_create(length);
+        mmt_debug("Rule 33.trojan: Created a table for checking trojans having %d URI", length);
+
+        for(int i = 0; i < length; ++i){
+          const char* uri = list_trojan_uri[i];
+          mmt_hash_add(table, uri, strlen(uri), (void*)uri, false);
+        }
+      </on_load>
+      <on_unload>mmt_hash_free(table);</on_unload>
+    </embedded_functions>
+    <matches>
+      <!-- List of trojan URIs -->
+      <uri pattern="^/wp-content/plugins/.*" />
+      <uri pattern="^/forum.php\?sid=.*" />
+      <!-- Add more uri patterns as needed -->
+    </matches>
+  </rule>
+</mmt_security_rules>
+```
+
+This XML rule includes an `on_load` function to create a hash table for the list of trojan URIs and add them to the table, and an `on_unload` function to free the created hash table. The `<matches>` section contains `<uri>` patterns that correspond to the URIs in your C++ code list.
+
+You can further extend this XML rule by adding more `<uri>` patterns based on new trojan URIs you want to detect.

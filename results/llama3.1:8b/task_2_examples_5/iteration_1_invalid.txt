@@ -1,0 +1,33 @@
+Based on the provided examples, I will create a new XML property that matches the following scenario:
+
+**Scenario:** Detecting a possible SQL injection attack by identifying multiple requests with similar strings in a short period.
+
+**Protocol(s):**
+
+* HTTP
+* TCP/IP
+
+**XML Property:**
+```xml
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="5" property_id="100" type_property="ATTACK"
+         description="Possible SQL injection attack">
+  <operator value="AND" delay_units="ms" delay_min="0" delay_max="0">
+    <event value="COMPUTE" event_id="1" 
+           description="HTTP request with 'SELECT' string"
+           boolean_expression="#strstr(http.request, 'SELECT') != 0"/>
+    <event value="COMPUTE" event_id="2" 
+           description="HTTP request with similar string in the next 3 requests"
+           boolean_expression="( (#strstr(http.request, 'SELECT') != 0)&amp;&amp;(http.request_parameter == http.request_parameter.1)&amp;&amp;((#strstr(http.request, 'FROM') != 0) | (#strstr(http.request, 'WHERE') != 0)) ) | ( (#strstr(http.request, 'SELECT') != 0)&amp;&amp;(http.request_parameter == http.request_parameter.2)&amp;&amp;((#strstr(http.request, 'FROM') != 0) | (#strstr(http.request, 'WHERE') != 0)))"/>
+    <event value="COMPUTE" event_id="3" 
+           description="HTTP request with similar string in the next 5 requests"
+           boolean_expression="( (#strstr(http.request, 'SELECT') != 0)&amp;&amp;(http.request_parameter == http.request_parameter.1)&amp;&amp;((#strstr(http.request, 'FROM') != 0) | (#strstr(http.request, 'WHERE') != 0)) ) | ( (#strstr(http.request, 'SELECT') != 0)&amp;&amp;(http.request_parameter == http.request_parameter.2)&amp;&amp;((#strstr(http.request, 'FROM') != 0) | (#strstr(http.request, 'WHERE') != 0))) | ( (#strstr(http.request, 'SELECT') != 0)&amp;&amp;(http.request_parameter == http.request_parameter.3)&amp;&amp;((#strstr(http.request, 'FROM') != 0) | (#strstr(http.request, 'WHERE') != 0)) )"/>
+  </operator>
+</property>
+```
+This XML property uses the `THEN` operator to combine three events:
+
+1. The first event checks if the HTTP request contains the string "SELECT".
+2. The second and third events check if there are similar strings in the next requests (e.g., "FROM" or "WHERE").
+3. If all conditions are met, the property is triggered.
+
+Note that this is just one possible implementation, and you may need to adjust it based on your specific requirements and the structure of your data.

@@ -1,0 +1,65 @@
+<beginning>
+  <embedded_functions><![CDATA[
+    // Reactive function to log and report alert events
+    static inline void em_log_alert(const mmt_array_t * const trace, uint64_t timestamp){
+      printf("Alert event triggered: failed connection\n");
+      // Log the alert event to the network monitoring system
+      // ...
+    }
+
+    // Reactive function to send Authorization request
+    static inline void em_send_authorization_request(const mmt_array_t * const trace, uint64_t timestamp){
+      // Send an Authorization request to confirm the charging session start
+      // ...
+    }
+  ]]></embedded_functions>
+
+  <!-- Property: The charging station must initiate a charging session when it receives a valid charging request from a vehicle. -->
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="1" type_property="SECURITY_RULE"
+    description="Initiate charging session on valid charging request">
+    <event value="COMPUTE" event_id="1" 
+           description="CSMS responds with BootNotificationResponse (Accepted status)"
+           boolean_expression="(ocpp.csms_response.type == 'BootNotificationResponse' && ocpp.csms_response.status == 'Accepted')">
+      <!-- Trigger: The CSMS must respond with a BootNotificationResponse, including a status field (Accepted, Pending, or Rejected). -->
+    </event>
+    <event value="COMPUTE" event_id="2" 
+           description="CSMS sends Authorization request within 2 seconds"
+           boolean_expression="(ocpp.csms_response.type == 'Authorization' && ocpp.csms_response.timestamp - ocpp.csms_response.boot_notification_timestamp <= 2000)">
+      <!-- Trigger: If the status is Accepted, the CSMS must send an Authorization request within 2 seconds to confirm the charging session start. -->
+    </event>
+    <event value="COMPUTE" event_id="3" 
+           description="CSMS does not respond within 2 seconds"
+           boolean_expression="(ocpp.csms_response.timestamp - ocpp.csms_response.boot_notification_timestamp > 2000)">
+      <!-- Trigger: If the CSMS does not respond within 2 seconds, the charging station must retry sending the BootNotification message up to 3 times. -->
+    </event>
+    <event value="COMPUTE" event_id="4" 
+           description="CSMS responds with error (e.g., Rejected status)"
+           boolean_expression="(ocpp.csms_response.type == 'BootNotificationResponse' && ocpp.csms_response.status != 'Accepted')">
+      <!-- Trigger: If the station does not receive a valid response after 3 retries, it must raise an alert event indicating a failed connection. -->
+    </event>
+    <event value="COMPUTE" event_id="5" 
+           description="Raise alert event on failed connection"
+           boolean_expression="(ocpp.csms_response.type == 'BootNotificationResponse' && ocpp.csms_response.status != 'Accepted')">
+      <!-- Trigger: Raise an alert event indicating a failed connection. -->
+    </event>
+  </property>
+
+  <property value="THEN" delay_units="s" delay_min="2" delay_max="3" property_id="2" type_property="EVASION"
+    description="Retry sending BootNotification message up to 3 times">
+    <event value="COMPUTE" event_id="6" 
+           description="Charging station retries sending BootNotification message"
+           boolean_expression="(ocpp.csms_response.timestamp - ocpp.csms_response.boot_notification_timestamp <= 2000 && retry_count <= 3)">
+      <!-- Trigger: The charging station must retry sending the BootNotification message up to 3 times. -->
+    </event>
+  </property>
+
+  <property value="THEN" delay_units="s" delay_min="2" delay_max="3" property_id="3" type_property="EVASION"
+    description="Raise alert event on failed connection">
+    <event value="COMPUTE" event_id="7" 
+           description="Raise alert event on failed connection"
+           boolean_expression="(ocpp.csms_response.type == 'BootNotificationResponse' && ocpp.csms_response.status != 'Accepted')">
+      <!-- Trigger: Raise an alert event indicating a failed connection. -->
+    </event>
+  </property>
+
+</beginning>

@@ -1,0 +1,22 @@
+<beginning>
+    <!-- Property 24: Continuous CSMS Communication.-->
+    <property value="THEN" delay_units="s" delay_min="0+" delay_max="+60" property_id="24" type_property="SECURITY_RULE"
+             description="Continuous CSMS communication : the charging station must send periodic Heartbeat messages to the CSMS within 5 seconds of receiving a Heartbeat">
+        <event value="COMPUTE" event_id="3" 
+               description="Heartbeat message sent by the charging station"
+               boolean_expression="(message.type == ocpp.action.heartbeat &amp;&amp; message.payload.data != null)">
+        </event>
+        <event value="COMPUTE" event_id="4" 
+               description="CSMS response within 5 seconds of receiving a Heartbeat"
+               boolean_expression="(message.type == ocpp.action.response &amp;&amp; timestamp - message.timestamp <= 5)"/>
+        <event value="COMPUTE" event_id="5" 
+               description="3 consecutive unresponsive CSMS"
+               boolean_expression="(message.type == ocpp.action.heartbeat &amp;&amp; (response_count >= 3))">
+            <embedded_functions>
+                void on_unresponsive_csms(){
+                    // log and report to network monitoring system
+                }
+            </embedded_functions>
+        </event>
+    </property>
+</beginning>

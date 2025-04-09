@@ -1,0 +1,12 @@
+```xml
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="47" type_property="ATTACT" description="Probable ICMPv6 Timeout scan (4 different attempts in a row on different ports).">
+  <operator value="TWEEN" delay_units="ms" delay_min="0+" delay_max="10">
+    <event value="COMPUTE" event_id="1" description="ICMPv6 Timeout packet header with a destination port field set (1)" boolean_expression="(icmpv6.type == 11)"/>
+    <event value="COMPUTE" event_id="2" description="ICMPv6 Timeout packet header with another destination port field set (2)" boolean_expression="((icmpv6.type == 11) && (icmpv6.dest_port != icmpv6.dest_port.1) && (ip.src == ip.src.1) && (ip.dst == ip.dst.1))"/>
+  </operator>
+  <operator value="TWEEN" delay_units="ms" delay_min="0+" delay_max="10">
+    <event value="COMPUTE" event_id="3" description="ICMPv6 Timeout packet header with another destination port field set (3)" boolean_expression="((icmpv6.type == 11) && (icmpv6.dest_port != icmpv6.dest_port.1) && (icmpv6.dest_port != icmpv6.dest_port.2) && (ip.src == ip.src.1) && (ip.dst == ip.dst.1))"/>
+    <event value="COMPUTE" event_id="4" description="ICMPv6 Timeout packet header with another destination port field set (4)" boolean_expression="((icmpv6.type == 11) && (icmpv6.dest_port != icmpv6.dest_port.1) && (icmpv6.dest_port != icmpv6.dest_port.2) && (icmpv6.dest_port != icmpv6.dest_port.3) && (ip.src == ip.src.1) && (ip.dst == ip.dst.1))"/>
+  </operator>
+</property>
+```

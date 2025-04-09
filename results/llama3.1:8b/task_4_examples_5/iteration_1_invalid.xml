@@ -1,0 +1,9 @@
+<beginning>
+  <!-- Property 99: Detection of "TajMahal" Malware -->
+  <property value="THEN" delay_units="s" delay_min="0" delay_max="0" property_id="99" type_property="ATTACK" 
+    description="Detection of 'TajMahal' Malware">
+    <event value="COMPUTE" event_id="1" 
+           description="'TajMahal' malware communication"
+           boolean_expression="((http.host == &quot;www.tajmahal.com&quot;) && (ip.src == &quot;192.168.1.100&quot;))"/>
+  </property>
+</beginning>

@@ -1,0 +1,8 @@
+<beginning>
+    <property value="THEN" delay_units="s" delay<｜begin▁of▁sentence｜>min="0+" delay_max="4" property_id="ocppStatusUpdate" type_property="ATTACK" 
+              description="Charging station must report its current charging status to the CSMS.">
+        <event value="COMPUTE" event_id="1" 
+               description="A StatusNotification message is sent whenever the charging status changes."
+               boolean_expression="(ocpp.type == 'StatusNotification')"/>
+    </property>
+</beginning>

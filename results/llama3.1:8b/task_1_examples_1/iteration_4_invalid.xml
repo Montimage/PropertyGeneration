@@ -1,0 +1,24 @@
+<beginning>
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="1" type_property="SECURITY_RULE"
+    description="Charging station initiates a charging session when receiving a valid charging request from a vehicle">
+    <event value="COMPUTE" event_id="1" 
+           description="BootNotification message sent to CSMS"
+           boolean_expression="(ocpp.message == 'BootNotification' and ocpp.type == 'Request')"/>
+    <operator>
+      <event value="COMPUTE" event_id="2" 
+             description="CSMS responds with a BootNotificationResponse within 2 seconds"
+             boolean_expression="(ocpp.type == 'Response' and ocpp.id == 'BootNotificationResponse' and timestamp - ocpp.timestamp <= 2000)"/>
+    </operator>
+    <event value="COMPUTE" event_id="3" 
+           description="CSMS sends an Authorization request within 2 seconds if the status is Accepted"
+           boolean_expression="(ocpp.type == 'Request' and ocpp.id == 'Authorization' and timestamp - ocpp.timestamp <= 2000)"/>
+    <operator>
+      <event value="COMPUTE" event_id="4" 
+             description="CSMS does not respond within 2 seconds, charging station retries sending BootNotification message up to 3 times"
+             boolean_expression="(ocpp.type == 'Response' and ocpp.id == 'BootNotificationResponse' and timestamp - ocpp.timestamp > 2000)"/>
+      <event value="COMPUTE" event_id="5" 
+             description="Charging station raises an alert event indicating a failed connection if it does not receive a valid response after 3 retries"
+             boolean_expression="(ocpp.type == 'Alert' and ocpp.id == 'FailedConnection')"/>
+    </operator>
+  </property>
+</beginning>

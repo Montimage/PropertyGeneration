@@ -1,0 +1,24 @@
+<beginning>
+
+<!-- Property 95: Consecutive UDP packets with increasing IDs -->
+<property value="THEN" delay_units="mms" delay_min="0" delay_max="1000" property_id="95" type_property="ATTACK"
+    description="Consecutive UDP packets with increasing IDs (by more than 10%) in less than 1 ms">
+    <event value="COMPUTE" event_id="1"
+        description="First UDP packet"
+        boolean_expression="(udp) &amp;&amp; (ip.src != ip.dst)" />
+    <event value="COMPUTE" event_id="2"
+        description="Consecutive UDP packet with increasing ID"
+        boolean_expression="(
+            udp
+            &amp;&amp;
+            (
+                udp.id > udp.id.1 * 1.10
+                &amp;&amp;
+                abs(timestamp - timestamp.1) < 1
+            )
+            &amp;&amp;
+            (ip.src == ip.src.1)
+        )" />
+</property>
+
+</beginning>

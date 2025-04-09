@@ -1,0 +1,38 @@
+<beginning>
+  <!-- Property ID: 100 -->
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="100" type_property="SECURITY_RULE"
+            description="Energy Consumption Tracking">
+    <!-- Event 1: MeterValues message sent by charging station -->
+    <event value="COMPUTE" event_id="1" description="MeterValues message sent"
+           boolean_expression="(ocpp.message == 'MeterValues' &amp;&amp; ocpp.payload['energy_consumption'] != null)">
+
+      <!-- Embedded function to calculate energy consumption accuracy -->
+      <embedded_functions>
+        #em_calculate_energy_accuracy(ocpp.payload['energy_consumption'])
+      </embedded_functions>
+
+    </event>
+    <!-- Event 2: CSMS validates and logs received energy data in real time -->
+    <event value="COMPUTE" event_id="2" description="CSMS validates and logs energy data"
+           boolean_expression="(ocpp.message == 'MeterValues' &amp;&amp; ocpp.payload['energy_consumption'] != null &amp;&amp;
+                               (abs(ocpp.payload['energy_consumption'] - meta.energy_consumption) <= 0.5))">
+
+      <!-- Embedded function to calculate energy consumption accuracy -->
+      <embedded_functions>
+        #em_calculate_energy_accuracy(ocpp.payload['energy_consumption'])
+      </embedded_functions>
+
+    </event>
+    <!-- Event 3: CSMS detects missing or inaccurate energy data and triggers corrective action alert -->
+    <event value="COMPUTE" event_id="3" description="CSMS detects missing or inaccurate energy data"
+           boolean_expression="(ocpp.message == 'MeterValues' &amp;&amp; ocpp.payload['energy_consumption'] != null &amp;&amp;
+                               (abs(ocpp.payload['energy_consumption'] - meta.energy_consumption) > 0.5))">
+
+      <!-- Embedded function to trigger corrective action alert -->
+      <embedded_functions>
+        #em_trigger_corrective_action_alert()
+      </embedded_functions>
+
+    </event>
+  </property>
+</beginning>

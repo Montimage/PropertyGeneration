@@ -1,0 +1,16 @@
+prompt_file,model_name,iterations,valid_xml,elapsed_time
+task_1_examples_5.txt,llama3.2:3b,1,False,11.85
+task_1_examples_7.txt,llama3.2:3b,1,True,10.44
+task_1_examples_1.txt,llama3.2:3b,5,False,32.38
+task_5_examples_7.txt,llama3.2:3b,1,True,8.1
+task_2_examples_5.txt,llama3.2:3b,1,True,9.49
+task_3_examples_1.txt,llama3.2:3b,2,True,14.8
+task_2_examples_7.txt,llama3.2:3b,1,False,9.52
+task_5_examples_5.txt,llama3.2:3b,1,True,7.82
+task_4_examples_1.txt,llama3.2:3b,5,False,26.69
+task_4_examples_5.txt,llama3.2:3b,1,True,10.57
+task_5_examples_1.txt,llama3.2:3b,1,False,8.48
+task_3_examples_7.txt,llama3.2:3b,1,False,7.04
+task_3_examples_5.txt,llama3.2:3b,1,False,8.83
+task_2_examples_1.txt,llama3.2:3b,2,True,16.31
+task_4_examples_7.txt,llama3.2:3b,1,False,12.63

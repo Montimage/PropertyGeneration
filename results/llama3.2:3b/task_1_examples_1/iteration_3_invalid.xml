@@ -1,0 +1,22 @@
+<beginning>
+  <!-- Property 100: Charging Station Initiates Session -->
+  <property value="THEN" delay_units="s" delay_min="2" delay_max="3" property_id="100" type_property="SECURITY_RULE"
+    description="Charging station initiates a charging session when receiving a valid charging request from a vehicle">
+    <event value="COMPUTE" event_id="1" 
+           description="Receive a Charging Request message">
+          <boolean_expression>(#is_valid_charging_request(charging_request))</boolean_expression>
+        </event>
+
+    <!-- Event 2: Send BootNotification Message -->
+    <event value="COMPUTE" event_id="2" 
+           description="Send the BootNotification message to CSMS">
+          <boolean_expression #(csms_boot_notification_sent)></boolean_expression>
+        </event>
+
+    <!-- Alert Event 3: Failed Connection -->
+    <event value="COMPUTE" event_id="3" 
+           description="Raise an alert if CSMS does not respond within 2 seconds">
+          <boolean_expression>(#timeout csms_response())</boolean_expression>
+        </event>
+    </property>
+</beginning>

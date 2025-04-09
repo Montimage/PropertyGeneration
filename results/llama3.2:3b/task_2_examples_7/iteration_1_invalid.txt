@@ -1,0 +1,25 @@
+Based on the provided examples, I will generate a new XML property for a scenario with protocols `ftp` and `ip`. Here is the generated XML property:
+
+**Property 50:** Probable FTP connection attempt.
+
+```xml
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="5" property_id="50" type_property="SECURITY">
+    <operator value="THEN" delay_units="s" delay_min="0+" delay_max="3">
+      <event value="COMPUTE" event_id="1" description="FTP request USER"
+             boolean_expression="(#strstr(ftp.packet_request, 'USER') != 0)"/>
+      <event value="COMPUTE" event_id="2" description="FTP request PASS"
+             boolean_expression="((#strstr(ftp.packet_request, 'PASS') != 0)&amp;&amp;((ftp.packet_request_parameter != ftp.packet_request_parameter.1)&amp;&amp;(ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1)))" />
+    </operator>
+    <operator value="THEN" delay_units="s" delay_min="0+" delay_max="3">
+      <event value="COMPUTE" event_id="3" description="FTP request CWD"
+             boolean_expression="((#strstr(ftp.packet_request, 'CWD') != 0)&amp;&amp;((ftp.packet_request_parameter != ftp.packet_request_parameter.1)&amp;&amp;(ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1)))" />
+      <event value="COMPUTE" event_id="4"
+             description="FTP request ECHO"
+             boolean_expression="((#strstr(ftp.packet_request, 'ECHO') != 0)&amp;&amp;((ftp.packet_request_parameter != ftp.packet_request_parameter.1)&amp;&amp;(ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1)))" />
+    </operator>
+</property>
+```
+
+This new property detects a probable FTP connection attempt by analyzing the packet requests for `USER`, `PASS`, `CWD`, and `ECHO` commands. If any of these conditions are met, it triggers an alert.
+
+Note that this is just one possible implementation, and you may need to adjust the boolean expressions or add additional rules to suit your specific use case.

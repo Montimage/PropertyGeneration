@@ -1,0 +1,12 @@
+<beginning>
+<!-- Property 25: High-Frequency DNS Requests to Single Domain - Detects a large number of DNS requests to the same domain within a short time window, potentially indicative of scanning or bot activity. -->
+<property value="THEN" delay_units="ms" delay_min="500" delay_max="2000" property_id="25" type_property="SCANNING"
+   description="High-frequency DNS requests to the same domain.">
+     <event value="COUNT" event_id="1"
+            description="DNS request to a domain"
+            boolean_expression="(dns.qname != '')"/>
+     <event value="COMPUTE" event_id="2"
+            description="Check for high frequency of requests to the same domain within a time window."
+            boolean_expression="(count(dns.qname) &gt;= 10 &amp;&amp; (time_since(dns.qname) &lt;= 5000))"/>
+</property>
+</beginning>

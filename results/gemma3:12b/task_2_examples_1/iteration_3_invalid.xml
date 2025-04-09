@@ -1,0 +1,19 @@
+<beginning>
+  <!-- Property: Charging station sends periodic Heartbeat messages to CSMS. -->
+  <property value="COMPUTE" delay_units="s" delay_min="0" delay_max="0" property_id="1" type_property="SECURITY_RULE" description="Charging station sends periodic Heartbeat messages to CSMS.">
+    <event value="COMPUTE" event_id="1" description="Heartbeat message sent by charging station." boolean_expression="ocpp.message.type == 'Heartbeat'"/>
+    <event value="COMPUTE" event_id="2" description="CSMS responds to Heartbeat within 5 seconds." boolean_expression="ocpp.message.type == 'HeartbeatResponse' &amp;&amp; (BASE.timestamp - BASE.timestamp_heartbeat &lt; 5)"/>
+    <event value="COMPUTE" event_id="3" description="Alert triggered after 3 consecutive missed Heartbeat responses." boolean_expression="em_check_heartbeat_failures(3)"/>
+  </event>
+</property>
+
+  <!-- Embedded function for checking consecutive failures -->
+  <embedded>
+    <function name="em_check_heartbeat_failures" param_count="1">
+      <param name="failure_count" type="integer"/>
+      <description>Checks if the number of consecutive missed Heartbeat responses reaches the specified failure count.</description>
+      <return type="boolean"/>
+      <body/>
+    </function>
+  </embedded>
+</beginning>

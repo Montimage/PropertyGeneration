@@ -1,0 +1,16 @@
+prompt_file,model_name,iterations,valid_xml,elapsed_time
+task_1_examples_5.txt,mistral-nemo:12b,1,False,21.45
+task_1_examples_7.txt,mistral-nemo:12b,1,False,18.34
+task_1_examples_1.txt,mistral-nemo:12b,5,False,137.71
+task_5_examples_7.txt,mistral-nemo:12b,1,True,13.19
+task_2_examples_5.txt,mistral-nemo:12b,1,False,16.83
+task_3_examples_1.txt,mistral-nemo:12b,5,False,109.95
+task_2_examples_7.txt,mistral-nemo:12b,1,False,16.2
+task_5_examples_5.txt,mistral-nemo:12b,5,True,83.9
+task_4_examples_1.txt,mistral-nemo:12b,5,False,111.86
+task_4_examples_5.txt,mistral-nemo:12b,1,True,20.15
+task_5_examples_1.txt,mistral-nemo:12b,1,False,19.17
+task_3_examples_7.txt,mistral-nemo:12b,1,False,12.69
+task_3_examples_5.txt,mistral-nemo:12b,1,False,26.22
+task_2_examples_1.txt,mistral-nemo:12b,5,False,112.0
+task_4_examples_7.txt,mistral-nemo:12b,1,False,21.11

@@ -1,0 +1,12 @@
+<beginning>
+<!-- Property 101: Likely UDP Flood Attack (Single Source) -->
+<property value="TALLY" delay_units="s" delay_min="0+" delay_max="5" property_id="101" type_property="ATTACK" description="Likely UDP Flood Attack (Single Source)">
+  <operator value="TALLY" delay_units="s" delay_min="0+" delay_max="5">
+    <event value="COUNT" event_id="1" description="UDP packet from a specific source IP" boolean_expression="(udp.type != 0) &amp; (ip.src == 192.168.1.100)"/>
+    <event value="COUNT" event_id="2" description="Multiple UDP packets from the same source within a short time" boolean_expression="(udp.type != 0) &amp; (ip.src == 192.168.1.100)"/>
+  </operator>
+  <operator value="THRESHOLD" threshold="100" delay_units="s" delay_min="0+" delay_max="5">
+     <event value="ALERT" event_id="3" description="Alert if the count exceeds the threshold" boolean_expression="true"/>
+  </operator>
+</property>
+</beginning>

@@ -1,0 +1,10 @@
+<beginning>
+  <embedded_functions><![CDATA[
+  //each function name should be prefixed by em_
+
+  static inline int em_check_ip_proto_id(int i){
+    //printf("IP proto ID:%d\n", i);
+  
+    if(i>143 && i<252) return 1;
+    if (i==255) return 1;
+    return <｜begin▁of▁sentence｜>0

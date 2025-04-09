@@ -1,0 +1,9 @@
+<beginning>
+<!-- Property 25: IP Fragment Overlap with Same Identification and Offset Difference Greater Than Length (Potential Evasion).-->
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="25" type_property="EVASION"
+    description="IP fragment overlap with same identification, offset difference greater than length (potential evasion).">
+      <event value="COMPUTE" event_id="3"
+             description="IP fragment followed by another with same ID and offset difference greater than length"
+             boolean_expression="((ip.identification == ip.identification.1) &amp;&amp; ((ip.frag_offset - ip.frag_offset.1) > ip.tot_len) &amp;&amp; (ip.src != ip.dst)))"/>
+</property>
+</beginning>

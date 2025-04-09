@@ -1,0 +1,47 @@
+Okay, let's craft a new XML property. Here's a scenario and the corresponding XML property, designed to be consistent with the provided examples and focusing on a new protocol context.
+
+**Scenario:**
+
+We want to detect if a DNS query is using a particularly long domain name (e.g., longer than 253 characters), which *could* be indicative of a potential DNS amplification attack or a misconfiguration.  We'll focus on the DNS protocol.
+
+**XML Property:**
+
+```xml
+<property id="dns_long_domain"
+          name="DNS Long Domain Query"
+          protocol="dns"
+          description="Detects DNS queries with excessively long domain names, potentially indicating amplification attacks or misconfigurations.">
+  <match type="expression" value="#em_is_long_domain(dns.query_domain)"/>
+  <embedded_functions><![CDATA[
+#include <mmt_core.h>
+#include <dns/mmt_dns.h>
+
+static inline bool em_is_long_domain( const void *domain ){
+  const char *domain_str = (const char*)domain;
+  if( domain_str == NULL ){
+    return false;
+  }
+  return strlen(domain_str) > 253;
+}
+]]></embedded_functions>
+</property>
+```
+
+**Explanation:**
+
+*   **`property id="dns_long_domain"`:**  A unique identifier for this property.
+*   **`name="DNS Long Domain Query"`:** A human-readable name.
+*   **`protocol="dns"`:**  Specifies the protocol this property applies to.
+*   **`description="..."`:**  Provides context for why this property is important.
+*   **`match type="expression" value="#em_is_long_domain(dns.query_domain)"`:** This is the core of the rule.  It uses an embedded function (`em_is_long_domain`) to evaluate an expression.  `dns.query_domain` is assumed to be a field within the DNS protocol data structure that contains the domain name being queried.  The embedded function will return `true` if the domain name length exceeds 253 characters.
+*   **`embedded_functions`:** Contains the C code for the `em_is_long_domain` function.  This function takes a `void*` representing the domain name, casts it to a `char*`, and checks its length using `strlen()`.  A null check is included for robustness.
+
+**Key Considerations & Improvements:**
+
+*   **`dns.query_domain`:**  This is a *placeholder*.  You'll need to replace it with the *actual* field name within your DNS protocol data structure. The correct field name is critical for this rule to work.
+*   **Error Handling:** The embedded function includes a null check.  More robust error handling (e.g., logging) could be added within the function if needed.
+*   **Threshold:** The threshold (253 characters) is based on common DNS limitations.  You might adjust this value based on your specific environment and requirements.
+*   **False Positives:**  While rare, there might be legitimate reasons for long domain names.  Consider the potential for false positives and adjust the rule accordingly.
+*   **Performance:**  Embedded functions can impact performance.  Keep them as efficient as possible.
+
+This property provides a solid foundation for detecting potentially malicious or misconfigured DNS queries based on domain name length. Remember to adapt the field names and threshold to your specific DNS protocol implementation.

@@ -1,0 +1,36 @@
+Based on the provided examples, I'll create a new XML property that matches a scenario of a probable HTTP GET scan (5 different attempts in a row on different URLs).
+
+**Protocol(s):** http, ip
+**Scenario:** Probable HTTP GET scan (5 different attempts in a row on different URLs).
+
+```xml
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="46" type_property="ATTACK"
+    description="Probable HTTP GET scan (5 different attempts in a row on different URLs).">
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+        <event value="COMPUTE" event_id="1"
+            description="HTTP GET packet header with a destination URL field set (1)"
+            boolean_expression="((http.method == 1)&amp;&amp;(ip.src != ip.dst))"/>
+        <event value="COMPUTE" event_id="2"
+            description="HTTP GET packet header with another destination URL field set (2)"
+            boolean_expression="((http.method == 1)&amp;&amp;((http.dest_url != http.dest_url.1)&amp;&amp;((ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1))))"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+        <event value="COMPUTE" event_id="3"
+            description="HTTP GET packet header with another destination URL field set (3)"
+            boolean_expression="((http.method == 1)&amp;&amp;((http.dest_url != http.dest_url.1)&amp;&amp;((http.dest_url != http.dest_url.2)&amp;&amp;((ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1)))))"/>
+        <event value="COMPUTE" event_id="4"
+            description="HTTP GET packet header with another destination URL field set (4)"
+            boolean_expression="((http.method == 1)&amp;&amp;((http.dest_url != http.dest_url.1)&amp;&amp;((http.dest_url != http.dest_url.2)&amp;&amp;((http.dest_url != http.dest_url.3)&amp;&amp;((ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1)))))"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+        <event value="COMPUTE" event_id="5"
+            description="HTTP GET packet header with another destination URL field set (5)"
+            boolean_expression="((http.method == 1)&amp;&amp;((http.dest_url != http.dest_url.1)&amp;&amp;((http.dest_url != http.dest_url.2)&amp;&amp;((http.dest_url != http.dest_url.3)&amp;&amp;((http.dest_url != http.dest_url.4)&amp;&amp;((ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1)))))"/>
+        <event value="COMPUTE" event_id="6"
+            description="HTTP GET packet header with the same destination URL field set (5)"
+            boolean_expression="((http.method == 1)&amp;&amp;((http.dest_url == http.dest_url.4)&amp;&amp;((ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1)))/>"/>
+    </operator>
+</property>
+```
+
+This new XML property should match the scenario of a probable HTTP GET scan (5 different attempts in a row on different URLs) and adhere to the protocol(s) context (http, ip).

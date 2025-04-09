@@ -1,0 +1,16 @@
+prompt_file,model_name,iterations,valid_xml,elapsed_time
+task_1_examples_5.txt,gemma3:12b,1,True,47.9
+task_1_examples_7.txt,gemma3:12b,2,False,77.34
+task_1_examples_1.txt,gemma3:12b,3,True,77.77
+task_5_examples_7.txt,gemma3:12b,2,False,61.84
+task_2_examples_5.txt,gemma3:12b,4,False,114.19
+task_3_examples_1.txt,gemma3:12b,1,True,22.15
+task_2_examples_7.txt,gemma3:12b,2,False,53.86
+task_5_examples_5.txt,gemma3:12b,5,False,98.89
+task_4_examples_1.txt,gemma3:12b,3,True,71.52
+task_4_examples_5.txt,gemma3:12b,3,False,75.15
+task_5_examples_1.txt,gemma3:12b,1,False,49.79
+task_3_examples_7.txt,gemma3:12b,4,True,106.87
+task_3_examples_5.txt,gemma3:12b,4,False,135.12
+task_2_examples_1.txt,gemma3:12b,4,True,94.89
+task_4_examples_7.txt,gemma3:12b,1,False,39.3

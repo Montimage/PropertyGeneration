@@ -1,0 +1,23 @@
+Based on the provided examples, I will generate a new XML property that matches the scenario of detecting "Fragmentation" in the context of the "IP" protocol.
+
+**Example 8:**
+**Description:** Detect Fragmentation
+**Protocol(s):** IP
+**XML Property:**
+```xml
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="81" type_property="EVASION" 
+    description="Detect Fragmentation">
+  <event value="COMPUTE" event_id="1" 
+         description="Fragment Offset > 0"
+         boolean_expression="(ip.fragment_offset > 0)"/>
+  <event value="COMPUTE" event_id="2" 
+         description="Total Length <= MTL (Maximum Transmission Unit)"
+         boolean_expression="((int.total_length <= int.mtu))"/>
+</property>
+```
+In this new property, we are checking for two conditions:
+
+1. The fragment offset is greater than 0, indicating that the packet is a fragment.
+2. The total length of the packet is less than or equal to the Maximum Transmission Unit (MTU), which could indicate fragmentation.
+
+Note: This is just an example and may not be a comprehensive solution for detecting fragmentation in all scenarios.

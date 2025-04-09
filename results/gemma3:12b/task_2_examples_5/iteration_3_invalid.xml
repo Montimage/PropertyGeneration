@@ -1,0 +1,9 @@
+<beginning>
+<!-- Property 100: Detect SYN flood attack based on a high rate of SYN packets without corresponding ACK. -->
+<property value="TREN" delay_units="s" delay_min="0+" delay_max="5" property_id="100" type_property="ATTACK">
+    <operator value="TREN" delay_units="s" delay_min="0+" delay_max="1">
+        <event value="COMPUTE" event_id="1" description="SYN packet" boolean_expression="(tcp.flags.syn == 1)"/>
+        <event value="COMPUTE" event_id="2" description="No ACK received after a short delay" boolean_expression="(tcp.flags.syn == 1 &amp;&amp; (tcp.flags.ack != 1 &amp;&amp; meta.packet_time &gt; 1))"/>
+    </operator>
+</property>
+</beginning>

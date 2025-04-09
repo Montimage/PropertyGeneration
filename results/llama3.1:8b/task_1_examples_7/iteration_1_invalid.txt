@@ -1,0 +1,33 @@
+Based on your prompt, I will create an example of a new XML property.
+
+**Example 7.1:**
+
+**Protocol(s):** TCP/IP
+**Property ID:** 101
+**Type Property:** ATTACK
+**Description:** Probable TCP SYN flood attack (4 different attempts in a row on different ports).
+
+```xml
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="101" type_property="ATTACK" if_satisfied="">
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+        <event value="COMPUTE" event_id="1"
+            description="TCP SYN packet header with a destination port field set (1)"
+            boolean_expression="(tcp.src_port != 0 &amp;&amp; tcp.dest_port == 22)"/>
+        <event value="COMPUTE" event_id="2"
+            description="TCP SYN packet header with another destination port field set (2)"
+            boolean_expression="((tcp.src_port != 0 &amp;&amp; tcp.dest_port != 22)&amp;&amp;(ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1))"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+        <event value="COMPUTE" event_id="3"
+            description="TCP SYN packet header with another destination port field set (3)"
+            boolean_expression="((tcp.src_port != 0 &amp;&amp; tcp.dest_port != 22)&amp;&amp;(tcp.dest_port != 23)&amp;&amp;(ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1))"/>
+        <event value="COMPUTE" event_id="4"
+            description="TCP SYN packet header with another destination port field set (4)"
+            boolean_expression="((tcp.src_port != 0 &amp;&amp; tcp.dest_port != 22)&amp;&amp;(tcp.dest_port != 23)&amp;&amp;(tcp.dest_port != 24)&amp;&amp;(ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1))"/>
+    </operator>
+</property>
+```
+
+This XML property checks for a TCP SYN flood attack by monitoring packets with the same source IP and different destination ports (22, 23, 24) within a short time frame.
+
+Please note that this is just an example and you may need to adjust it according to your specific use case.

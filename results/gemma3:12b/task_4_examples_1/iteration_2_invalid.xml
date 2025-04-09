@@ -1,0 +1,14 @@
+<beginning>
+  <property value="T THEN" delay_units="s" delay_min="0" delay_max="10" property_id="1001" type_property="SECURITY_RULE" description="Charging station must provide accurate energy consumption data during a charging session.">
+    <event value="COMPUTE" event_id="1" description="Charging station sends MeterValues messages during an active charging session." boolean_expression="ocpp.message.type == 'MeterValues' &amp;&amp; ocpp.message.action == 'Report'"/>
+    <event value="COMPUTE" event_id="2" description="Reported energy consumption data accuracy within ±0.5 kWh." boolean_expression="abs(ocpp.message.payload.energy_consumption - csms.expected_energy_consumption) &lt;= 0.5"/>
+  </property>
+  <property value="T THEN" delay_units="s" delay_min="0" delay_max="10" property_id="1002" type_property="SECURITY_RULE" description="CSMS validates and logs energy consumption data.">
+    <event value="COMPUTE" event_id="1" description="CSMS receives MeterValues message." boolean_expression="ocpp.message.type == 'MeterValues' &amp;&amp; ocpp.message.action == 'Report'"/>
+    <event value="COMPUTE" event_id="2" description="CSMS logs the received energy consumption data." boolean_expression="csms.log.energy_consumption == true"/>
+  </property>
+  <property value="F THEN" delay_units="s" delay_min="0" delay_max="10" property_id="1003" type_property="SECURITY_RULE" description="CSMS triggers a corrective action alert if inaccurate data is detected.">
+    <event value="COMPUTE" event_id="1" description="CSMS detects missing or inaccurate energy data." boolean_expression="abs(ocpp.message.payload.energy_consumption - csms.expected_energy_consumption) &gt; 0.5"/>
+    <event value="COMPUTE" event_id="2" description="CSMS triggers a corrective action alert within 10 seconds." boolean_expression="csms.alert.triggered == true &amp;&amp; time_since_detection &lt;= 10"/>
+  </property>
+</beginning>

@@ -1,0 +1,26 @@
+<beginning>
+  <!-- Property ID: 101 -->
+  <property value="THEN" delay_units="s" delay_min="-60+" delay_max="5" property_id="101"
+    type_property="SECURITY_RULE"
+    description="Heartbeat message exchange between charging station and CSMS">
+    <event value="COMPUTE" event_id="101.1"
+           description="Charging Station sends Heartbeat"
+           boolean_expression="(ocpp.message == 'HeartbeatRequest' &amp;&amp; ocpp.type == 'FromBootNotification')"/>
+    <event value="COMPUTE" event_id="101.2"
+           description="CSMS responds with HeartbeatAccepted"
+           boolean_expression="(ocpp.message == 'HeartbeatResponse' &amp;&amp; ocpp.action == 'HeartbeatAccepted'"
+                              "&amp;&amp; ocpp.id == ocpp.id.101.1)"/>
+    <event value="COMPUTE" event_id="101.3"
+           description="CSMS does not respond within 5 seconds"
+           boolean_expression="(NOT EXISTS(ocpp.message == 'HeartbeatResponse' &amp;&amp; ocpp.action == 'HeartbeatAccepted'"
+                              "&amp;&amp; ocpp.id == ocpp.id.101.1) WITHIN 5s AFTER ocpp.id.101.1)"/>
+    <operator value="OR">
+      <event value="COMPUTE" event_id="101.4"
+             description="CSMS fails to respond for 3 consecutive Heartbeat messages"
+             boolean_expression="(ocpp.id.101.3 = ocpp.id.101.2) &amp;&amp; (ocpp.id.101.2 = ocpp.id.101.1))"/>
+    </operator>
+    <event value="ALERT" event_id="101.5"
+           description="Trigger alert for potential communication breakdown"
+           boolean_expression="ocpp.id.101.4"/>
+  </property>
+</beginning>

@@ -1,0 +1,25 @@
+<beginning>
+  <!-- Property: Heartbeat message exchange -->
+  <property value="THEN" delay_units="s" delay_min="60" delay_max="120" property_id="1" type_property="SECURITY_RULE"
+    description="Heartbeat message exchange between EVCS and CSMS">
+    <event value="COMPUTE" event_id="1"
+           description="EVCS sends Heartbeat message to CSMS"
+           boolean_expression="#ocpp_message(protocol='OCPP', id='1.001', type='HEARTBEAT', action='', payload='')"/>
+    <!-- Response: CSMS responds within 5 seconds -->
+    <event value="COMPUTE" event_id="2"
+           description="CSMS responds to Heartbeat message from EVCS"
+           boolean_expression="#ocpp_message(protocol='OCPP', id='1.001', type='HEARTBEAT_CONFIRMATION', action='', payload='')"/>
+    <!-- Error Handling: CSMS does not respond within 3 consecutive Heartbeats -->
+    <event value="COMPUTE" event_id="3"
+           description="CSMS does not respond to 3 consecutive Heartbeat messages from EVCS"
+           boolean_expression="#ocpp_message(protocol='OCPP', id='1.001', type='HEARTBEAT_CONFIRMATION', action='', payload='') == false && #count(ocpp_message(protocol='OCPP', id='1.001', type='HEARTBEAT', action='', payload='')) >= 3">
+      <property value="THEN" delay_units="s" delay_min="0+" delay_max="10" property_id="2" type_property="ALERT"
+        description="Potential communication breakdown detected">
+        <!-- Log and report alert to network monitoring system -->
+        <event value="COMPUTE" event_id="4"
+               description="Log and report alert to network monitoring system"
+               boolean_expression="#log_alert(message='Communication breakdown detected') && #report_alert(message='Communication breakdown detected', severity='CRITICAL')"/>
+      </property>
+    </event>
+  </property>
+</beginning>

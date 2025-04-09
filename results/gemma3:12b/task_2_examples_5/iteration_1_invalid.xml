@@ -1,0 +1,18 @@
+<beginning>
+<!-- Property 22: Detects a potential SYN flood attack by identifying a high volume of SYN packets originating from different source IPs within a short time window.  A SYN flood overwhelms a server by sending a large number of SYN packets without completing the TCP handshake. -->
+<property value="TREN" delay_units="s" delay_min="0+" delay_max="1" property_id="22" type_property="ATTACK">
+   <operator value="TREN" delay_units="s" delay_min="0+" delay_max="0.5">
+     <event value="COMPUTE" event_id="1"
+            description="SYN packet from IP address A"
+            boolean_expression="(tcp.flags.syn == 1)"/>
+     <event value="COMPUTE" event_id="2"
+            description="SYN packet from IP address B within a short timeframe"
+            boolean_expression="((tcp.flags.syn == 1)&amp;&amp;(ip.src != ip.src.1)&amp;&amp;(meta.packet_time - meta.packet_time.1 < 0.2))"/>
+   </operator>
+   <operator value="TREN" delay_units="s" delay_min="0+" delay_max="0.5">
+     <event value="COMPUTE" event_id="3"
+            description="SYN packet from IP address C within a short timeframe"
+            boolean_expression="((tcp.flags.syn == 1)&amp;&amp;(ip.src != ip.src.1)&amp;&amp;(ip.src != ip.src.2)&amp;&amp;(meta.packet_time - meta.packet_time.1 < 0.2))"/>
+   </operator>
+ </property>
+</beginning>

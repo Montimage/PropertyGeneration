@@ -1,0 +1,40 @@
+<beginning>
+  <property>
+    <!-- Define the new XML property -->
+    <name>new_trojan_uri</name>
+    <description>New list of Trojan URI patterns</description>
+    <type>string_list</type>
+    <value>
+      <![CDATA[
+        // List of new Trojan URI patterns
+        char* list_new_trojan_uri[] = {
+          "http://example.com/new-trojan-uri",
+          "https://example2.com/new-trojan-uri-2",
+          // Add more URI patterns here...
+        };
+        
+        // Function to be called when the rules in this file are loaded into MMT-Security
+        void on_load(){
+          int i;
+          int length = sizeof( list_new_trojan_uri ) / sizeof( list_new_trojan_uri[0] );
+          const char* uri;
+          
+          // Create a new hash table
+          table = mmt_hash_create( length );
+          mmt_debug("Rule 33.trojan: Created a table for checking trojans having %d URI", length );
+          
+          // Add items to the hash table
+          for( i=0; i<length; i++ ){
+            uri = list_new_trojan_uri[i];
+            mmt_hash_add( table, uri, strlen(uri), (void*) uri, false );
+          } 
+        }//end on_load()
+        
+        // Function to be called when exiting MMT-Security
+        void on_unload(){
+          mmt_hash_free( table );
+        }//end on_unload()
+      ]]>
+    </value>
+  </property>
+</beginning>

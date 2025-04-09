@@ -1,0 +1,35 @@
+<beginning>
+  <embedded_functions><![CDATA[
+    //each function name should be prefixed by em_
+
+    static inline int em_is_authorized(const char *payload) {
+      // parse payload and check if it contains authorization information
+      return 0; // for demonstration purposes only
+    }
+
+    static inline void em_log_alert() {
+      printf("Failed connection alert logged\n");
+    }
+  ]]></embedded_functions>
+
+  <!-- Property: The charging station must initiate a charging session when it receives a valid charging request from a vehicle. -->
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="1000" property_id="1" type_property="SECURITY_RULE"
+    description="Charging Session Initiation">
+    <!-- Trigger: The charging station sends a BootNotification message to the Central System (CSMS) -->
+    <event value="COMPUTE" event_id="1" 
+           description="BootNotification message sent by CSMS"
+           boolean_expression="#em_is_authorized(mmt_array_get(&amp;trace, 0)->payload) == 1 && mmt_array_get(&amp;trace, 1)->type == 'BootNotification'"/>
+    <!-- Response: The CSMS must respond with a BootNotificationResponse, including a status field (Accepted, Pending, or Rejected). -->
+    <event value="COMPUTE" event_id="2" 
+           description="CSMS responds with BootNotificationResponse"
+           boolean_expression="#em_is_authorized(mmt_array_get(&amp;trace, 0)->payload) == 1 && mmt_array_get(&amp;trace, 2)->type == 'BootNotificationResponse'"/>
+    <!-- Error Handling: If the CSMS does not respond within 2 seconds, the charging station must retry sending the BootNotification message up to 3 times. -->
+    <event value="COMPUTE" event_id="3" 
+           description="CSMS does not respond within 2 seconds"
+           boolean_expression="#em_is_authorized(mmt_array_get(&amp;trace, 0)->payload) == 1 && mmt_array_get(&amp;trace, 3)->type == 'BootNotification'"/>
+    <!-- Error Handling: If the station does not receive a valid response after 3 retries, it must raise an alert event indicating a failed connection. -->
+    <event value="COMPUTE" event_id="4" 
+           description="Failed connection alert"
+           boolean_expression="#em_is_authorized(mmt_array_get(&amp;trace, 0)->payload) == 1 && mmt_array_get(&amp;trace, 4)->type == 'Alert'"/>
+  </property>
+</beginning>

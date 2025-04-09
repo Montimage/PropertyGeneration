@@ -1,0 +1,12 @@
+<beginning>
+<!-- Property 95: Varying UDP payload lengths -->
+<property value="THEN" delay_units="mms" delay_min="0" delay_max="1000" property_id="95" type_property="ANOMALY">
+    <event value="COMPUTE" event_id="1"
+            description="First UDP packet with specific source IP and destination port"
+            boolean_expression="(udp.dst_port == 1234) &amp;&amp; (ip.src != ip.src.0) &amp;&amp; (udp.len != udp.len.0))"/>
+
+    <event value="COMPUTE" event_id="2"
+            description="Second UDP packet with the same source IP and destination port within 1 ms"
+            boolean_expression="(udp.dst_port == 1234) &amp;&amp; (ip.src == ip.src.0) &amp;&amp; (abs(udate - udatetime.0)) <= 1))"/>
+</property>
+</beginning>

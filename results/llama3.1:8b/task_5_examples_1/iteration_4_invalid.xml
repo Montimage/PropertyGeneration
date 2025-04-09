@@ -1,0 +1,45 @@
+<beginning>
+  <!-- This script will load the rules in this file into MMT-Security -->
+  <embedded_functions>
+    <function name="on_load">
+      <!-- This function is called when the rules in this file are being loaded into MMT-Security -->
+      int i;
+      //number of uri
+      int length = sizeof( list_trojan_uri ) / sizeof( list_trojan_uri[0] );
+      const char* uri;
+      
+      //create a new hash table
+      table = mmt_hash_create( length );
+      mmt_debug("Rule 33.trojan: Created a table for checking trojat having %d URI", length );
+      
+      <!-- add items to the hash table -->
+      for( i=0; i<length; i++ ){
+        uri = list_trojan_uri[i];
+        mmt_hash_add( table, uri, strlen(uri), (void*) uri, false );
+      } 
+    </function>
+    
+    <function name="on_unload">
+      <!-- This function is called when exiting MMT-Security -->
+      mmt_hash_free( table );
+    </function>
+  </embedded_functions>
+  
+  <trojan_rule>
+    <name>trojan</name>
+    <description>This rule checks for known trojans.</description>
+    
+    <property name="uri">
+      <type>list_trojan_uri</type>
+      <!-- The list of known trojans -->
+      <value>
+        <!-- This is a list of known trojans -->
+        <?xml version="1.0" encoding="UTF-8"?>
+        <list_trojan_uri>
+          <!-- List of known trojans in the protocol context -->
+          ...
+        </list_trojan_uri>
+      </value>
+    </property>
+  </trojan_rule>
+</beginning>

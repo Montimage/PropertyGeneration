@@ -1,0 +1,11 @@
+<beginning>
+  <property value="T THEN" delay_units="s" delay_min="0" delay_max="2" property_id="1" type_property="SECURITY_RULE" description="Charging station sends BootNotification message">
+    <event value="COMPUTE" event_id="1" description="BootNotification message sent" boolean_expression="(ocpp.message.type == 'BootNotification')"/>
+  </property>
+  <property value="T THEN" delay_units="s" delay_min="0" delay_max="0" property_id="2" type_property="SECURITY_RULE" description="CSMS responds with BootNotificationResponse">
+    <event value="COMPUTE" event_id="2" description="BootNotificationResponse received" boolean_expression="(ocpp.message.type == 'BootNotificationResponse')"/>
+  </property>
+  <property value="T THEN" delay_units="s" delay_min="0" delay_max="0" property_id="3" type_property="SECURITY_RULE" description="CSMS Authorization request sent after BootNotificationResponse Accepted">
+    <event value="COMPUTE" event_id="3" description="Authorization request sent" boolean_expression="(ocpp.message.type == 'AuthorizationRequest' and ocpp.message.action == 'StartSession')"/>
+  </property>
+</beginning>

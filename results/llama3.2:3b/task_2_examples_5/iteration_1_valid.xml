@@ -1,0 +1,15 @@
+<beginning>
+    <property value="THEN" delay_units="s" delay_min="0" delay_max="5" property_id="59" type_property="ATTACK"
+             description="TCP SYN Flood">
+        <operator value="THEN" delay_units="s" delay_min="1" delay_max="3">
+            <event value="COMPUTE" event_id="1"
+                 description="TCP SYN packet received"
+                 boolean_expression="((tcp.syn == 1)&amp;&amp;(ip.src != ip.dst))"/>
+        </operator>
+        <operator value="THEN" delay_units="s" delay_min="2" delay_max="4">
+            <event value="COMPUTE" event_id="2"
+                 description="Multiple TCP SYN packets received within a short time frame"
+                 boolean_expression="((tcp.syn == 1)&amp;&amp;(#strstr(tcp.packet, 'syn') != 0)&amp;&amp;(#count(tcp.packet, tcp.syn) > 5))"/>
+        </operator>
+    </property>
+</beginning>

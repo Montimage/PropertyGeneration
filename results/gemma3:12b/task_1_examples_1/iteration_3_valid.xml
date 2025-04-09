@@ -1,0 +1,7 @@
+<beginning>
+  <property value="COMPUTE" delay_units="ms" delay_min="0" delay_max="2000" property_id="100" type_property="SECURITY_RULE" description="Charging station initiates charging session after receiving a valid charging request.">
+    <event value="COMPUTE" event_id="1" description="Charging station sends a BootNotification message." boolean_expression="ocpp.type == 'BootNotification'"/>
+    <event value="COMPUTE" event_id="2" description="CSMS responds with a BootNotificationResponse." boolean_expression="ocpp.type == 'BootNotificationResponse'"/>
+    <event value="COMPUTE" event_id="3" description="CSMS Authorization request within 2 seconds." boolean_expression="ocpp.message.type == 'AuthorizationRequest'"/>
+  </property>
+</beginning>

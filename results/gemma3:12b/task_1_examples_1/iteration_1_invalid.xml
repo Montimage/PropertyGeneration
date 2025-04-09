@@ -1,0 +1,58 @@
+<beginning>
+  <embedded_functions><![CDATA[
+// Function to check if the BootNotification status is Accepted
+static inline int em_check_boot_notification_status(const char* status) {
+  if (strcmp(status, "Accepted") == 0) {
+    return 1;
+  }
+  return 0;
+}
+
+// Function to check if the Authorization request was sent within the specified time window
+static inline int em_check_authorization_request_time(uint64_t boot_notification_timestamp) {
+  uint64_t current_time = mm_get_time(); // Assuming a function to get current timestamp
+  uint64_t time_difference = current_time - boot_notification_timestamp;
+  return (time_difference >= 0 && time_difference <= 2000); // 2 seconds = 2000 ms
+}
+]]></embedded_functions>
+
+<!-- Property 1: Charging station initiates a charging session after receiving a valid charging request -->
+<property value="T THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="1" type_property="COMPUTE"
+           description="Charging station sends a BootNotification message to the Central System (CSMS) after receiving a valid charging request.">
+  <event value="COMPUTE" event_id="1"
+         description="BootNotification message sent by charging station."
+         boolean_expression="ocpp.message.type == 'BootNotification'"/>
+</property>
+
+<!-- Property 2: CSMS responds with a BootNotificationResponse with status Accepted -->
+<property value="T THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="2" type_property="COMPUTE"
+           description="CSMS responds with a BootNotificationResponse with status Accepted.">
+  <event value="COMPUTE" event_id="1"
+         description="CSMS sends a BootNotificationResponse with status Accepted."
+         boolean_expression="ocpp.message.type == 'BootNotificationResponse' &amp; ocpp.message.payload.status == 'Accepted'"/>
+</property>
+
+<!-- Property 3: CSMS sends an Authorization request within 2 seconds after receiving an Accepted BootNotification -->
+<property value="T THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="3" type_property="COMPUTE"
+           description="CSMS sends an Authorization request within 2 seconds after receiving an Accepted BootNotification.">
+  <event value="COMPUTE" event_id="1"
+         description="CSMS sends an Authorization request."
+         boolean_expression="ocpp.message.type == 'AuthorizationRequest'"/>
+</property>
+
+<!-- Property 4: Charging station retries sending BootNotification message up to 3 times if no response is received within 2 seconds -->
+<property value="T THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="4" type_property="COMPUTE"
+           description="Charging station retries sending BootNotification message up to 3 times if no response is received within 2 seconds.">
+  <event value="COMPUTE" event_id="1"
+         description="Charging station retries sending BootNotification message after timeout."
+         boolean_expression="ocpp.message.type == 'BootNotification'"/>
+</property>
+
+<!-- Property 3: Charging station raises an alert event if it does not receive a valid response after 3 re-tries -->
+<property value="T THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="5" type_property="COMPUTE"
+           description="Charging station raises an alert event indicating a failed connection.">
+  <event value="COMPUTE" event_id="1"
+         description="Charging station raises an alert event."
+         boolean_expression="ocpp.message.type == 'Alert'"/>
+</property>
+</beginning>

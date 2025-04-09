@@ -1,0 +1,18 @@
+**Scenario:** Anomalous DNS query rate exceeding a predefined threshold (e.g., 5 queries per second).
+
+**Protocol(s):** dns
+
+**XML Property:**
+```xml
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="1" property_id="94" type_property="ANOMALY">
+    <event value="COMPUTE" event_id="1"
+            description="DNS query rate exceeds threshold (5 queries/second)"
+            boolean_expression="(dns.qr_count / #time_since_last_event(dns.qr_count) > 5)"/>
+</property>
+```
+
+This property will trigger when the DNS query rate exceeds 5 queries per second. The `qr_count` is incremented each time a DNS query request is detected, and `#time_since_last_event(dns.qr_count)` gives the time elapsed since the last increment event. If the rate of increment exceeds 5 queries/second, an anomaly is flagged.
+
+You can adjust the threshold value (currently set to 5) according to your requirements or specific use case. Also, ensure that you have a proper way to reset the `qr_count` variable when desired to avoid false positives over time.
+
+Additionally, you might want to add a delay to this property to prevent it from being too sensitive and triggering too frequently for minor fluctuations in DNS query rates. In the provided XML, there's a 1-second delay before re-evaluating the condition, which can be adjusted according to your needs.

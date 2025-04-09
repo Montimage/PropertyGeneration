@@ -1,0 +1,40 @@
+**Scenario:** Ensure all HTTP traffic is using HTTPS and has a valid SSL certificate with a common name (CN) matching the server's hostname or IP address. Block any non-HTTPS traffic on port 80.
+
+**Protocol(s):** http, https, ssl, ip
+
+**XML Property:**
+
+```xml
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="80" type_property="SECURITY">
+  <event value="COMPUTE" event_id="1" description="HTTP or HTTPS traffic on port 80 or 443">
+    ( (
+      ( http.port == 80 || http.port == 443 ) &&
+      ( http.packet_count > 0 )
+    ) ||
+    ( ip.port == 80 && ip.packet_count > 0 )
+    )
+  </event>
+  <event value="COMPUTE" event_id="2" description="HTTPS with valid SSL certificate and matching CN">
+    (
+      (
+        https.packet_count > 0 &&
+        ssl.certificate_valid &&
+        ssl.common_name.match(ip.client_addr) &&
+        #em_check_common_name(ssl.common_name, ip.client_addr)
+      )
+    ) ||
+    ( ip.port == 80 && ip.packet_count > 0 )
+    )
+  </event>
+</property>
+
+<embedded_functions><![CDATA[
+static inline bool em_check_common_name(const char *cn, const char *addr) {
+  // Implement common name check logic here
+  // For example: compare cn with addr or IP address pattern
+  return (strcmp(cn, addr) == 0 || strcmp(cn, inet_ntoa(inet_addr(addr)))) ? true : false;
+}
+]]></embedded_functions>
+```
+
+This XML property will first ensure that the traffic is either HTTP on port 80 or HTTPS on port 443. If it's not, and the port is 80, it will be considered non-HTTPS traffic and blocked. For HTTPS traffic, it will further check if the SSL certificate is valid and if the common name (CN) matches the server's hostname or IP address using an embedded function `em_check_common_name()`.

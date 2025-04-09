@@ -1,0 +1,10 @@
+<beginning>
+  <property value="TREAT" delay_units="ms" delay_min="0" delay_max="100" property_id="95" type_property="MALWARE">
+    <event event_id="1" value="COMPUTE" description="Detect suspicious DNS queries">
+      <boolean_expression>(dns.flags &amp; 0x0002) == 0x0002</boolean_expression>
+    </event>
+    <event event_id="2" value="COMPUTE" description="Another suspicious DNS query">
+      <boolean_expression>(dns.flags &amp; 0x0002) == 0x0002</boolean_expression>
+    </event>
+  </property>
+</beginning>

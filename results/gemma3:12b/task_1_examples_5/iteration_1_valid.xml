@@ -1,0 +1,16 @@
+<beginning>
+<!-- Property 49: Detection of Slowloris Attack -->
+<property value="THEN" delay_units="s" delay_min="0" delay_max="0" property_id="49" type_property="ATTACK"
+   description="Detection of Slowloris Attack - Multiple incomplete HTTP requests from the same source IP">
+   <event value="COMPUTE" event_id="1"
+          description="First incomplete HTTP request"
+          boolean_expression="(http.request_content_length &lt; 100 AND http.status_code &lt; 400)"/>
+   <event value="COMPUTE" event_id="2"
+          description="Second incomplete HTTP request from the same IP within a short timeframe"
+          boolean_expression="(http.request_content_length &lt; 100 AND http.status_code &lt; 400 AND ip.src == ip.src.1 AND http.method == http.method.1 AND http.host == http.host.1 AND (ip.time - ip.time.1) &lt; 10)"/>
+   <event value="COMPUTE" event_id="3"
+          description="Third incomplete HTTP request from the same IP within a short timeframe"
+          boolean_expression="(http.request_content_length &lt; 100 AND http.status_code &lt; 400 AND ip.src == ip.src.2 AND http.method == http.method.2 AND http.host == http.host.2 AND (ip.time - ip.time.2) &lt; 10)"/>
+</property>
+
+</beginning>

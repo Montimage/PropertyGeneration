@@ -1,0 +1,37 @@
+Based on the provided C code snippet, it appears to be part of a security system that checks for malicious functions in executable files. The function `on_load()` adds a list of URIs to a hash table for checking trojans.
+
+To generate a new XML property that matches this scenario and adheres to the protocol(s) context, I will create an XML element with a name that reflects its purpose, similar to the existing `rule` element. Here's an example:
+
+```xml
+<property>
+    <name>newTrojanUri</name>
+    <type>stringArray</type>
+    <description>New URI to add to the table for checking trojans.</description>
+    <protocol>MMT-Security Protocol</protocol>
+    <context>Security System Context</context>
+    <xml>
+        <array>
+            <element>
+                <name>http://example.com/trojan1</name>
+                <value>http://example.com/trojan1</value>
+            </element>
+            <element>
+                <name>https://example.net/trojan2</name>
+                <value>https://example.net/trojan2</value>
+            </element>
+        </array>
+    </xml>
+</property>
+```
+
+This XML property has the following attributes:
+
+*   `<name>`: The name of the property, which reflects its purpose.
+*   `<type>`: Specifies that this property contains a string array.
+*   `<description>`: Provides a brief description of the property.
+*   `<protocol>`: Indicates the protocol context in which this property is used.
+*   `<context>`: Clarifies the security system's context where this property is applied.
+
+The XML element also includes an `array` structure containing two `element` sub-elements, each representing a new URI to add to the table for checking trojans. The values of these URIs match those found in the provided C code snippet.
+
+Please note that you may need to adjust the properties and their types according to your specific requirements and the XML schema used by your application or system.

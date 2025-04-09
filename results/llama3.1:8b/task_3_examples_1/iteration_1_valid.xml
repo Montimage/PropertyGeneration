@@ -1,0 +1,50 @@
+<beginning>
+  <!-- Property description -->
+  <property value="THEN" delay_units="s" delay_min="0+" delay_max="4" property_id="10" type_property="SECURITY_RULE"
+            description="Charging station reports accurate real-time charging status updates to CSMS.">
+    <!-- Context: Charging session starts, pauses or completes -->
+    <event value="COMPUTE" event_id="1"
+           description="StatusNotification message is sent with Charging status update"
+           boolean_expression="(ocpp.message == 'StatusNotification') &amp;&amp; (ocpp.payload['status'] == 'Charging' | ocpp.payload['status'] == 'Paused' | ocpp.payload['status'] == 'Finished')"/>
+    <!-- Trigger: A StatusNotification message must be sent whenever the charging status changes -->
+  </property>
+  
+  <!-- Property description -->
+  <property value="THEN" delay_units="s" delay_min="0+" delay_max="4" property_id="11" type_property="SECURITY_RULE"
+            description="CSMS logs and acknowledges status update within 3 seconds.">
+    <!-- Context: Charging station sends StatusNotification message with Charging status update -->
+    <event value="COMPUTE" event_id="2"
+           description="CSMS logs and acknowledges status update"
+           boolean_expression="(ocpp.message == 'StatusNotification') &amp;&amp; (ocpp.payload['status'] == 'Charging' | ocpp.payload['status'] == 'Paused' | ocpp.payload['status'] == 'Finished')"/>
+    <!-- Trigger: CSMS must log and acknowledge the status update within 3 seconds -->
+    <event value="COMPUTE" event_id="3"
+           description="Status update is acknowledged by CSMS"
+           boolean_expression="(ocpp.message == 'StatusNotification Acknowledgement') &amp;&amp; (ocpp.payload['status'] == 'Charging' | ocpp.payload['status'] == 'Paused' | ocpp.payload['status'] == 'Finished')"/>
+  </property>
+  
+  <!-- Property description -->
+  <property value="THEN" delay_units="s" delay_min="0+" delay_max="4" property_id="12" type_property="SECURITY_RULE"
+            description="Charging station retries sending status update within 5 seconds if not acknowledged.">
+    <!-- Context: Charging station sends StatusNotification message with Charging status update -->
+    <event value="COMPUTE" event_id="4"
+           description="Status update is not acknowledged by CSMS"
+           boolean_expression="(ocpp.message == 'StatusNotification') &amp;&amp; (ocpp.payload['status'] == 'Charging' | ocpp.payload['status'] == 'Paused' | ocpp.payload['status'] == 'Finished')"/>
+    <!-- Trigger: Charging station retries sending status update within 5 seconds if not acknowledged -->
+    <event value="COMPUTE" event_id="5"
+           description="Status update is resent by charging station"
+           boolean_expression="(ocpp.message == 'StatusNotification') &amp;&amp; (ocpp.payload['status'] == 'Charging' | ocpp.payload['status'] == 'Paused' | ocpp.payload['status'] == 'Finished')"/>
+  </property>
+  
+  <!-- Property description -->
+  <property value="THEN" delay_units="s" delay_min="0+" delay_max="4" property_id="13" type_property="SECURITY_RULE"
+            description="System raises alert if 3 consecutive retries fail to send status update.">
+    <!-- Context: Charging station retries sending status update within 5 seconds if not acknowledged -->
+    <event value="COMPUTE" event_id="6"
+           description="Charging station fails to send status update for the third time"
+           boolean_expression="(ocpp.message == 'StatusNotification') &amp;&amp; (ocpp.payload['status'] == 'Charging' | ocpp.payload['status'] == 'Paused' | ocpp.payload['status'] == 'Finished')"/>
+    <!-- Trigger: System raises alert if 3 consecutive retries fail to send status update -->
+    <event value="COMPUTE" event_id="7"
+           description="System logs and reports alert for diagnostic purposes"
+           boolean_expression="(ocpp.message == 'Alert') &amp;&amp; (ocpp.payload['status'] == 'Charging' | ocpp.payload['status'] == 'Paused' | ocpp.payload['status'] == 'Finished')"/>
+  </property>
+</beginning>

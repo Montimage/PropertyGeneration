@@ -1,0 +1,22 @@
+**Scenario:** Probable TCP SYN Flooding attack.
+
+**Protocol(s):** tcp, ip
+
+**XML Property:**
+
+```xml
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="5" property_id="48" type_property="ATTACK" description="Probable TCP SYN Flooding attack (more than 3 SYN packets in a row with different source ports).">
+  <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="5">
+    <event value="COMPUTE" event_id="1"
+            description="TCP SYN packet header with a different source port"
+            boolean_expression="(tcp.syn == 1) &amp;&amp; (tcp.source_port != tcp.source_port.1 &amp;&amp; tcp.source_port != tcp.source_port.-1 &amp;&amp; tcp.source_port != tcp.source_port.-2))"/>
+    <event value="COMPUTE" event_id="2"
+            description="More than 3 SYN packets in a row with different source ports"
+            boolean_expression="(tcp.syn == 1) &amp;&amp; (tcp.packets_count > 3) &amp;&amp; (ip.src != ip.dst))"/>
+  </operator>
+</property>
+```
+
+**Explanation:**
+
+This new XML property defines a rule for detecting possible TCP SYN Flooding attacks. It checks for SYN packets with different source ports and counts the number of such packets. If more than 3 such packets are detected in a row, an alert is triggered, indicating a potential SYN flooding attack. The `delay_min` and `delay_max` values have been set to 5 milliseconds each to allow for a reasonable time window within which multiple SYN packets can be considered part of the same potential attack.

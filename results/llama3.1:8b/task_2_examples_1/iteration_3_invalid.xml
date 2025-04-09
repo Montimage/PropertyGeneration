@@ -1,0 +1,18 @@
+<beginning>
+  <!-- Property 1: Heartbeat message sent by charging station -->
+  <property value="THEN" delay_units="s" delay_min="60+" delay_max="0" property_id="1" type_property="SECURITY_RULE"
+    description="Charging point sends periodic Heartbeat messages to CSMS">
+    <event value="COMPUTE" event_id="1" 
+           description="Heartbeat message sent by charging station"
+           boolean_expression="((protocol_name = 'ocpp') &amp;&amp; (message_type = 'HEARTBEAT') &amp;&amp; (timestamp - previous_timestamp >= 60))"/>
+    <event value="COMPUTE" event_id="2" 
+           description="CSMS responds within 5 seconds"
+           boolean_expression="((protocol_name = 'ocpp') &amp;&amp; (message_type = 'RESPONSE') &amp;&amp; (timestamp - previous_timestamp <= 5))"/>
+    <event value="COMPUTE" event_id="3" 
+           description="CSMS does not respond to 3 consecutive Heartbeat messages"
+           boolean_expression="((protocol_name = 'ocpp') &amp;&amp; (message_type = 'HEARTBEAT') &amp;&amp; (count_of_unresponded_heartbeats >= 3))"/>
+    <event value="COMPUTE" event_id="4" 
+           description="Charging station triggers alert for potential communication breakdown"
+           boolean_expression="(protocol_name = 'ocpp' &amp;&amp; message_type = 'ALERT')"/>
+  </property>
+</beginning>

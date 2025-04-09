@@ -1,0 +1,19 @@
+<beginning>
+    <!-- Property 102: The charging station must provide accurate energy consumption data during a charging session -->
+    <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="102" type_property="SECURITY_RULE" 
+              description="Accurate energy consumption reporting">
+        <event value="COMPUTE" event_id="1" 
+               description="Charging session initiated"
+               boolean_expression="(ocpp.action == 'request') &amp;&amp; (ocpp.type == 'start_session')"
+               embedded_functions="void on_load(){ printf('Charging session started\n'); }"/>
+        <event value="COMPUTE" event_id="2" 
+               description="MeterValues message received"
+               boolean_expression="(ocpp.message == 'MeterValues') &amp;&amp; (ip.protocol == 'ocpp')"
+               boolean_expression="((ocpp.payload.type == 'energy') &amp;&amp; ((ocpp.payload.value > 0) |&amp;(ocpp.payload.value < 0)))"
+               embedded_functions="void on_satisfied(){ printf('Energy consumption reported: %f kWh\n', occp.payload.value); }"/>
+        <event value="COMPUTE" event_id="3" 
+               description="Charging session completed"
+               boolean_expression="(ocpp.action == 'complete') &amp;&amp; (ocpp.type == 'end_session')"
+               embedded_functions="void on_satisfied(){ printf('Charging session ended\n'); }"/>
+</property>
+</beginning>

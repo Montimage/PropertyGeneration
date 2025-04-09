@@ -1,0 +1,51 @@
+<beginning>
+  <embedded_functions><![CDATA[
+    static inline int em_check_ocpp_msg_type(const char *msg_type) {
+      if (strcmp(msg_type, "BootNotification") == 0 ||
+          strcmp(msg_type, "BootNotificationResponse") == 0 ||
+          strcmp(msg_type, "AuthorizationRequest") == 0) {
+        return 1;
+      }
+      return 0;
+    }
+
+    static inline int em_check_ocpp_status(const char *status) {
+      if (strcmp(status, "Accepted") == 0) {
+        return 1;
+      }
+      return 0;
+    }
+  ]]></embedded_functions>
+
+  <!-- Property 1: Charging Session Initiation -->
+  <property value="THEN" delay_units="ms" delay_min="-2000" delay_max="0" property_id="1" type_property="SECURITY_RULE"
+            description="Charging station initiates charging session when receiving valid request">
+    <event value="COMPUTE" event_id="1"
+           description="BootNotification received from Vehicle"
+           boolean_expression="(ocpp.message == 'BootNotification')"/>
+    <operator value="AND"/>
+    <event value="COMPUTE" event_id="2"
+           description="CSMS responds with Accepted status within 2 seconds"
+           boolean_expression="(em_check_ocpp_msg_type(ocpp.payload.BootNotificationResponse.status) == 1) AND (em_check_ocpp_status(ocpp.payload.BootNotificationResponse.status) == 1))"/>
+    <event value="COMPUTE" event_id="3"
+           description="AuthorizationRequest sent within 2 seconds after Accepted status"
+           boolean_expression="(em_check_ocpp_msg_type(ocpp.payload.AuthorizationRequest.message) == 1) AND (ocpp.payload.AuthorizationRequest.timestamp - ocpp.payload.BootNotificationResponse.timestamp &lt;= 2000))"/>
+  </property>
+
+  <!-- Property 2: Retry and Alert on Connection Failure -->
+  <property value="THEN" delay_units="ms" delay_min="5000" delay_max="0" property_id="2" type_property="EVASION"
+            description="Charging station retries BootNotification up to 3 times on CSMS failure">
+    <event value="COMPUTE" event_id="1"
+           description="BootNotification send failed (no response from CSMS)"
+           boolean_expression="(ocpp.message == 'BootNotification') AND (NOT em_check_ocpp_msg_type(ocpp.payload.BootNotificationResponse.status)))"/>
+    <operator value="AND"/>
+    <event value="COMPUTE" event_id="2"
+           description="Retry counter less than 3"
+           boolean_expression="(retry_counter &lt; 3)"/>
+    <operator value="OR"/>
+    <event value="COMPUTE" event_id="3"
+           description="Alert raised after 3 failed retries"
+           boolean_expression="(retry_counter == 3)"/>
+  </property>
+
+</beginning>

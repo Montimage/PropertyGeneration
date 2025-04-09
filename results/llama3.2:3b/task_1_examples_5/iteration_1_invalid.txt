@@ -1,0 +1,58 @@
+Here is an example of a new XML property that matches the scenario of detecting a specific type of malware:
+
+**Property ID:** 40
+**Protocol(s):** http, ip
+**Description:** Detection of a new ransomware variant
+
+**XML Property:**
+```xml
+<property value="THEN" delay_units="s" delay_min="0" delay_max="0" property_id="40" type_property="ATTACK">
+    <event value="COMPUTE" event_id="1" description="Malware signature match" boolean_expression="(mmt_hash_search(wannacry_table, malware_signature) == 1)"/>
+    <event value="COMPUTE" event_id="2" description="Block traffic to infected hosts" boolean_expression="(ip.src != ip.dst)"/>
+</property>
+
+<embedded_functions>
+<![CDATA[
+static mmt_hash_t *wannacry_table = NULL;
+
+static inline int mmt_hash_search(const char *str){
+   return ( mmt_hash_search(wannacry_table, str, strlen(str)) != NULL );
+}
+
+const char* malware_signature[] = {
+"malware1",
+"malware2",
+"malware3"
+};
+
+//This fuction is called when the rules in this files being loaded into MMT-Security
+void on_load(){   
+   int i;
+   int length = sizeof(malware_signature) / sizeof(malware_signature[0]);
+   const char*str;
+
+   //create a new hash table
+   wannacry_table = mmt_hash_create(length);
+   mmt_debug("Rule 40: Created a table for checking WannaCry having %d malware signatures", length);
+
+   //add items to the hash table
+   for( i=0; i<length; i++ ){
+      str = malware_signature[i];
+      
+      if( !mmt_hash_add(wannacry_table, str, strlen(str), (void*)str, false) )
+         break;
+   }
+}//end on_load()
+
+//This fuction is called when exiting MMT-Security
+void on_unload(){
+   mmt_hash_free(wannacry_table);
+}//end on_unload()
+```
+**Explanation:**
+
+* This property uses a "THEN" operator to trigger the detection of malware.
+* The first event checks if the malware signature matches using the `mmt_hash_search` function.
+* If a match is found, the second event blocks traffic to infected hosts.
+
+Note that this example assumes the existence of a `wannacry_table` hash table and a set of malware signatures. You will need to create these tables and populate them with data in order for this property to work correctly.

@@ -1,0 +1,10 @@
+<beginning>
+    <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="99" type_property="SECURITY_RULE"
+             description="Charging Station must send BootNotification to CSMS within 2 seconds after receiving a valid charging request">
+        <event value="COMPUTE" event_id="1" 
+               description="BootNotification sent by the Charging Station to the Central System (CSMS)"/>
+        <event value="COMPUTE" event_id="2" 
+               description="CSMS responds with BootNotificationResponse within 2 seconds"
+               boolean_expression="(timestamp - boot_notification_sent_time < 2000)"/>
+    </property>
+</beginning>

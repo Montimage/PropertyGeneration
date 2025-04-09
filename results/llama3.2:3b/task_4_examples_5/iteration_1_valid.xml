@@ -1,0 +1,12 @@
+<beginning>
+  <!-- Property 42: Detection of Fileless Malware-->
+  <property value="THEN" delay_units="s" delay_min="0" delay_max="0" property_id="42" type_property="ATTACK"
+    description="Detection of Fileless Malware">
+    <event value="COMPUTE" event_id="1"
+           description="SMB client/server intend connecting fileless malware host"
+           boolean_expression="( #em_check_Fileless_Malware(http.host) == 1 )"/>
+    <event value="COMPUTE" event_id="2"
+           description="File access pattern mismatch"
+           boolean_expression="(ip.src != ip.dst)&amp;&amp;(ip.proto_port != 445)"/>
+  </property>
+</beginning>

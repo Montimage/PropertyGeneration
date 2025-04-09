@@ -1,0 +1,45 @@
+<beginning>
+  <!-- Property 101: Periodic Heartbeat messages for continuous communication -->
+  <property value="THEN" delay_units="s" delay_min="-60+" delay_max="5+" property_id="101"
+            type_property="SECURITY_RULE" description="Ensure periodic Heartbeat messages with CSMS response">
+    <!-- Context: Receive Heartbeat message from EVCS -->
+    <event value="COMPUTE" event_id="1"
+           description="Receive Heartbeat message from EVCS"
+           boolean_expression="(ocpp.message == 'Heartbeat' &amp;&amp; ocpp.type == 'FromBootNotification')"/>
+
+    <!-- Trigger: CSMS responds to Heartbeat within 5 seconds -->
+    <event value="COMPUTE" event_id="2"
+           description="CSMS responds to Heartbeat within 5 seconds"
+           boolean_expression="(ocpp.message == 'Heartbeat' &amp;&amp; ocpp.type == 'ToBootNotification'
+                                 &amp;&amp; ocpp.id == heartbeat.id &amp;&amp;
+                                (timestamp - heartbeat.timestamp) <= 5000)"/>
+
+    <!-- Error Recovery: Alert on consecutive missed Heartbeats -->
+    <event value="COMPUTE" event_id="3"
+           description="Consecutive missed Heartbeats trigger alert"
+           boolean_expression="(missed_heartbeats >= 3 &amp;&amp; last_missed_heartbeat_timestamp + 60000 <= timestamp)"/>
+
+    <!-- Reactive function to log and report alert -->
+    <embedded_functions>
+      void on_rule_satisfied() {
+        if (event_id == 3) {
+          log("Alert: Potential communication breakdown with CSMS");
+          report_alert_to_network_monitoring();
+        }
+      }
+
+      int missed_heartbeats = 0;
+      long last_missed_heartbeat_timestamp = 0;
+
+      void update_missed_heartbeats() {
+        if (event_id == 1) {
+          missed_heartbeats++;
+          last_missed_heartbeat_timestamp = timestamp;
+        } else if (event_id == 2) {
+          missed_heartbeats = 0;
+          last_missed_heartbeat_timestamp = 0;
+        }
+      }
+    </embedded_functions>
+  </property>
+</beginning>

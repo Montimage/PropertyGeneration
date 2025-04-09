@@ -1,0 +1,23 @@
+<beginning>
+  <!-- Property 1: The charging station must provide accurate energy consumption data during a charging session. Ref: https://www.openchargepointprotocol.org/ -->
+  <property value="THEN" delay_units="s" delay_min="-10" delay_max="+10" property_id="1" type_property="SECURITY_RULE"
+            description="The charging station reports MeterValues messages containing energy usage data to the CSMS in real-time">
+    <event value="COMPUTE" event_id="3" 
+           description="MeterValues message sent by the charging station"
+           boolean_expression="(ocpp.protocol == ' MeterValues' &amp;&amp; ocpp.action == 'send')"/>
+    <event value="COMPUTE" event_id="4" 
+           description="CSMS receives and validates MeterValues message from charging station"
+           boolean_expression="(csms.protocol == 'MeterValues' &amp;&amp; csmssubscribe.action == 'validate')"/>
+  </property>
+  
+  <!-- Error handling: CSMS detects missing or inaccurate energy data -->
+  <property value="THEN" delay_units="s" delay_min="-10" delay_max="+10" property_id="2" type_property="ATTACK"
+            description="CSMS detects and logs issue with MeterValues message">
+    <event value="COMPUTE" event_id="5" 
+           description="Missing or inaccurate energy data in MeterValues message from charging station"
+           boolean_expression="(csms.error_code != 0 &amp;&amp; csmssubscribe.action == 'log')"/>
+    <event value="COMPUTE" event_id="6" 
+           description="CSMS triggers corrective action alert"
+           boolean_expression="(csms.alert_level == 'critical' &amp;&amp; csmssubscribe.action == 'alert')"/>
+  </property>
+</beginning>

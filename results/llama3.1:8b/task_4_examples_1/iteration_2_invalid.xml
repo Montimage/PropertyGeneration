@@ -1,0 +1,21 @@
+<beginning>
+  <property value="THEN" delay_units="s" delay_min="0" delay_max="10" property_id="1" type_property="SECURITY_RULE" description="Energy Consumption Tracking">
+    <!-- Context: Charging Station sends MeterValues message to CSMS -->
+    <event value="COMPUTE" event_id="1" description="Charging Station sends MeterValues message" boolean_expression="(ocpp.message == 'MeterValues') &amp;&amp; (ocpp.payload[0] == 1)"/>
+    
+    <!-- Trigger: Energy consumption data is reported by the Charging Station -->
+    <event value="COMPUTE" event_id="2" description="Energy consumption data is reported" boolean_expression="(ocpp.message == 'MeterValues') &amp;&amp; (abs(ocpp.payload[0] - ocpp.payload[1]) <= 0.5)"/>
+    
+    <!-- Error Handling: Missing or inaccurate energy data -->
+    <event value="COMPUTE" event_id="3" description="Error handling for missing or inaccurate energy data" boolean_expression="(ocpp.message == 'MeterValues') &amp;&amp; (abs(ocpp.payload[0] - ocpp.payload[1]) > 0.5)">
+      <!-- Corrective Action Alert -->
+      <event value="COMPUTE" event_id="4" description="Trigger corrective action alert" boolean_expression="(timestamp - ocpp.timestamp) <= 10"/>
+      
+      <!-- Log issue and notify network monitoring system -->
+      <event value="COMPUTE" event_id="5" description="Log issue and notify network monitoring system" boolean_expression="true"/>
+    </event>
+    
+    <!-- Reactive Function: Execute action when property condition is met -->
+    <if_satisfied>em_execute_action</if_satisfied>
+  </property>
+</beginning>

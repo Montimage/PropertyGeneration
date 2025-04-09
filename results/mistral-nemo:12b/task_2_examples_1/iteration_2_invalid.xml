@@ -1,0 +1,34 @@
+<beginning>
+  <!-- Property 1001: Continuous Heartbeat Communication -->
+  <property value="THEN" delay_units="s" delay_min="-60+" delay_max="5" property_id="1001" type_property="SECURITY_RULE"
+    description="Charging point sends periodic Heartbeat messages to CSMS">
+    <event value="COMPUTE" event_id="1" description="Heartbeat message sent by charging station"
+      boolean_expression="(ocpp.message == 'Heartbeat' &amp;&amp; ocpp.type == 'Request')"/>
+  </property>
+
+  <!-- Property 1002: CSMS Response to Heartbeat -->
+  <property value="THEN" delay_units="s" delay_min="-5+" delay_max="0" property_id="1002" type_property="SECURITY_RULE"
+    description="CSMS responds to Heartbeat message">
+    <event value="COMPUTE" event_id="2" description="Heartbeat Response from CSMS"
+      boolean_expression="(ocpp.message == 'Heartbeat' &amp;&amp; ocpp.type == 'Response' &amp;&amp; ocpp.action == 'StatusNotification')"/>
+  </property>
+
+  <!-- Property 1003: Heartbeat Alert -->
+  <property value="IF_SATISFIED" delay_units="s" delay_min="-60+" delay_max="5" property_id="1003" type_property="ATTACK"
+    description="Alert event triggered after 3 consecutive failed Heartbeats">
+    <event value="COMPUTE" event_id="3" description="Three consecutive failed Heartbeats"
+      boolean_expression="(ocpp.message != 'Heartbeat' || ocpp.type != 'Request') &amp;&amp; counter('1001', 'failed') >= 3"/>
+    <action>Log the alert and report to network monitoring system</action>
+  </property>
+
+  <!-- Counter property for Heartbeat failures -->
+  <counter id="1004" event_id="1" reset_event_id="2">
+    <event value="COMPUTE" description="Heartbeat failed (no response)">
+      <boolean_expression>(ocpp.message == 'Heartbeat' &amp;&amp; ocpp.type == 'Request')</boolean_expression>
+    </event>
+    <reset_event id="2" value="COMPUTE">
+      <boolean_expression>(ocpp.message == 'Heartbeat' &amp;&amp; ocpp.action == 'StatusNotification')</boolean_expression>
+    </reset_event>
+  </counter>
+
+</beginning>

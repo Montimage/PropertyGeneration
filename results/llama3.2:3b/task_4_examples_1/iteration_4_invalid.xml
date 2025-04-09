@@ -1,0 +1,16 @@
+<beginning>
+    <!-- Property 1002: The charging station must provide accurate energy consumption data during a charging session. -->
+    <property value="THEN" delay_units="s" delay_min="-30" delay_max="0" property_id="1002" type_property="SECURITY_RULE"
+              description="Energy consumption tracking">
+        <event value="COMPUTE" event_id="3" 
+               description="MeterValues message received from charging station"
+               boolean_expression="(message.type == \"MeterValues\") &amp;&amp; (meta.action == \"GET\" &amp;&amp; meta.id == \" meter_data\")"/>
+        <event value="COMPUTE" event_id="4" 
+               description="Energy usage data within ±0.5 kWh accuracy"
+               boolean_expression="(meta.payload.meter_usage &gt;= (meta.payload.energy_used - 0.5) &amp;&amp;
+                                  meta.payload.meter_usage &lt;= (meta.payload.energy_used + 0.5))"/>
+        <event value="COMPUTE" event_id="5" 
+               description="CSMS logs and notifies network monitoring system"
+               boolean_expression="(logging.meter_log != NULL) &amp;&amp; (logging.notify_network != NULL)"/>
+    </property>
+</beginning>

@@ -1,0 +1,33 @@
+<beginning>
+  <!-- Property: Charging station sends periodic Heartbeat messages. -->
+  <property value="T THEN" delay_units="s" delay_min="0" delay_max="0" property_id="1" type_property="SECURITY_RULE"
+             description="Charging station sends periodic Heartbeat messages to the CSMS.">
+    <event value="COMPUTE" event_id="1"
+           description="Charging station sends a Heartbeat message."
+           boolean_expression="ocpp.message.type == 'Heartbeat'"/>
+  </property>
+
+  <!-- Property: CSMS responds to Heartbeat messages within 5 seconds. -->
+  <property value="T THEN" delay_units="s" delay_min="0" delay_max="5" property_id="2" type_property="SECURITY_RULE"
+             description="CSMS responds to Heartbeat messages within 5 seconds.">
+    <event value="COMPUTE" event_id="2"
+           description="CSMS sends a response to a Heartbeat message."
+           boolean_expression="ocpp.message.type == 'HeartbeatResponse'"/>
+  </property>
+
+  <!-- Property: Alert triggered after 3 consecutive missed Heartbeat responses. -->
+  <property value="T THEN" delay_units="s" delay_min="0" delay_max="0" property_id="3" type_property="SECURITY_RULE"
+             description="Alert triggered after 3 consecutive missed Heartbeat responses.">
+    <event value="COMPUTE" event_id="4"
+           description="Third consecutive missed Heartbeat response triggers an alert."
+           boolean_expression="count(ocpp.message.type == 'HeartbeatResponse') == 1"/>
+  </property>
+
+  <!-- Property: Log and report the alert to the network monitoring system. -->
+  <property value="T THEN" delay_units="s" delay_min="0" delay_max="0" property_id="4" type_property="SECURITY_RULE"
+             description="Log and report the alert to the network monitoring system.">
+    <event value="COMPUTE" event_id="5"
+           description="Log the communication breakdown alert."
+           boolean_expression="ocpp.message.type == 'Alert'"/>
+  </property>
+</beginning>
