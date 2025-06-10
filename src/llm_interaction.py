@@ -56,9 +56,10 @@ def generate_property(llm, prompt, max_iterations=1):
         max_iterations (int): The maximum number of iterations to attempt generating valid XML.
     
     Returns:
-        Tuple[str or None, bool]: A tuple containing:
+        Tuple[str or None, bool, str]: A tuple containing:
             - The generated XML string if valid, otherwise None.
             - A boolean indicating whether the XML is valid (True) or not (False).
+            - A validation message if invalid.
     """
     validator = XMLValidator()
 
@@ -66,6 +67,7 @@ def generate_property(llm, prompt, max_iterations=1):
     prompt_text = prompt
     valid_xml = False
     validation_message = ""
+    last_xml_candidate = ""
 
     # Define prompt template
     prompt_template = PromptTemplate(
@@ -86,17 +88,17 @@ def generate_property(llm, prompt, max_iterations=1):
         if extracted_xml is None:
             validation_message = "Please return only the XML content, wrapped entirely between <beginning> and </beginning> tags."
             continue
-
         else:
+            last_xml_candidate = extracted_xml
             valid_xml, validation_message = validator.validate_xml(extracted_xml)
 
             # If valid, stop
             if valid_xml:
                 print("Valid XML generated:")
                 print(extracted_xml)
-                return extracted_xml, True
+                return extracted_xml, True, ""
 
             # If invalid, modify prompt and retry
             print(f"Invalid XML generated: {validation_message}")
         prompt_text += f"\n\n### Validation Feedback:\nThe generated XML is invalid: {validation_message}\nPlease correct and return only a valid XML structure."
-    return None, False
+    return last_xml_candidate, False, validation_message

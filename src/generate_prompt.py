@@ -10,6 +10,7 @@ It returns a full prompt string suitable for input to an LLM.
 
 from langchain.prompts import PromptTemplate
 from retrieve_data import retrieve_examples, retrieve_protocol_context
+from pathlib import Path
 
 template = """
 You are an AI that generates XML properties for deep packet inspection.
@@ -70,6 +71,10 @@ def format_prompt(examples_data, scenario_description, protocol_data, mmt_contex
         xml_examples=xml_examples
     )
 
+def load_mmt_context():
+    context_path = Path(__file__).parent / "data" / "mmt-property-context.txt"
+    return context_path.read_text()
+
 def generate_prompt(scenario, protocol_list, num_examples=1):
     """
     Retrieves the necessary context and builds a prompt suitable for few-show XML property generation.
@@ -83,7 +88,7 @@ def generate_prompt(scenario, protocol_list, num_examples=1):
         str: The formatted prompt string.
     """
 
-    mmt_context = open("../data/mmt-property-context.txt").read()  # Load MMT rules format context from a file
+    mmt_context = load_mmt_context()
     protocol_data = retrieve_protocol_context(protocol_list)  # Retrieve protocol context from PostgreSQL
     examples = retrieve_examples(scenario, num_examples=num_examples)  # Retrieve examples from PostgreSQL
 
