@@ -5,6 +5,7 @@ This project requires a PostgreSQL database with two tables: `mmt_properties` an
 ## Prerequisites
 - PostgreSQL installed on your system.
 - Database creation privileges.
+- Node v20.19.2 (Only needed for web interface)
 
 ## Setup Instructions
 1. **Create a new PostgreSQL database** for the project:
@@ -89,15 +90,17 @@ This project uses a local Large Language Model (LLM) served by [Ollama](https://
 This project is organized into the following directories and files:
 ```
 project-root/
-├── data/
-│   └── mmt-property-context.txt       # Static context describing the MMT XML property format
 ├── notebooks/
 │   └── generate_property.ipynb        # Jupyter notebook for running and testing experiments
 ├── src/
-│   └── generate_prompt.py             # Builds few-shot prompts using scenario, examples, and protocol context
+│   ├── data/
+│       └── mmt-property-context.txt   # Static context describing the MMT XML property format
+│   ├── generate_prompt.py             # Builds few-shot prompts using scenario, examples, and protocol context
+│   ├── generator.py                   # User-LLM interaction wrapper
 │   ├── llm_interaction.py             # Interacts with the LLM to generate and validate XML properties
 │   ├── retrieve_data.py               # Connects to PostgreSQL to retrieve protocol and example data
 │   ├── syntax_validation.py           # Validates XML structure and content according to MMT rules
+│   ├── save_property.py               # Connects to PostgreSQL and stores new property
 │   └── utils.py                       # Utility functions (e.g., XML extraction)
 ├── tasks/
 │   └── 1.txt ... 5.txt                # Text files containing example scenarios for OCPP
@@ -107,6 +110,8 @@ project-root/
 │   └── <model_name>/
 │       ├──── task_X_examples_Y/       # Folder for each scenario/shot configuration results
 │       └──── stats_<model_name>.csv   # Summary of performance per model
+├── chat-ui/                           # Web interface project
+├── backend/                           # Backend used for web version
 ├── requirements.txt                   # Python dependencies
 └── .env                               # (Not tracked) Environment variables for DB config
 ```
@@ -149,6 +154,42 @@ Contains the actual prompts given to the LLM during the experiments.
     - Validates it using `syntax_validation.py`
     - Iterates until a valid result or limit is reached.
 5. The **Jupyter notebook** (`generate_property.ipynb`) ties it all together for interactive testing.
+
+# Running the Web Version
+In addition to the Jupyter-based workflow, this project provides a web-based interface that allows users to describe a scenario in natural language and receive a generated XML property through a chat interaction.
+
+## Features
+- Interactive chat interface built with React and Bootstrap.
+- Backend implemented with FastAPI to serve generation requests.
+- Messages from the AI include editable XML properties, validation feedback, and optional database saving.
+- Automatically tracks user edits and saves them into the database if confirmed.
+
+## Running the Web Version
+### Backend (FastAPI)
+Make sure your PostgreSQL and `.env` file properly configured, the use of a virtul environment is recommended:
+```bash
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+
+#Run FastAPI ap using the virtualenv uvicorn
+venv/bin/uvicorn main:app --reload
+```
+The API will be available at `http://localhost:8000` and you can access the API documentation at `http://localhost:8000/docs`.
+
+To change the LLM model that the backend is using, modify `src/generator.py`
+
+### Frontend (React)
+
+From the root or `chat-ui/` directory:
+```bash
+cd chat-ui
+npm install
+npm run dev
+```
+The frontend should be available at `http://localhost:5173` and will communicate with the backend for property generation and storage.
+
 
 # Getting Started
 1. Set up your PostgreSQL database and `.env` file (see above).
