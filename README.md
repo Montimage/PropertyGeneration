@@ -165,6 +165,7 @@ In addition to the Jupyter-based workflow, this project provides a web-based int
 - Automatically tracks user edits and saves them into the database if confirmed.
 
 ## Running the Web Version
+![GUI Screenshot](images/gui_screenshot.png)
 ### Backend (FastAPI)
 Make sure your PostgreSQL and `.env` file properly configured, the use of a virtul environment is recommended:
 ```bash
