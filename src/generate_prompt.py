@@ -28,7 +28,7 @@ You are an AI that generates XML properties for deep packet inspection.
 {xml_examples}
 
 ### Task:
-Generate a new XML property that matches the scenario and adheres to the protocol(s) context.
+Generate a new XML property that matches the scenario description and adheres to the protocol(s) context.
 """
 
 prompt = PromptTemplate(

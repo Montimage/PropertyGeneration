@@ -2,10 +2,10 @@ from generate_prompt import generate_prompt
 from llm_interaction import generate_property, initialize_llm
 
 # Config is set here directly
-DEFAULT_MODEL_NAME = "mistral"
+DEFAULT_MODEL_NAME = "gemma3:12b"
 DEFAULT_MODEL_CONFIG = {
     "provider": "ollama",
-    "temperature": 0.3,
+    "temperature": 0.7,
     "top_p": 0.9,
     "max_tokens": 1024
 }
