@@ -1,11 +1,55 @@
 
-# Database Setup
+# LLM-based Property Generation
+This project focuses on the automated generation of formal event-based XML properties from natural language descriptions using Large Language Models (LLMs). It also provides a web-based interface, database storage, and integration with monitoring tools for deploying generated properties.
+
+The system supports:
+- Property generation from user input (chat interface)
+- Property generation ffrom incoming remote events (MISP-like format)
+- Validation and iterative refinement of XML properties
+- Storage of properties in a PostgreSQL database
+- Deployment of properties to a monitoring tool (e.g., MMT-Security)
+
+## Project Structure
+This project is organized into the following directories and files:
+```
+project-root/
+├── 5G_prompts/                        # Generated prompts for 5G scenarios
+├── 5G_results/                        # Experimental results per model/scenario
+├── 5G_stats/                          # Aggregated statistics
+├── 5G_tasks/                          # Scenario descriptions (5G network scenarios)
+│
+├── backend/                           # FastAPI backend (web + APIs)
+│   ├── main.py                        # API entry point
+│   ├── models.py                      # Request/response models
+│   └── requirements                   # Backend dependencies
+│
+├── chat-ui/                           # React frontend
+│
+├── src/                               # Core logic (LLM + processing)
+│   ├── data/
+│       └── mmt-property-context.txt
+│   ├── experiments.py
+│   ├── generate_prompt.py           
+│   ├── generator.py                   
+│   ├── llm_interaction.py             
+│   ├── retrieve_data.py
+│   ├── save_property.py 
+│   ├── stats.py             
+│   ├── syntax_validation.py     
+│   └── utils.py
+│
+├── notebooks/
+│   └── generate_property.ipynb       
+└── .env                               # (Not tracked) Environment variables for DB config
+```
+
+## Database Setup
 This project requires a PostgreSQL database with two tables: `mmt_properties` and `protocols`. Follow the steps below to set up your database environment.
 
 ## Prerequisites
 - PostgreSQL installed on your system.
 - Database creation privileges.
-- Node v20.19.2 (Only needed for web interface)
+- Node v20.19.2 (for frontend)
 
 ## Setup Instructions
 1. **Create a new PostgreSQL database** for the project:
@@ -45,10 +89,9 @@ CREATE TABLE protocols(
 );
 ```
 
-## Table Descriptions
+### Table Descriptions
 
-### `mmt_properties`
-Stores formally defined properties used for monitoring.
+`mmt_properties`: Stores formally defined properties used for monitoring.
 
 | Column        | Type      | Description                                                                                    |
 |---------------|-----------|------------------------------------------------------------------------------------------------|
@@ -59,8 +102,7 @@ Stores formally defined properties used for monitoring.
 | `created_at`  | TIMESTAMP | Automatically set when the property is added.                                                  |
 | `name`        | TEXT      | The filename (or unique name) representing the property. Must be unique.                       |
 
-### `protocols`
-Stores protocol names and their attribute definitions as used by MMT.
+`protocols`: Stores protocol names and their attribute definitions as used by MMT.
 
 | Column       | Type   | Description                                                                  |
 |--------------|--------|------------------------------------------------------------------------------|
@@ -79,95 +121,35 @@ DB_HOST=localhost
 DB_PORT=5432
 ```
 
-# LLM Setup using Ollama
+## LLM Setup using Ollama
 This project uses a local Large Language Model (LLM) served by [Ollama](https://ollama.com/) to process and reason about scenario property generation.
 
-## Prerequisites
+### Prerequisites
 - [Ollama](https://ollama.com/) installed and running on your machine.
 - A supported model pulled (e.g., `mistral`, `llama2`, etc).
 
-# Project Structure
-This project is organized into the following directories and files:
-```
-project-root/
-├── notebooks/
-│   └── generate_property.ipynb        # Jupyter notebook for running and testing experiments
-├── src/
-│   ├── data/
-│       └── mmt-property-context.txt   # Static context describing the MMT XML property format
-│   ├── generate_prompt.py             # Builds few-shot prompts using scenario, examples, and protocol context
-│   ├── generator.py                   # User-LLM interaction wrapper
-│   ├── llm_interaction.py             # Interacts with the LLM to generate and validate XML properties
-│   ├── retrieve_data.py               # Connects to PostgreSQL to retrieve protocol and example data
-│   ├── syntax_validation.py           # Validates XML structure and content according to MMT rules
-│   ├── save_property.py               # Connects to PostgreSQL and stores new property
-│   └── utils.py                       # Utility functions (e.g., XML extraction)
-├── tasks/
-│   └── 1.txt ... 5.txt                # Text files containing example scenarios for OCPP
-├── generated_prompts/
-│   └── task_X_examples_Y.txt          # Prompt used for scenario X with Y examples
-├── results/
-│   └── <model_name>/
-│       ├──── task_X_examples_Y/       # Folder for each scenario/shot configuration results
-│       └──── stats_<model_name>.csv   # Summary of performance per model
-├── chat-ui/                           # Web interface project
-├── backend/                           # Backend used for web version
-├── requirements.txt                   # Python dependencies
-└── .env                               # (Not tracked) Environment variables for DB config
-```
+## Core Workflow: Property generation pipeline
+1. A scenario is provided (via notebook, API, or remote event)
+2. `retrieve_data.py` fetches protocol definitions, example properties
+3. `generate_prompt.py` builds a few-shot prompt
+4. `llm_interaction.py` sends prompt to LLM, extracts XML, and validates syntax
+5. Iteration continues until a valid property is generated or max attempts is reached
+6. Results can be returned to the user, stored in DB, or sent to monitoring tool.
 
-## Experiments Outputs
-
-### `results/`
-Contains the logged results of each model's output for every scenario tested.
-
-- Each subfolder is named after a model (e.g., `deepseek-coder:6.7b`).
-- Inside each model folder:
-    - Each `task_X_examples_Y/` folder corresponds to a scenario (`task_X`) run with Y example properties.
-    - Each folder contains:
-        - All LLM responses (whether valid or not), one per iteration.
-        - The final valid XML file (if generated).
-        - Intermediate invalid XMLs or textual outputs.
-- A CSV file (e.g., `stats_deepseek-coder:6.7b.csv`) summarizes:
-    - Number of iterations per scenario.
-    - Validity of the result
-    - Time taken per run
-
-### `generated_prompts/`
-Contains the actual prompts given to the LLM during the experiments.
-
-- File format: `task_X_examples_Y.txt`, where:
-    - `X` is the task/scenario number (from `tasks/`)
-    - `Y` is the number of few-shot examples used (1, 5, or 7)
-
-## How the Components Work Together
-1. **Scenarios** (in `tasks/`) describe use cases to generate properties for.
-2. `retrieve_data.py` connects to your PostgreSQL DB to get:
-    - Relevant examples (from `mmt_properties`)
-    - Protocol context (from `protocols`)
-3. `generate_prompt.py` builds a full prompt for the LLM using:
-    - The scenario
-    - Protocol definitions
-    - Example property structure (`data/mmt-property-context.txt`)
-4. `llm_interaction.py` sends the prompt to the LLM (via Ollama), then:
-    - Extracts the XML
-    - Validates it using `syntax_validation.py`
-    - Iterates until a valid result or limit is reached.
-5. The **Jupyter notebook** (`generate_property.ipynb`) ties it all together for interactive testing.
-
-# Running the Web Version
-In addition to the Jupyter-based workflow, this project provides a web-based interface that allows users to describe a scenario in natural language and receive a generated XML property through a chat interaction.
-
-## Features
-- Interactive chat interface built with React and Bootstrap.
-- Backend implemented with FastAPI to serve generation requests.
-- Messages from the AI include editable XML properties, validation feedback, and optional database saving.
-- Automatically tracks user edits and saves them into the database if confirmed.
+## Web Application
+It features:
+- Chat-based property generation
+- Editable XML properties
+- Validation feedback for invalid properties
+- Save properties to database
+- Send properties to monitoring tools
+- Automatic handling for incoming remote events
+- Background processing for event-driven generation
 
 ## Running the Web Version
 ![GUI Screenshot](images/gui_screenshot.png)
-### Backend (FastAPI)
-Make sure your PostgreSQL and `.env` file properly configured, the use of a virtul environment is recommended:
+### Backend (FASTAPI)
+Make sure your PostgreSQL and `.env` file are properly configured, the use of a virtul environment is recommended:
 ```bash
 cd backend
 python3 -m venv venv
@@ -181,9 +163,7 @@ The API will be available at `http://localhost:8000` and you can access the API 
 
 To change the LLM model that the backend is using, modify `src/generator.py`
 
-### Frontend (React)
-
-From the root or `chat-ui/` directory:
+### Frontend (React + Vite)
 ```bash
 cd chat-ui
 npm install
@@ -191,9 +171,34 @@ npm run dev
 ```
 The frontend should be available at `http://localhost:5173` and will communicate with the backend for property generation and storage.
 
+### Sending properties to monitoring
+The backend exposes
+```
+POST /send-to-monitoring
+```
+This sends XML properties to an external monitoring receiver.
+Response includes status, receiver response, error details (if any)
+
+### Receiving Remote Events
+The system supports ingestion of external events (MISP-like format):
+```
+POST /receive-event
+```
+
+## Experiments
+### 5G Scenario Evaluation
+- `5G_tasks/`: scenario descriptions
+- `5G_prompts/`: generated outputs
+- `5G_results/`: model outputs
+- `5G_stats/`: aggregated metrics
 
 # Getting Started
 1. Set up your PostgreSQL database and `.env` file (see above).
-2. Pull a supported model (e.g. `mistral`) with Ollama.
-3. Run the notebook `notebooks/generate_property.ipynb` to generate and validate properties.
-4. Optionally add or edit scenarios in `tasks/`.
+2. Intall Ollama and pull a model
+3. Run backend
+4. Run frontend
+5. Open UI and start generating properties
+
+Optional:
+- Use notebook for experiments
+- Send remote events to trigger automatic generation
