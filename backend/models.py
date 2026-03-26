@@ -1,5 +1,5 @@
-from pydantic import BaseModel
-from typing import Optional
+from pydantic import BaseModel, Field
+from typing import Optional, Any, Dict
 
 class PromptRequest(BaseModel):
     input_text: str
@@ -15,6 +15,8 @@ class PropertyMessage(BaseMessage):
     editable: bool
     ask_to_save: bool
     validation_feedback: Optional[str] = None
+    origin: Optional[str] = "chat"
+    incident_source: Optional[str] = None
 
 class ErrorMessage(BaseMessage):
     pass
@@ -27,3 +29,15 @@ class SavePropertyRequest(BaseModel):
     protocol: list[str]
     name: str
     content: str
+
+class SendToMonitoringRequest(BaseModel):
+    name: Optional[str] = None
+    content: str
+
+class ReceivedEventRequest(BaseModel):
+    source: Optional[str] = Field(default=None, description="Source of the event")
+    event: Dict[str, Any] = Field(..., description="MISP-like event payload")
+
+class ReceivedEventResponse(BaseModel):
+    message: str
+    source: Optional[str] = None
