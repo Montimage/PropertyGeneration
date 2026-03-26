@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 
 const ChatBubble = ({ 
   sender, 
@@ -8,7 +8,9 @@ const ChatBubble = ({
   validationFeedback = null,
   isQuestion = false,
   isError = false,
-  status = null
+  status = null,
+  origin = 'chat',
+  incidentSource = null
 }) => {
   const isUser = sender === 'user';
   const [editedText, setEditedText] = useState(text);
@@ -19,6 +21,11 @@ const ChatBubble = ({
   const [protocols, setProtocols] = useState('');
   const [fileName, setFileName] = useState('');
   const [submitStatus, setSubmitStatus] = useState(null); // 'sucess' | 'error' | null
+
+  // Send to monitoring
+  const [sendStatus, setSendStatus] = useState(null); // 'success' | 'error' | null
+  const [sendResponse, setSendResponse] = useState(null);
+  const [sending, setSending] = useState(false);
 
   useEffect(() => {
     setEditedText(text);
@@ -44,6 +51,7 @@ const ChatBubble = ({
     };
 
     try {
+      setSubmitStatus(null);
       const response = await fetch('http://localhost:8000/save-property', {
         method: 'POST',
         headers: {
@@ -63,6 +71,42 @@ const ChatBubble = ({
     }
   };
 
+  const handleSendToMonitoring = async () => {
+    setSending(true);
+    setSendStatus(null);
+    setSendResponse(null);
+
+    const payload = {
+      name: fileName || 'property.xml',
+      content: editedText,
+    };
+    try {
+      const response = await fetch('http://localhost:8000/send-to-monitoring', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload),
+      });
+
+      const result = await response.json();
+      setSendResponse(result);
+
+      if (!response.ok) {
+        setSendStatus('error');
+        return;
+      }
+
+      setSendStatus('success');
+    } catch (error) { 
+      console.error('Error sending property:', error);
+      setSendStatus('error');
+      setSendResponse({
+        error: error.message || 'Failed to send property to monitoring tool',
+      });
+    } finally {
+      setSending(false);
+    }
+  };
+
   return (
     <div className={`d-flex ${isUser ? 'justify-content-end' : 'justify-content-start'} mb-2`}>
       <div
@@ -74,12 +118,28 @@ const ChatBubble = ({
         {isError && (
           <strong className="d-block mb-2 text-danger">An error has occurred:</strong>
         )}
-        {editable && status === 'valid' && (
+        {editable && status === 'valid' && origin === 'remote_incident' && (
+          <strong className="d-block mb-2">
+            A valid property was generated for an incoming incident
+            {incidentSource ? ` from ${incidentSource}` : ''}:
+          </strong>
+        )}
+
+        {editable && status === 'invalid' && origin === 'remote_incident' && (
+          <strong className="d-block mb-2">
+            An invalid property was generated for an incoming incident
+            {incidentSource ? ` from ${incidentSource}` : ''}. This is the last attempt of the AI at generating a property:
+          </strong>
+        )}
+        
+        {editable && status === 'valid' && origin !== 'remote_incident' && (
           <strong className="d-block mb-2">A valid property was generated:</strong>
         )}
 
-        {editable && status === 'invalid' && (
-          <strong className="d-block mb-2">An invalid property was generated. This is the last attempt of the AI at generating a property:</strong>
+        {editable && status === 'invalid' && origin !== 'remote_incident' && (
+          <strong className="d-block mb-2">
+            An invalid property was generated. This is the last attempt of the AI at generating a property:
+          </strong>
         )}
 
         {editable ? (
@@ -107,12 +167,34 @@ const ChatBubble = ({
         {askToSave && (
           <div className="mt-3">
             <div className="mb-2 text-muted">
-              Would you like to save it in the database?
+              Would you like to save it in the database? (for future shot prompts)
             </div>
             <div className="d-flex gap-2 mb-3">
               <button className="btn btn-sm btn-outline-success" onClick={handleYesClick}>Yes</button>
               <button className="btn btn-sm btn-outline-secondary" onClick={handleNoClick}>No</button>
             </div>
+
+            <div>
+              <button className="btn btn-outline-info btn-sm" 
+                onClick={handleSendToMonitoring}
+                disabled={sending}>
+                {sending ? 'Sending...' : 'Send property to monitoring tool'}
+              </button>
+            </div>
+
+            {sendStatus === 'success' && sendResponse && (
+              <div className="text-success mt-2">
+                {sendResponse.message || 'Property sent successfully to the monitoring tool.'}
+              </div>
+            )}
+
+            {sendStatus === 'error' && sendResponse && (
+              <div className="text-danger mt-2">
+                {sendResponse.error ||
+                  sendResponse.message ||
+                  'There was an error sending the property to the monitoring tool.'}
+              </div>
+            )}
 
             {showForm && (
               <div className="border-top pt-3">

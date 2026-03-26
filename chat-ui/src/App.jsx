@@ -44,7 +44,26 @@ function App() {
         })
       );
     }
-};
+  };
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const response = await fetch('http://localhost:8000/pending-messages');
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        if (data.messages && data.messages.length > 0) {
+          setMessages((prev) => [...prev, ...data.messages]);
+        }
+      } catch (error) {
+        console.error('Error polling pending messages:', error);
+      }
+    }, 3000); // poll every 3 seconds
+
+    return () => clearInterval(interval);
+  }, []);
 
   // Auto-scroll to bottom when messages update
   useEffect(() => {
@@ -62,6 +81,8 @@ function App() {
         askToSave={msg.ask_to_save ?? false}
         validationFeedback={msg.validation_feedback ?? null}
         status={msg.status ?? null}
+        origin={msg.origin ?? 'chat'}
+        incidentSource={msg.incident_source ?? null}
       />
     );
     } else if (msg.type === 'question'){
