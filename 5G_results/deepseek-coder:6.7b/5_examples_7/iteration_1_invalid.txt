@@ -1,0 +1,1 @@
+Sure, I can help you with that. However, without knowing the exact scenario or the protocols involved, it's hard for me to provide an accurate solution. Could you please provide more details about the scenario? For example, what kind of traffic is being monitored (protocols like TCP, IP, HTTP etc.) and what specific anomaly or behavior should trigger this property?

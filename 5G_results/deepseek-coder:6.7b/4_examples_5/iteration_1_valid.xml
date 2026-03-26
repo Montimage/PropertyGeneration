@@ -1,0 +1,12 @@
+<beginning>
+    <!-- Property 95: Detect malformed NGAP packets -->
+    <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="95" type_property="SECURITY" 
+        description="SCTP Protocol Identifier indicates NGAP but payload is not effectually NGAP.">
+        <event value="COMPUTE" event_id="1" 
+            description="An SCTP packet with PPID 60 indicating its payload is NGAP."
+               boolean_expression="(( sctp_data.data_ppid == 60) &amp;&amp; (sctp.dest_port == 38412))"/>
+        <event value="COMPUTE" event_id="2" 
+            description="No NGAP available or decoded correctly."
+               boolean_expression="(#is_exist(ngap.procedure_code) == false)"/>
+    </property>
+</beginning>

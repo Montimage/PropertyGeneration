@@ -1,0 +1,14 @@
+<beginning>
+
+<!-- Property ID: 101 -->
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="60" property_id="101" type_property="SECURITY_RULE"
+          description="Detect excessive user-plane traffic from UE(s) causing potential data-plane saturation">
+    <event value="COMPUTE" event_id="1" description="GTP-U packet rate exceeds threshold on N3">
+      boolean_expression="((gtpu.teid != 0) &amp;&amp; (gtpu.packet_rate > 10000))"
+    </event>
+    <event value="COMPUTE" event_id="2" description="Sustained high traffic rate from specific UE(s)">
+      boolean_expression="((gtpu.teid == gtpu.teid.1) &amp;&amp; (gtpu.packet_rate > 5000))"
+    </event>
+</property>
+
+</beginning>

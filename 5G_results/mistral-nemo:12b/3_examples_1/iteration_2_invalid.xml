@@ -1,0 +1,21 @@
+<beginning>
+<!-- Property: Detect gNB instability towards AMF over N2 -->
+<property value="THEN" delay_units="s" delay_min="-60" delay_max="0" property_id="70" type_property="SECURITY_RULE"
+          description="Detect gNB instability towards AMF by repeatedly initiating NG setup procedures">
+  <event event_id="1" value="COMPUTE"
+         description="NGSetupRequest message from gNB to AMF"
+         boolean_expression="(ngap.procedure_code == 'NGSetupRequest')"/>
+  <operator type="COUNT" count_min="3"/>
+  <event event_id="2" value="COMPUTE"
+         description="Time window for detecting repeated NG setup procedures"
+         boolean_expression="(BASE.time_slot - ngap_time_slot) <= 60"/>
+</property>
+<embedded_functions><![CDATA[
+void on_load(){
+   // Load custom logic here
+}
+void on_unload(){
+   // Unload custom logic here
+}
+]]></embedded_functions>
+</beginning>

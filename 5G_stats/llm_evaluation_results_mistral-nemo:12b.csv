@@ -1,0 +1,4 @@
+model_name,num_examples,SVR,Avg_Iterations,TVR
+mistral-nemo:12b,1,0.0,3.6666666666666665,60.0
+mistral-nemo:12b,5,0.0,3.0,40.0
+mistral-nemo:12b,7,60.0,1.0,60.0

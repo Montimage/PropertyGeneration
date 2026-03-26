@@ -1,0 +1,26 @@
+**Scenario Description:** A potential Distributed Denial of Service (DDoS) attack is suspected when there's an unusually high volume of SYN packets sent from multiple sources targeting a single destination IP address within a short period of time.
+
+**Protocol(s):** tcp, ip
+
+**XML Property:**
+
+```xml
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="1000" property_id="97" type_property="ATTACK"
+    description="Potential DDoS SYN Flooding Attack">
+
+    <operator value="THEN" delay_units="ms" delay_min="500" delay_max="500">
+      <!-- Event 1: High volume of SYN packets -->
+      <event value="COMPUTE" event_id="1"
+              description="SYN packet with source IP different from destination IP"
+              boolean_expression="(tcp.fin==0 &amp;&amp; tcp.syn==1 &amp;&amp; ip.src!=ip.dst)"/>
+    </operator>
+
+    <!-- Event 2: Multiple sources targeting a single destination -->
+    <event value="COMPUTE" event_id="2"
+            description="More than one unique source IP in the last second"
+            boolean_expression="(#unique(ip.src)) > 1 &amp;&amp; meta.utime - meta.utime.1 <= 1000)"/>
+
+</property>
+```
+
+In this XML property, Event 1 checks for SYN packets with different source and destination IP addresses, indicating a potential SYN flood attack. Event 2 verifies if there are more than one unique source IP in the last second, suggesting multiple sources targeting a single destination, which is a typical characteristic of DDoS attacks. The `delay_units`, `delay_min`, and `delay_max` values are set to capture packets within a 1-second window for better accuracy in identifying high-volume SYN packet bursts.

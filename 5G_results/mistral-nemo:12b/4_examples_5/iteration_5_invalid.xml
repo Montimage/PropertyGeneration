@@ -1,0 +1,23 @@
+<beginning>
+  <!-- Property ID: 101 -->
+  <property value="THEN" delay_units="s" delay_min="-5" delay_max="0" property_id="101" type_property="SECURITY_RULE"
+    description="Detect excessive user-plane traffic from UEs causing high-rate GTP-U flows">
+    <!-- Context: Moderate GTP-U traffic on N3 -->
+    <event value="COMPUTE" event_id="1" description="Moderate GTP-U traffic on N3">
+      ((gtpu.packet_count &lt; 1000) &amp;&amp; (gtpu.tot_len &lt; 1500))
+    </event>
+
+    <!-- Trigger: Sustained high-rate GTP-U flows from specific UE(s) -->
+    <operator value="THEN" delay_units="s" delay_min="0+" delay_max="60">
+      <event value="COMPUTE" event_id="2" description="High-rate GTP-U traffic on N3 from specific UE(s)">
+        ((gtpu.packet_count &gt; 1000) &amp;&amp; (gtpu.tot_len &gt; 1500)) &amp;&amp;
+        (ngap.ue_id != ngap.ue_id.2)
+      </event>
+    </operator>
+
+    <!-- Additional condition: IP addresses do not match -->
+    <event value="COMPUTE" event_id="3" description="IP addresses do not match">
+      (ip.src != ip.dst)
+    </event>
+  </property>
+</beginning>

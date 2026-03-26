@@ -1,0 +1,65 @@
+<beginning>
+  <!-- Property: Detect frequent gNB NG setup attempts -->
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="1001" type_property="ATTACK"
+             description="Detect frequent gNB NG setup attempts indicating instability.">
+    <event event_id="1" value="COMPUTE"
+           description="NGSetupRequest received from a gNB"
+           boolean_expression="ngap.procedure_code == 1"/>
+    <event event_id="2" value="COMPUTE"
+           description="Subsequent NGSetupRequest within a short time window"
+           boolean_expression="(#em_check_gNB_setup_frequency(ngap.procedure_code, ngap.gNB_id)==1)"/>
+  </property>
+
+  <embedded_functions><![CDATA[
+// Function to check the frequency of NGSetupRequests from a gNB.
+// Parameters:
+//   - procedure_code: The NGAP procedure code (should be 1 for NGSetupRequest).
+//   - gNB_id: The gNB identifier.
+// Returns:
+//   - 1 if the frequency exceeds the threshold (e.g., more than 3 requests in 5 seconds).
+//   - 0 otherwise.
+
+static inline int em_check_gNB_setup_frequency(int procedure_code, int gNB_id) {
+  static uint64_t last_setup_time[256]; // Assuming max 256 gNBs
+  static int request_count[256];
+  static uint64_t last_reset_time[256];
+
+  uint64_t current_time = mmt_get_time_ms(); // Use a function to get current time in milliseconds
+  
+  if (procedure_code != 1) {
+    return 0; // Only consider NGSetupRequests
+  }
+  
+  int gnb_index = gNB_id;
+
+  if (gnb_index < 0 || gnb_index > 255) {
+    return 0; // Invalid gNB ID
+  }
+
+  if (last_setup_time[gnb_index] == 0) {
+    last_setup_time[gnb_index] = current_time;
+    request_count[gnb_index] = 1;
+    last_reset_time[gnb_index] = 0;
+    return 0;
+  }
+
+  if (current_time - last_setup_time[gnb_index] < 5000) { // 5 seconds
+    request_count[gnb_index]++;
+    if (request_count[gnb_index] > 3) {
+      return 1; // Exceeded frequency threshold
+    }
+  } else {
+    request_count[gnb_index] = 1;
+    last_setup_time[gnb_index] = current_time;
+  }
+  
+  last_setup_time[gnb_index] = current_time;
+  return 0;
+}
+  
+// Placeholder for getting the current time in milliseconds
+uint64_t mmt_get_time_ms() {
+  return 1000; // Replace with actual implementation
+}
+]]></embedded_functions>
+</beginning>

@@ -1,0 +1,27 @@
+<beginning>
+<!-- Property 101: UPF must forward user-plane traffic through valid and active GTP-U tunnels -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="101" type_property="SECURITY_RULE"
+          description="UPF forwarding inconsistencies">
+      <event value="COMPUTE" event_id="1"
+             description="GTP-U packet received with unknown TEID"
+             boolean_expression="(gtpu.teid not in pfcpsession.active_teids)"/>
+      <event value="COMPUTE" event_id="2"
+             description="GTP-U packet received with stale TEID (no active session)"
+             boolean_expression="(gtpu.teid in pfcpsession.inactive_teids)"/>
+      <event value="COMPUTE" event_id="3"
+             description="GTP-U traffic persists after PFCP session deleted"
+             boolean_expression="(pfcpsession.session_state == 'deleted' and gtpu.pdu_session_id in pfcpsession.session_list)"/>
+</property>
+<!-- Reactive function to generate alert -->
+<embedded_functions>
+  void on_rule_satisfied(const rule_t *rule, int verdict, uint64_t timestamp, uint64_t counter,
+                         const mmt_array_t *trace)
+  {
+    if (verdict == DETECTED) {
+      char alert[1024];
+      snprintf(alert, sizeof(alert), "Invalid GTP-U TEID or session inconsistency detected: %s", rule->description);
+      mmt_alert(ALERT_LEVEL_HIGH, alert, trace);
+    }
+  }
+</embedded_functions>
+</beginning>

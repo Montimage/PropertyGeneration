@@ -1,0 +1,20 @@
+<beginning>
+  <!-- Property 65: Abnormal surge detection -->
+
+  <property value="THEN" delay_units="s" delay_min="0" delay_max="30" property_id="65" type_property="ATTACK" 
+    description="Detect abnormal surges of UE registration signaling">
+      <event value="COMPUTE" event_id="3" 
+             description="Count UEs sending repeated RegistrationRequest messages"
+             boolean_expression="(nas.registration_request_count > 5)"/>
+      <embedded_functions>
+        <!-- Custom function to calculate the rate of repetition -->
+        void em_rate_of_repetition(uint64_t timestamp, uint64_t counter){
+          // implementation
+        }
+      </embedded_functions>
+
+      <event value="COMPUTE" event_id="4" 
+             description="Check if repeated registration attempts are observed without completion"
+             boolean_expression="(nas.registration_request_attempt_count > nas.registration_response_count)"/>
+    </property>
+</beginning>

@@ -1,0 +1,42 @@
+<beginning>
+  <!-- Property 101: Abnormal UE Registration Surge -->
+
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="101" type_property="SECURITY_RULE"
+    description="Detect abnormal surges of UE registration signaling">
+    <operator value="+"/>
+    <event value="COMPUTE" event_id="101.1"
+      description="RegistrationRequest message received"
+      boolean_expression="(ngap.message_type == InitialUEMessage || ngap.message_type == UplinkNASTransport) && nas.message_present == RegistrationRequest"/>
+    <embedded_functions>
+      <![CDATA[
+        #include <stdio.h>
+        int registrationRequests[MAX_UES] = {0};
+        uint64_t lastRegistrationTime[MAX_UES] = {0};
+
+        void updateRegistration Counters(uint64_t timestamp, uint32_t amfUeId) {
+          if (amfUeId >= MAX_UES) return;
+          registrationRequests[amfUeId]++;
+          lastRegistrationTime[amfUeId] = timestamp;
+        }
+
+        int isSurgeDetected(uint64_t currentTime, uint32_t amfUeId, uint32_t threshold, uint64_t windowSize) {
+          if (registrationRequests[amfUeId] > threshold && (currentTime - lastRegistrationTime[amfUeId]) < windowSize) {
+            return 1;
+          }
+          return 0;
+        }
+
+        void on_load() {}
+        void on_unload() {}
+      ]]>
+    </embedded_functions>
+    <event value="COMPUTE" event_id="101.2"
+      description="Surge detection based on registration requests count and time window"
+      boolean_expression="#isSurgeDetected(timestamp, ngap.amf_ue_id, 5, 1000)"/>
+    <if_satisfied>
+      <!-- Reactive function to generate alert -->
+      #em_generateAlert(rule_t *, int, uint64_t, uint64_t, mmt_array_t *)
+    </if_satisfied>
+  </property>
+
+</beginning>

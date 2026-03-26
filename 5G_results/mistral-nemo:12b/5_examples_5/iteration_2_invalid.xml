@@ -1,0 +1,24 @@
+<beginning>
+  <!-- Property 101: Invalid GTP-U Tunnel Usage Detection -->
+  <property value="THEN" delay_units="ms" delay_min="0+" delay_max="100" property_id="101" type_property="SECURITY_RULE">
+    <event value="COMPUTE" event_id="1" description="GTP-U packet received">
+      <boolean_expression>(gtp.teid != 0)</boolean_expression>
+    </event>
+
+    <operator value="AND">
+      <event value="COMPUTE" event_id="2" description="Unknown TEID">
+        <boolean_expression>(!pcf_session_exists(gtp.teid))</boolean_expression>
+      </event>
+    </operator>
+
+    <operator value="OR">
+      <event value="COMPUTE" event_id="3" description="Stale TEID">
+        <boolean_expression>(pcf_session_age(gtp.teid) > 60000)</boolean_expression> <!-- Assuming stale if no activity for more than 1 minute -->
+      </event>
+
+      <event value="COMPUTE" event_id="4" description="Inconsistent TEID">
+        <boolean_expression>(pcf_session_state(gtp.teid) != ACTIVE)</boolean_expression>
+      </event>
+    </operator>
+  </property>
+</beginning>

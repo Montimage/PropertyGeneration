@@ -1,0 +1,19 @@
+<beginning>
+  <!-- Property 67: Abnormal PDU session establishment and release behavior -->
+  
+  <property value="THEN" delay_units="ms" delay_min="-1" delay_max="0" property_id="67" type_property="ATTACK" 
+          description="Abnormal PDU session establishment and release behavior">
+      <event value="COMPUTE" event_id="1" 
+             description="PDU Session Establishment Request Message"
+             boolean_expression="(ngap.procedure_code == 3)&amp;&amp;(ip.protocol == BASE)"/>
+      <event value="COMPUTE" event_id="2" 
+             description="PFCP session establishment message "
+             boolean_expression="((pfcp.session_establishment_message != NULL)&amp;&amp;((pfcp.session_establishment_message.1 != 0)))"/>
+      <event value="COMPUTE" event_id="3" 
+             description="PDU Session Release Request Message"
+             boolean_expression="(ngap.procedure_code == 4)&amp;&amp;(ip.protocol == BASE)"/>
+      <event value="COMPUTE" event_id="4" 
+             description="PFCP session deletion message "
+             boolean_expression="((pfcp.session_deletion_message != NULL)&amp;&amp;((pfcp.session_deletion_message.1 != 0)))"/>
+</property>
+</beginning>

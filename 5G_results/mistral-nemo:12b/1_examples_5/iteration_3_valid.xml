@@ -1,0 +1,17 @@
+<beginning>
+<property value="THEN" delay_units="s" delay_min="-1" delay_max="0" property_id="5g_registration_surge" type_property="SECURITY_RULE" description="Detect abnormal surges of UE registration signaling">
+  <event value="COMPUTE" event_id="1" description="RegistrationRequest message received" boolean_expression="(ngap.pdu_present &amp;&amp; ngap.procedure_code == 3 &amp;&amp; nas_reg_request_present)"/>
+  <event value="COMPUTE" event_id="2" description="Abnormal registration rate" boolean_expression="(meta.packet_count(event_id=1, interval=60s) &gt; 100)"/>
+</property>
+<embedded_functions><![CDATA[
+#include "mmt_lib.h"
+
+void on_unload(){
+  mmt_log(MMT_LOG_INFO, "Property 5g_registration_surge unloaded");
+}
+
+void on_load(){
+  mmt_log(MMT_LOG_INFO, "Property 5g_registration_surge loaded");
+}
+]]></embedded_functions>
+</beginning>

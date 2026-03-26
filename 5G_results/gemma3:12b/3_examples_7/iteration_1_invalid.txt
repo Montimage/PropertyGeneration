@@ -1,0 +1,37 @@
+Okay, I'll generate a new XML property based on your provided examples and the prompt.  Here's a new property, designed to detect suspicious traffic related to a server acting as a DNS resolver. I'll include comments to explain the logic and choices.
+
+```xml
+<!-- Property 100:  Detecting potentially compromised DNS resolver.  Looks for a DNS resolver responding to queries from a large number of distinct source IPs within a short timeframe. -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="100" property_id="100" type_property="ATTACK"
+    description="Suspicious DNS resolver activity: high query rate from diverse sources." >
+    <!-- Event 1:  Compute the number of distinct source IPs sending DNS queries.  We're tracking this over a sliding window. -->
+    <event value="COMPUTE" event_id="1"
+           description="Count distinct source IPs sending DNS queries"
+           boolean_expression="(dns.query_type == 1) AND (ip.src != '127.0.0.1')"/>
+
+    <!-- Event 2: Check if the number of distinct source IPs exceeds a threshold within a short time window. -->
+    <event value="CHECK" event_id="2"
+           description="High query rate from distinct sources"
+           boolean_expression="distinct_ip_count > 500 WITHIN 10s"/>
+</property>
+```
+
+**Explanation of Choices and Considerations:**
+
+*   **`property_id`:**  I'm using `100` to keep it sequential with your existing properties.
+*   **`type_property="ATTACK"`:**  This indicates a potentially malicious activity.
+*   **`description`:**  Clear and concise description of the rule.
+*   **`delay_units="ms"` and `delay_min/max`:**  Standard delays as in your examples.
+*   **`boolean_expression`:**
+    *   **Event 1:** This event is used to count distinct IPs.  The `dns.query_type == 1` condition specifically targets DNS queries (A records).  The `ip.src != '127.0.0.1'` prevents the resolver from counting its own loopback traffic.
+    *   **Event 2:** This event checks if the `distinct_ip_count` (which is a *calculated value*, not a field) exceeds a threshold (500 in this case) within a short time window (10 seconds). The `WITHIN 10s` clause is crucial; it defines the sliding window for counting.  The exact meaning of `WITHIN` depends on the MMT-Security implementation.
+*   **Calculated Value:**  The `distinct_ip_count` is a calculated value.  MMT-Security needs a mechanism to track and maintain this count. This might require a custom script or extension.
+
+**Important Notes:**
+
+*   **MMT-Security Implementation:** The specific syntax for calculated values (like `distinct_ip_count`) and sliding windows (`WITHIN 10s`) *heavily* depends on the version and extensions of MMT-Security you're using. You'll need to consult the documentation for your specific environment.
+*   **Threshold Tuning:** The threshold value (500) is an example. You'll need to tune this based on your network's normal traffic patterns.
+*   **Protocol-Specific Fields:**  I've used `dns.query_type` and `ip.src` as examples.  Make sure these fields are available and meaningful within your MMT-Security configuration.  You might need to adapt them to your specific protocol parsing rules.
+*   **False Positives:**  This rule could generate false positives if you have a legitimate network with a high number of clients.  Careful tuning and monitoring are essential.
+
+This property is designed to be a starting point. You'll likely need to modify it to fit your specific needs and environment.  Let me know if you'd like me to refine it further based on more details about your setup.

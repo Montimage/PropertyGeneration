@@ -1,0 +1,43 @@
+<beginning>
+    <embedded_functions><![CDATA[
+        //each function name should be prefixed by em_
+        /**
+         * Return:
+         * - 0: ok
+         * - 1: invalid
+         * - 2: NULL
+         */
+        static inline int em_check_http_fuzzing(const char* payload) {
+            const char* c = payload;
+            while (*c != '\0') {
+                if (*c == 'S' && c[1] == 'h' && c[2] == 'o' && c[3] == 't' &&
+                    c[4] == 'f' && c[5] == 'u' && c[6] == 'z' && c[7] == 'z' &&
+                    c[8] == 'e') {
+                    if (strstr(c, "application/ http2") != NULL) {
+                        while (*c != '\0') {
+                            if (*c == 'S' && c[1] == 'h' && c[2] == 'o' && c[3] == 't' &&
+                                c[4] == 'f' && c[5] == 'u' && c[6] == 'z' && c[7] == 'z' &&
+                                c[8] == 'e') {
+                                if (strstr(c, "application/ http2") != NULL) return 1;
+                                break;
+                            }
+                        }
+                    }
+                    break;
+                }
+                c++;
+            }
+            return 0;
+        }
+    ]]></embedded_functions>
+
+    <property value="THEN" property_id="80" type_property="ATTACK" 
+             description="Detect HTTP double compression">
+        <event event_id="1" value="COMPUTE" 
+               description="IP addresses"
+               boolean_expression="((ip.packet_count != 0) &amp;&amp; (ip.src != ip.dst))"/>
+        <event event_id="2" value="COMPUTE" 
+               description="HTTP double compression"
+               boolean_expression="(#em_check_http_fuzzing(http2.p_payload)==1)"/>
+    </property>
+</beginning>

@@ -1,0 +1,23 @@
+**Scenario Description:** Detect suspicious IP addresses that frequently change their MAC addresses.
+
+**Protocol(s):** ip, ethernet
+
+**XML Property:**
+
+```xml
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="1000" property_id="97" type_property="SUSPICIOUS">
+  <event value="COMPUTE" event_id="1"
+          description="IP packet with MAC address not matching the known device"
+          boolean_expression="(ip.src != ethernet.dst)"/>
+  <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="600">
+    <event value="COMPUTE" event_id="2"
+            description="Second occurrence of MAC mismatch for the same IP address"
+            boolean_expression="((ip.src == ip.src.1) &amp;&amp; (ethernet.dst != ethernet.dst.1))"/>
+  </operator>
+  <operator value="THEN" delay_units="ms" delay_min="600+" delay_max="1200">
+    <event value="COMPUTE" event_id="3"
+            description="Third occurrence of MAC mismatch for the same IP address"
+            boolean_expression="((ip.src == ip.src.1) &amp;&amp; (ethernet.dst != ethernet.dst.1)) &amp;&amp; ((ip.src == ip.src.2) &amp;&amp; (ethernet.dst != ethernet.dst.2)))"/>
+  </operator>
+</property>
+```

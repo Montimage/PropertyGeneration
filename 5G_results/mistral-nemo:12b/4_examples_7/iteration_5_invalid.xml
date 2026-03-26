@@ -1,0 +1,9 @@
+<beginning>
+  <!-- Property: Detect Sustained High-Rate GTP-U Flows -->
+  <property value="THEN" delay_units="ms" delay_min="0+" delay_max="1000" property_id="8571" type_property="SECURITY_RULE" description="Detect sustained high-rate GTP-U flows from specific UEs or sessions.">
+    <!-- Event: High-Rate GTP-U Flow -->
+    <event event_id="1" value="COMPUTE" boolean_expression="(gre.proto == 47) &amp;&amp; (tcp.payload_len > 0) &amp;&amp; (ip.src != ip.dst))"/>
+    <!-- Event: Same UE/IP Address in Consecutive Packets -->
+    <event event_id="2" value="COMPUTE" boolean_expression="(gre.proto == 47) &amp;&amp; (tcp.payload_len > 0) &amp;&amp; (ip.src == ip.prev_src) &amp;&amp; (ip.dst == ip.prev_dst))"/>
+  </property>
+</beginning>

@@ -1,0 +1,27 @@
+<beginning>
+<!-- Property 128: Abnormal UE Registration Surges -->
+
+<property value="THEN" delay_units="ms" delay_min="-1" delay_max="0" property_id="128" type_property="ATTACK"
+    description="Abnormal surges of UE registration signaling">
+      <event value="COMPUTE" event_id="1" description="NAS RegistrationRequest received">
+        <boolean_expression>(ngap.pdu_present == NGAP_PDU INITIALUEMESSAGE AND nas.message_type == NAS_REGISTRATION_REQUEST)</boolean_expression>
+      </event>
+      <operator value="+"> <!-- operator for counting the number of events -->
+        <event value="COMPUTE" event_id="2">
+          <boolean_expression>(ngap.pdu_present == NGAP_PDU INITIALUEMESSAGE AND nas.message_type == NAS_REGISTRATION_REQUEST)</boolean_expression>
+        </event>
+      </operator>
+      <if_satisfied>em_on_rule_satisfied("Abnormal registration surge detected")</if_satisfied> <!-- reactive function call -->
+    </property>
+
+  <!-- Define the reactive function -->
+  <embedded_functions>
+    void on_load() { ... } <!-- On load function -->
+    void on_unload() { ... } <!-- On unload function -->
+    void em_on_rule_satisfied(const char *message) {
+      printf("%s\n", message);
+      // Add your custom logic here, e.g., send alert to sysadmin
+    }
+  </embedded_functions>
+
+</beginning>

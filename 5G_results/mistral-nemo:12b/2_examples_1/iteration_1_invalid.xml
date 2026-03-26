@@ -1,0 +1,20 @@
+<beginning>
+<!-- Property 101: Excessive PDU Session Establishment/Release Churn -->
+<property value="THEN" delay_units="ms" delay_min="-1" delay_max="0" property_id="101" type_property="SECURITY_RULE"
+    description="Excessive PDU Session Establishment/Release churn in 5G core network">
+    <operator value="AND">
+      <!-- Context: Session establishment request -->
+      <event value="COMPUTE" event_id="101.1" description="NAS PDU Session Establishment Request received">
+        <boolean_expression>(ngap.procedure_code == NAS_NON_5GS_MOmobile_Identification) &amp;&amp; (ngap.pdu_present &amp; nas.message_type == NAS_PDU_SESSION_ESTABLISHMENT_REQUEST)</boolean_expression>
+      </event>
+
+      <!-- Trigger: Session release request within a short timeframe -->
+      <event value="COMPUTE" event_id="101.2" description="NAS PDU Session Release Request received within 5 seconds">
+        <boolean_expression>(ngap.procedure_code == NAS_NON_5GS_MOmobile_Identification) &amp;&amp; (ngap.pdu_present &amp; nas.message_type == NAS_PDU_SESSION_RELEASE_REQUEST) &amp;&amp; ((timestamp - timestamp.1) <= 5000)</boolean_expression>
+      </event>
+    </operator>
+
+    <!-- Reactive function: Generate alert on excessive churn -->
+    <if_satisfied>em_generate_alert("Excessive PDU Session Establishment/Release churn", affected_ue_contexts, involved_interfaces, nas_message_types)</if_satisfied>
+</property>
+</beginning>

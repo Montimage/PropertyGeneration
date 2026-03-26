@@ -1,0 +1,12 @@
+<beginning>
+
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="10" property_id="97" type_property="ATTACK" 
+    description="Temporal pattern of packets sent from UE to UPF within the last 3 seconds">
+   <event value="COMPUTE" event_id="1" 
+           description="UE sends packets in time window [t-2, t+2] seconds"
+           boolean_expression="( #em_ngap_check_msg_throughput( meta.utime - 2 ) &amp;&amp; ( #em_ngap_check_msg_throughput( meta.utime + 2 ) ) )"/>
+   <event value="COMPUTE" event_id="2" 
+           description="Total number of packets sent within the last 3 seconds"
+           boolean_expression="( #em_ngap_packets_sent_in_window( meta.utime - 2, meta.utime + 2 ) )"/>
+</property>
+</beginning>

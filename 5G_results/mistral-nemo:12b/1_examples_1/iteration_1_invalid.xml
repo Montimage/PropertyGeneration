@@ -1,0 +1,37 @@
+<beginning>
+<!-- Property ID 101: Abnormal UE Registration Surge Detection -->
+<property value="THEN" delay_units="ms" delay_min="-1" delay_max="0" property_id="101" type_property="SECURITY_RULE"
+    description="Detect abnormal surges of UE registration signaling">
+      <event value="COMPUTE" event_id="1"
+             description="InitialUEMessage or UplinkNASTransport with NAS RegistrationRequest"
+             boolean_expression="(ngap.pdu_present == 'initialUENotification' AND nas.message_type == 'registrationRequest') OR
+                                  (ngap.pdu_present == 'uplinkNasTransport' AND nas.message_type == 'registrationRequest')"/>
+      <event value="COMPUTE" event_id="2"
+             description="Count registration attempts per UE and gNB within a time window"
+             boolean_expression="#em_count_registration_attempts(ngap.amf_ue_id, ngap.ran_ue_id, 1000ms) > 5"/>
+      <event value="COMPUTE" event_id="3"
+             description="Check for repeated registration attempts without completion within a bounded time interval"
+             boolean_expression="#em_check_registration_completion(ngap.amf_ue_id, ngap.ran_ue_id, 10000ms) == false"/>
+      <if_satisfied>#em_generate_alert("Abnormal UE Registration Surge", current_time, registration_attempts_count, affected_identifiers, triggering_message_types)</if_satisfied>
+</property>
+
+<!-- Embedded Functions -->
+<embedded_functions>
+#include "mmt_lib.h"
+#include "pre_embedded_functions.h"
+
+void em_count_registration_attempts(uint64_t amf_ue_id, uint64_t ran_ue_id, int64_t time_window_ms) {
+  // Implement function to count registration attempts per UE and gNB within a time window
+}
+
+int em_check_registration_completion(uint64_t amf_ue_id, uint64_t ran_ue_id, int64_t time_interval_ms) {
+  // Implement function to check for repeated registration attempts without completion within a bounded time interval
+  return false;
+}
+
+void em_generate_alert(const char* alert_message, uint64_t timestamp, int registration_attempts_count,
+                      const char* affected_identifiers, const char* triggering_message_types) {
+  // Implement function to generate an alert containing the required information
+}
+</embedded_functions>
+</beginning>

@@ -1,0 +1,18 @@
+<beginning>
+  <!-- Property: The UPF must forward user-plane traffic only through valid and active GTP-U tunnels and detect inconsistencies between observed GTP-U packets and the tunnel state established by the SMF. -->
+  <property value="THEN" delay_units="ms" delay_min="0+" delay_max="100" property_id="50" type_property="SECURITY_RULE"
+    description="The UPF must forward user-plane traffic only through valid and active GTP-U tunnels and detect inconsistencies between observed GTP-U packets and the tunnel state established by the SMF.">
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="1" description="GTP-U packet with unknown TEID"
+        boolean_expression="(gtp_u.teid == 0 or gtp_u.teid != smf.pfcp_state[smf.pfcp_state.id].teid)"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="2" description="GTP-U packet with stale TEID"
+        boolean_expression="(gtp_u.teid != 0 and gtp_u.teid == smf.pfcp_state[smf.pfcp_state.id].teid and (timestamp - smf.pfcp_state[smf.pfcp_state.id].last_update) > 1000)"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="3" description="GTP-U packet with inconsistent TEID"
+        boolean_expression="(gtp_u.teid != 0 and gtp_u.teid == smf.pfcp_state[smf.pfcp_state.id].teid and (timestamp - smf.pfcp_state[smf.pfcp_state.id].last_update) < 1000 and (gtp_u.teid != smf.pfcp_state[smf.pfcp_state.id].teid))"/>
+    </operator>
+  </property>
+</beginning>

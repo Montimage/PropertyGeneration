@@ -1,0 +1,16 @@
+prompt_file,model_name,iterations,valid_xml,elapsed_time
+1_examples_5.txt,mistral-nemo:12b,3,True,68.52863788604736
+1_examples_7.txt,mistral-nemo:12b,1,True,36.223859786987305
+1_examples_1.txt,mistral-nemo:12b,5,False,86.10269594192505
+5_examples_7.txt,mistral-nemo:12b,1,True,22.751986026763916
+2_examples_5.txt,mistral-nemo:12b,3,True,75.96120190620422
+3_examples_1.txt,mistral-nemo:12b,3,True,46.76606488227844
+2_examples_7.txt,mistral-nemo:12b,5,False,127.48140788078308
+5_examples_5.txt,mistral-nemo:12b,5,False,153.96263718605042
+4_examples_1.txt,mistral-nemo:12b,5,True,76.3992657661438
+4_examples_5.txt,mistral-nemo:12b,5,False,130.89468908309937
+5_examples_1.txt,mistral-nemo:12b,3,True,55.27507400512695
+3_examples_7.txt,mistral-nemo:12b,1,True,30.828908920288086
+3_examples_5.txt,mistral-nemo:12b,5,False,167.07581186294556
+2_examples_1.txt,mistral-nemo:12b,5,False,89.82420992851257
+4_examples_7.txt,mistral-nemo:12b,5,False,153.1452660560608

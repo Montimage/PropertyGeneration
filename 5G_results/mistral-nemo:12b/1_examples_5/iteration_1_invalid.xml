@@ -1,0 +1,41 @@
+<beginning>
+  <property value="THEN" delay_units="s" delay_min="-1" delay_max="0" property_id="5G_REGISTRATION_FLOOD" type_property="SECURITY_RULE" description="Detect abnormal surges of UE registration signaling">
+    <event value="COMPUTE" event_id="1" description="NGAP InitialUEMessage with NAS RegistrationRequest" boolean_expression="(ngap.message_type == 1) &amp;&amp; (nas.registration_request_present == 1)" />
+    <embedded_functions>
+      <![CDATA[
+#include <stdlib.h>
+
+static uint64_t reg_req_count = 0;
+static time_t last_reg_req_time = 0;
+
+void on_load() {
+  reg_req_count = 0;
+  last_reg_req_time = 0;
+}
+
+void on_unload() {
+  // Reset counters and timestamps when unloading the rules
+  reg_req_count = 0;
+  last_reg_req_time = 0;
+}
+
+bool check_registration_flood(uint64_t current_time, uint64_t packet_index) {
+  time_t current_time_seconds = (time_t)(current_time / 1000);
+  if ((current_time_seconds - last_reg_req_time) >= 5) { // Adjust the interval as needed
+    reg_req_count = 0;
+    last_reg_req_time = current_time_seconds;
+  }
+  ++reg_req_count;
+
+  // Check if the rate of RegistrationRequest messages exceeds the threshold within the specified time window
+  if (reg_req_count > 10 && (current_time - last_reg_req_time) <= (5 * 60 * 1000)) { // Adjust the threshold and time window as needed
+    return true;
+  }
+
+  return false;
+}
+      ]]>
+    </embedded_functions>
+    <event value="COMPUTE" event_id="2" description="Check registration flood condition" boolean_expression="#check_registration_flood(meta.packet_timestamp, meta.packet_index)" if_satisfied="generate_alert()" />
+  </property>
+</beginning>

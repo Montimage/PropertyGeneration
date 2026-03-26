@@ -1,0 +1,22 @@
+<beginning>
+  <!-- Property 501: High rate of PDU Session Establishment/Release Requests -->
+  <property value="THEN" delay_units="ms" delay_min="-1+" delay_max="0" property_id="501" type_property="SECURITY_RULE" description="High rate of PDU Session Establishment/Release Requests">
+    <event value="COMPUTE" event_id="1" description="PDU Session Establishment Request (NGAP)" boolean_expression="(ngap.procedure_code == 3)"/>
+    <event value="COMPUTE" event_id="2" description="PDU Session Release Request (NGAP)" boolean_expression="(ngap.procedure_code == 4)"/>
+
+    <!-- PFCP session establishment/deletion events -->
+    <event value="COMPUTE" event_id="3" description="PFCP Session Establishment" boolean_expression="(pfcp.message_type == 16)"/>
+    <event value="COMPUTE" event_id="4" description="PFCP Session Deletion" boolean_expression="(pfcp.message_type == 20)"/>
+
+    <!-- Reactive function to raise alert on high churn rate -->
+    <if_satisfied>em_raise_alert(rule_t, DETECTED, timestamp, counter, trace)</if_satisfied>
+  </property>
+
+  <!-- Embedded functions for raising alerts -->
+  <embedded_functions>
+    void em_raise_alert(const rule_t *rule, int verdict, uint64_t timestamp, uint64_t counter, const mmt_array_t *trace) {
+      // Implement alert-raising logic here using the provided parameters
+      printf("Alert: High rate of PDU Session Establishment/Release Requests\n");
+    }
+  </embedded_functions>
+</beginning>

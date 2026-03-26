@@ -1,0 +1,23 @@
+<beginning>
+  <!-- Property 123: Detect abnormal UE registration signaling -->
+  
+  <property value="THEN" delay_units="ms" delay_min="-1" delay_max="1000" property_id="123" type_property="ATTACK"
+    description="Detect abnormal UE registration signaling">
+    
+    <!-- Context event: InitialUEMessage or UplinkNASTransport with NAS RegistrationRequest -->
+    <event value="COMPUTE" event_id="101" 
+           description="InitialUEMessage or UplinkNASTransport with NAS RegistrationRequest"
+           boolean_expression="(ngap.message_type = 'InitialUEMessage' OR ngap.message_type = 'UplinkNASTransport') AND (nas_registration_request_present)"/>
+    
+    <!-- Trigger event: Repeated RegistrationRequest messages within a time window -->
+    <event value="COMPUTE" event_id="102" 
+           description="Repeated RegistrationRequest messages"
+           boolean_expression="(ngap.message_type = 'InitialUEMessage' OR ngap.message_type = 'UplinkNASTransport') AND (nas_registration_request_present) AND (#em_repeated_requests(1000))"/>
+    
+    <!-- Trigger event: No completion of registration procedure within a bounded time interval -->
+    <event value="COMPUTE" event_id="103" 
+           description="No completion of registration procedure"
+           boolean_expression="(ngap.message_type = 'InitialUEMessage' OR ngap.message_type = 'UplinkNASTransport') AND (nas_registration_request_present) AND (#em_no_completion(1000))"/>
+    
+  </property>
+</beginning>

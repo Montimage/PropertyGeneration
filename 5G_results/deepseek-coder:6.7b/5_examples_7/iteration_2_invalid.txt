@@ -1,0 +1,8 @@
+Sure, I can help you with that. However, I need more information about the scenario you want to match. Could you provide me with the following details?
+
+1. The type of attack or behavior you are trying to detect (e.g., SYN flood, TCP idle scans).
+2. Which protocols should be included in this property (e.g., TCP, IP, Ethernet, etc.).
+3. Any specific criteria for matching the behavior (e.g., packet counts, flags, ports, etc.).
+4. The description of the new XML property you want to create.
+
+With these details, I can help you generate a more accurate XML property that matches your scenario and adheres to the protocol(s) context.

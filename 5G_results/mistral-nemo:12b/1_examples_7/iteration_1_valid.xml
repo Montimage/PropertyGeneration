@@ -1,0 +1,20 @@
+<beginning>
+<!-- Property 95: Unusually high NAS security mode COMMAND messages from a single UE. -->
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="1000" property_id="95" type_property="ATTACK"
+    description="Unusually high NAS security mode COMMAND messages from a single UE, possible replay attack.">
+    <event value="COMPUTE" event_id="1"
+            description="NAS Security mode COMMAND message"
+            boolean_expression="(nas_5g.security_type == 3)"/>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="100">
+        <event value="COMPUTE" event_id="2"
+                description="NAS Security mode COMMAND msg, coming from the same UE (2nd occurrence)"
+                boolean_expression="((nas_5g.security_type == 3)&amp;&amp;(ngap.amf_ue_id == ngap.amf_ue_id.1))"/>
+        <event value="COMPUTE" event_id="3"
+                description="NAS Security mode COMMAND msg, coming from the same UE (3rd occurrence)"
+                boolean_expression="((nas_5g.security_type == 3)&amp;&amp;(ngap.amf_ue_id == ngap.amf_ue_id.1)&amp;&amp;(ngap.amf_ue_id != ngap.amf_ue_id.2))"/>
+        <event value="COMPUTE" event_id="4"
+                description="NAS Security mode COMMAND msg, coming from the same UE (4th occurrence)"
+                boolean_expression="((nas_5g.security_type == 3)&amp;&amp;(ngap.amf_ue_id == ngap.amf_ue_id.1)&amp;&amp;(ngap.amf_ue_id != ngap.amf_ue_id.2)&amp;&amp;(ngap.amf_ue_id != ngap.amf_ue_id.3))"/>
+    </operator>
+</property>
+</beginning>

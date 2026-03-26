@@ -1,0 +1,20 @@
+<beginning>
+  <!-- Property 123: Detection of excessive GTP-U traffic causing potential UPF resource exhaustion -->
+  <property value="THEN" delay_units="ms" delay_min="-1000" delay_max="0" property_id="123"
+    type_property="SECURITY_RULE" description="Detection of excessive GTP-U traffic causing potential UPF resource exhaustion">
+    <event value="COMPUTE" event_id="1" description="GTP-U packet rate exceeds threshold">
+      <boolean_expression>
+        (gtpu.packet_rate > 10000) AND
+        (#time() - gtpu.last_packet_time &lt;= 1000)
+      </boolean_expression>
+    </event>
+    <event value="COMPUTE" event_id="2" description="Increased packet loss or latency at UPF">
+      <boolean_expression>
+        (ip.packet_loss > 5%) OR
+        (ip.latency > 50ms) AND
+        #time() - ip.last_packet_time &lt;= 1000
+      </boolean_expression>
+    </event>
+    <if_satisfied>em_report_alert(n3, gtpu.packet_rate, gtpu.byte_volume, gtpu.involved_uens)</if_satisfied>
+  </property>
+</beginning>

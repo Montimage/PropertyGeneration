@@ -1,0 +1,27 @@
+<beginning>
+
+<!-- Property: Detect Abnormal Traffic Patterns on N3 -->
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="1000" property_id="501" type_property="ATTACK"
+    description="Detect abnormal traffic patterns originating from UEs leading to sustained high-rate GTP-U flows">
+    <operator value="AND" delay_units="ms" delay_min="0+" delay_max="500">
+      <!-- Context: Moderate traffic rate for a specific UE -->
+      <event value="COMPUTE" event_id="1"
+             description="Moderate traffic rate from an UE on N3"
+             boolean_expression="(gtpu.teid != 0) &amp;&amp; (ip.src != ip.dst) &amp;&amp; (gtpu.packet_rate < @normal_packet_rate) &amp;&amp; (gtpu.byte_volume < @normal_byte_volume)"/>
+    </operator>
+    <!-- Trigger: Sustained high-rate GTP-U flows from the same UE -->
+    <event value="COMPUTE" event_id="2"
+           description="Sustained high traffic rate from an UE on N3"
+           boolean_expression="(gtpu.teid == gtpu.teid.1) &amp;&amp; (gtpu.packet_rate > @abnormal_packet_rate) &amp;&amp; (gtpu.byte_volume > @abnormal_byte_volume) &amp;&amp; (gtpu.packet_count > 500)"/>
+</property>
+
+<!-- Set normal and abnormal traffic thresholds -->
+<embedded_functions><![CDATA[
+int @normal_packet_rate = 1000;
+int @normal_byte_volume = 100000;
+
+int @abnormal_packet_rate = 5000;
+int @abnormal_byte_volume = 5000000;
+]]></embedded_functions>
+
+</beginning>

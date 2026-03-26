@@ -1,0 +1,19 @@
+<beginning>
+<!-- Property: Excessive NACK messages in TCP indicate potential network issues or aggressive congestion control -->
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="10" property_id="100" type_property="NETWORK_ANOMALY"
+    description="Excessive NACK messages in TCP indicate potential network issues or aggressive congestion control.">
+    <operator value="THEN" delay_units="s" delay_min="0+" delay_max="1">
+      <event value="COMPUTE" event_id="1"
+             description="TCP packet with NACK flag set"
+             boolean_expression="(tcp.flags == 0x14)"/>
+      <event value="COMPUTE" event_id="2"
+             description="Count number of NACK packets"
+             boolean_expression="(tcp.flags == 0x14)"/>
+    </operator>
+    <operator value="THEN" delay_units="s" delay_min="0+" delay_max="5">
+      <event value="COMPUTE" event_id="3"
+             description="More than X NACK packets within Y seconds"
+             boolean_expression="(tcp.flags == 0x14)"/>
+    </operator>
+</property>
+</beginning>

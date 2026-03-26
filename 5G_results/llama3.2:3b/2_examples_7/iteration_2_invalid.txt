@@ -1,0 +1,39 @@
+Here is an example of a new XML property that matches the scenario description:
+
+**Property ID:** 99
+**Type Property:** EVASION
+**Description:** Duplicate IP addresses
+
+This rule detects whether there are duplicate IP addresses in the same packet.
+
+```xml
+<embedded_functions><![CDATA[
+#include <stdlib.h>
+#include <mmt_core.h>
+
+static int em_check_duplicate_ip(const void *data) {
+  static char ip[INET_ADDRSTRLEN];
+  struct in_addr addr;
+
+  // Convert IP address to string format
+  inet_ntop(AF_INET, (struct sockaddr *)&addr, ip, INET_ADDRSTRLEN);
+
+  // Check if the IP address is already present in the packet
+  return (inet_pton(AF_INET, ip, &addr) == 1);
+}
+
+]]></embedded_functions>
+
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="99" type_property="EVASION" 
+    description="Duplicate IP addresses">
+  <event value="COMPUTE" event_id="1"
+         description="IP packet with duplicate address in the same packet."
+         boolean_expression="(#em_check_duplicate_ip(meta.utime) == 1)"/>
+</property>
+```
+
+This property uses a custom function `em_check_duplicate_ip` to check if there are any duplicate IP addresses in the packet. The function converts the IP address from binary format to string format and then checks if it's already present in the packet using `inet_pton`. If the IP address is found twice, the function returns 1.
+
+The property uses a boolean expression to trigger the event when there are duplicate IP addresses in the same packet.
+
+Note that this is just one possible implementation of the rule, and you may need to modify it to fit your specific requirements.

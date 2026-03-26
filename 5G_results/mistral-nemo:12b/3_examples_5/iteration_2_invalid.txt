@@ -1,0 +1,25 @@
+Based on the provided scenario, I've created an XML property for detecting potential brute force attacks via SCTP (Stream Control Transmission Protocol), similar to SSH but using different ports. This property assumes that the source address is either the infected machine or the attacker, with no spoofing possible.
+
+```xml
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="5" property_id="101" type_property="ATTACK">
+  <description>Several attempts to connect via SCTP (brute force attack). Source address is either infected machine or attacker (no spoofing is possible).</description>
+  <operator value="THEN" delay_units="s" delay_min="0+" delay_max="3">
+    <event value="COMPUTE" event_id="1"
+            description="SCTP init request"
+            boolean_expression="((sctp.flag == 0x02)&amp;&amp;((sctp.dest_port == 2500)&amp;&amp;(ip.src != ip.dst))))"/>
+    <event value="COMPUTE" event_id="2"
+            description="SCTP init reply"
+            boolean_expression="((sctp.flag == 0x18)&amp;&amp;((sctp.src_port == 2500)&amp;&amp;((ip.dst == ip.src.1)&amp;&amp;(ip.src == ip.dst.1)))))"/>
+  </operator>
+  <operator value="THEN" delay_units="s" delay_min="0+" delay_max="3">
+    <event value="COMPUTE" event_id="3"
+            description="2nd attempt"
+            boolean_expression="((sctp.flag == 0x02)&amp;&amp;((sctp.dest_port == 2500)&amp;&amp;((ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1)))))"/>
+    <event value="COMPUTE" event_id="4"
+            description="3rd attempt"
+            boolean_expression="((sctp.flag == 0x02)&amp;&amp;((sctp.dest_port == 2500)&amp;&amp;((ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1)))))"/>
+  </operator>
+</property>
+```
+
+This property will trigger when it detects three consecutive SCTP init requests (similar to SYN packets in TCP) from the same source IP address and destination port (2500, as an example). Adjust the delay units, minimum, maximum values, and ports according to your specific use case.

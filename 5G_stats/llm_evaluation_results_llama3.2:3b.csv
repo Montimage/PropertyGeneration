@@ -1,0 +1,4 @@
+model_name,num_examples,SVR,Avg_Iterations,TVR
+llama3.2:3b,1,40.0,2.25,80.0
+llama3.2:3b,5,40.0,2.2,100.0
+llama3.2:3b,7,40.0,2.2,100.0

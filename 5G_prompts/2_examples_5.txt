@@ -1,0 +1,228 @@
+
+You are an AI that generates XML properties for deep packet inspection.
+
+### MMT Property Context:
+XML Rules:
+- A <property> defines a security rule (SECURITY_RULE) or an attack rule (ATTACK).
+- Each property begins with a <property> tag and ends with </property>
+- A property is a "general ordered tree"
+- The nodes of the property tree are:
+  - <property> node (required)
+  - <operator> nodes (optional)
+  - <event> nodes (required)
+- The <property> node is forcibly the root node and the <event> nodes are forcibly leaf nodes.
+- The left branch represents the context and the right branch represents the trigger.
+- The property is found valid when the trigger is found valid; and the trigger is checked only if the context is valid.
+
+- <beginning> tag:
+  - Container tag for defining multiple properties
+  - Holds one or more <property> definitions
+  - Includes optional embedded functions.
+
+- A <property> tag contains:
+  - value (optional): THEN, defines the logical relationship between context and the trigger
+  - delay_min (optional), attribute sets a time constraint on when the trigger must occur relative to the context. A negative delay (-1) means the trigger must have occurred before the context. A zero delay (0) means the trigger must occur simultaneously with the context. A positive delay (+N) means the trigger must occur after the context.
+  - property_id (required): attribute uniquely identifies the property.
+  - description (required): Textual description of the property.
+  - if_satisfied, (optional) specifies an action to be executed when the property condition is met, through the reactive function.
+  - type_property (required) can be SECURITY_RULE, ATTACK, EVASION, or TEST
+
+- An <event> tag contains:
+  - value:COMPUTE, indicates that this event is evaluated based on a boolean expression.
+  - event_id, assigns a unique identifier to the event, allowing it to be referenced within the security property.
+  - description: Textual description of the event.
+  - boolean_expression, attribute that defines the conditions that determines when the event is triggered. Packet or message attributes are identified by <protocol_name>”.”<field_name>[“.”<event_id>]. Protocol_name is either BASE (containing packet metadata, e.g., protocol id, time slot of message) or the message/protocol identifier (e.g., SPHY_DATA_REQ, IP, TCP, UDP...). Field_name is the name of the attribute. Event_id allows identifying data captured when another event (identified using its id) of the property occurred. Expressions can use packet fields, protocol attributes, or embedded functions.
+
+- <embedded_functions> tag:
+  - Contains custom embedded logic (C functions) that can be used within the boolean_expression in <event> tags.
+  - One can either use existing embedded functions or implement a new function.
+  - They can be used in the boolean_expression by using the syntax #<name_of_function>(<list of parameters>)
+  - To avoid any confusion, a new embedded function name should start by a prefix em_
+  - Inside the tag, one can also implement 2 other functions as the followings:
+    - void on_load(){ ... } being called when the rules inside the xml file being loaded into MMT-Security
+    - void on_unload(){ ... } being called when exiting MMT-Security
+  - Note that, before using a C function the library containing that embedded functions need to be included. The following libraries have been pre-included:
+    -#include <string.h>
+    -#include <stdio.h>
+    -#include <stdlib.h>
+    -#include "mmt_lib.h"
+    -#include "pre_embedded_functions.h"
+
+- Reactive functions
+  - They allow user perform some action when a rule is satisfied. The functions will be called each time rules are satisfied.
+  - To implement and use a reactive function, one need to implement a C function inside <embedded_functions> tag, the function name should be prefixed by em_ to avoid confusion with the ones existing in MMT.
+  - The function has the following format:
+typedef void (*mmt_rule_satisfied_callback)(
+		const rule_t *rule,		          //rule being validated
+		int verdict,                     //DETECTED, NOT_RESPECTED
+		uint64_t timestamp,              //moment (by time) the rule is validated
+		uint64_t counter,                //moment (by order of message) the rule is validated
+		const mmt_array_t * const trace  //historic of messages that validates the rule
+);
+
+- In the XML file of a rule, if an attribute is absent then its value is set by default
+  - property, operator:
+    - value: COMPUTE (=> only one <event> is required. Thus delay_min and delay_max must be 0)
+    - delay_units: 0
+    - delay_max: 0
+
+## Scenario Description:
+The system under test is a 5G Standalone (SA) core network where UEs establish and release PDU sessions through the Session Management Function (SMF), with data-plane resources configured in the User Plane Function (UPF). 
+Session control signaling is carried over NAS messages transported via NGAP over SCTP on the N1/N2 interfaces, while session rule installation and removal between SMF and UPF is performed over the N4 interface using PFCP. 
+Monitoring is performed at the 5G core, observing both control and user-plane control signaling.
+
+Protocol and interfaces:
+- Interfaces: N1/N2 (UE/gNB <-> AMF/SMF), N4 (SMF <-> UPF)
+- Protocols: SCTP, NGAP, NAS (PDU Session Management), PFCP
+
+Property: The 5G core must maintain stable session management behavior and detect abnormal PDU session establishment and release churn that may overload session tables, control-plane signaling, or UPF rule management.
+
+Trigger: One or more UEs repeatedly initiate NAS PDU Session Establishment Request and PDU Session Release Request messages at a high rate, causing rapid creation and teardown of session state in the SMF and UPF.
+
+Expected message ordering (baseline):
+Under normal conditions, a PDU session lifecycle follows:
+1. NAS PDU Session Establishment Request (via NGAP)
+2. Session acceptance and resource setup signaling
+3. PFCP session establishment between SMF and UPF
+4. NAS PDU Session Establishment Accept
+5. NAS PDU Session Release Request
+6. PFCP session deletion and resource cleanup
+
+Observable Evidence:
+The monitoring system must inspect:
+- NGAP/NAS: PDU session establishment and release messages, UE and session identifiers, timestamps
+- PFCP: session establishment and deletion messages, rule install/remove operations, session IDs
+- Temporal patterns: high-frequency create/delete cycles over short time windows
+
+Detection condition:
+An alert must be raised when:
+- the rate of PDU session establishment and release operations exceeds defined thresholds within a time window, or
+- repeated session setup requests are observed without sustained session duration, indicating excessive churn.
+
+Response:
+Upon detection, the system must generate an alert summarizing the session churn rate, affected UE contexts, involved interfaces (N1/N2, N4), and the corresponding NAS and PFCP message types, enabling correlation with SMF and UPF load indicators.
+
+## Protocol Context:
+Protocol: ngap
+Attributes: ['procedure_code', 'pdu_present', 'amf_ue_id', 'ran_ue_id']
+
+## Example XML Properties:
+### Example 1:
+**Description:** Out of order IP fragmentation.
+**Protocol(s):** ip
+**XML Property:**
+<beginning>
+<!-- Property 23: Out of order IP fragmentation.-->
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="23" type_property="EVASION" 
+    description="Out of order IP fragmentation : a fragment with a size less than 9 bytes (allowed but could be an evasion).">
+      <event value="COMPUTE" event_id="1" 
+             description="IP fragment followed by another"
+             boolean_expression="((ip.identification &gt; 0)&amp;&amp;((ip.mf_flag == 1)&amp;&amp;((ip.frag_offset &gt;= 0)&amp;&amp;(ip.src != ip.dst))))"/>
+      <event value="COMPUTE" event_id="2" 
+             description="IP fragment with same identification and an offset less than 9 bytes"
+             boolean_expression="((ip.identification == ip.identification.1)&amp;&amp;((ip.frag_offset &lt; ip.frag_offset.1)&amp;&amp;(((ip.frag_offset.1 - ip.frag_offset) &lt; 9)&amp;&amp;(ip.src != ip.dst))))"/>
+</property>
+</beginning>
+
+
+### Example 2:
+**Description:** This rule aims to detect 'Ping of death' attack.
+**Protocol(s):** icmp, ip
+**XML Property:**
+<beginning>
+<!-- Property 51: This rule aims to detect "Ping of death" attack. Ref: https://en.wikipedia.org/wiki/Ping_of_death
+The maximum packet length of an IPv4 packet is 65 535 bytes (2^16 - 1)
+The attacker sends a number of IP fragments with the regrouped payload at the end will be an ICMP packet bigger than 65 535 bytes 
+that can probably lead to buffer overflow / system crash.
+-->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="51" type_property="ATTACK" 
+          description="Ping of death attack">
+      <event value="COMPUTE" event_id="1" 
+             description="A defragmented ICMP packet"
+             boolean_expression="((icmp.packet_count != 0) &amp;&amp; ((ip.df_flag + ip.mf_flag) ==0))"/>
+      <event value="COMPUTE" event_id="2" 
+             description="Packet length greater than 65 535"
+             boolean_expression="((ip.src != ip.dst)&amp;&amp;(meta.packet_len &gt; 65535))"/>
+</property>
+</beginning>
+
+
+### Example 3:
+**Description:** Probable TCP ACK/Window scan (4 different attempts in a row on different ports).
+**Protocol(s):** tcp, ip
+**XML Property:**
+<beginning>
+<!-- Property 44: Probable TCP ACK/Window scan (4 different attempts in a row on different ports).
+-->
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="44" type_property="ATTACK" 
+    description="Probable TCP ACK/Window scan (4 different attempts in a row on different ports).">
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="1" 
+             description="TCP ACK packet header with a destination port field set (1)"
+             boolean_expression="(tcp.flags == 16)"/>
+      <event value="COMPUTE" event_id="2" 
+             description="TCP ACK packet header with another destination port field set (2)"
+             boolean_expression="((tcp.flags == 16)&amp;&amp;((tcp.dest_port != tcp.dest_port.1)&amp;&amp;((ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1))))"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="3" 
+             description="TCP ACK packet header with another destination port field set (3)"
+             boolean_expression="((tcp.flags == 16)&amp;&amp;((tcp.dest_port != tcp.dest_port.1)&amp;&amp;((tcp.dest_port != tcp.dest_port.2)&amp;&amp;((ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1)))))"/>
+      <event value="COMPUTE" event_id="4"
+             description="TCP ACK packet header with another destination port field set (4)"
+             boolean_expression="((tcp.flags == 16)&amp;&amp;((tcp.dest_port != tcp.dest_port.1)&amp;&amp;((tcp.dest_port != tcp.dest_port.2)&amp;&amp;((tcp.dest_port != tcp.dest_port.3)&amp;&amp;((ip.src == ip.src.1)&amp;&amp;(ip.dst == ip.dst.1)))))"/>
+    </operator>
+</property>
+</beginning>
+
+
+### Example 4:
+**Description:** Probable SYN flooding attack
+**Protocol(s):** tcp, ip
+**XML Property:**
+<beginning>
+<!-- Property 56: Probable SYN flooding attack.
+-->
+	<property value="THEN" delay_units="ms" delay_min="0+" delay_max="100" property_id="56" type_property="ATTACK" 
+    description="Probable SYN flooding attack (Half TCP handshake without TCP RST)">
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="50">
+      <event value="COMPUTE" event_id="1" 
+             description="TCP SYN packet"
+             boolean_expression="((tcp.flags == 2)&amp;&amp;(ip.src != ip.dst))"/>
+      <event value="COMPUTE" event_id="2" 
+             description="TCP [SYN, ACK] packet"
+             boolean_expression="((tcp.flags == 18)&amp;&amp;((ip.src == ip.dst.1)&amp;&amp;(ip.dst == ip.src.1)))"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="50">
+      <event value="COMPUTE" event_id="3" 
+             description="TCP [SYN, ACK] packet"
+             boolean_expression="((tcp.flags == 18)&amp;&amp;((ip.src == ip.dst.1)&amp;&amp;(ip.dst == ip.src.1)))"/>
+      <event value="COMPUTE" event_id="4" 
+             description="TCP [SYN, ACK] packet"
+             boolean_expression="((tcp.flags == 18)&amp;&amp;((ip.src == ip.dst.1)&amp;&amp;(ip.dst == ip.src.1)))"/>
+    </operator>
+</property>
+</beginning>
+
+
+### Example 5:
+**Description:** Non-zero IP padding
+**Protocol(s):** ip
+**XML Property:**
+<beginning>
+<!-- Property 64: Non-zero IP padding -->
+
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="64" type_property="EVASION" 
+    description="Non-zero IP padding">
+      <event value="COMPUTE" event_id="1" 
+             description="IP packet with non-zero IP padding"
+             boolean_expression="(ip.padding_check != 0)"/>
+      <event value="COMPUTE" event_id="2" 
+             description="Print source and destination of IP"
+             boolean_expression="(ip.src != ip.dst)"/>
+</property>
+</beginning>
+
+
+### Task:
+Generate a new XML property that matches the scenario description and adheres to the protocol(s) context.

@@ -1,0 +1,11 @@
+<beginning>
+  <property value="THEN" delay_units="ms" delay_min="-1" delay_max="0" property_id="99" type_property="SECURITY_RULE"
+            description="Monitor UE registration procedures in a stable manner and detect abnormal surges of registration signaling">
+    <event value="COMPUTE" event_id="3" 
+           description="UE registration attempt"
+           boolean_expression="(nas.registration_request_present &amp;&amp; (ngap.message_type == 'InitialUEMessage'))"/>
+    <event value="COMPUTE" event_id="4" 
+           description="Registration completion message"
+           boolean_expression="(nas.registration_request_present &amp;&amp; (ngap.message_type == 'RegistrationAccept' | ngap.message_type == 'RegistrationComplete'))"/>
+  </property>
+</beginning>

@@ -1,0 +1,19 @@
+**Scenario Description:** An attacker is attempting to exploit a known vulnerability in a specific version of a popular web server software by repeatedly sending HTTP GET requests with User-Agent header set to "curl/7.64.1".
+
+**Protocol(s):** http
+
+**XML Property:**
+
+```xml
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="5" property_id="98" type_property="ATTACK"
+    description="Probable HTTP GET Requests with specific User-Agent header (vulnerability exploitation attempt)">
+    <event value="COMPUTE" event_id="1"
+        description="HTTP GET request with User-Agent header set to 'curl/7.64.1'"
+        boolean_expression="(http.header_method == 8) &amp;&amp; (http.header_user_agent == 'curl/7.64.1'))"/>
+    <event value="COMPUTE" event_id="2"
+        description="Same source IP and destination port as the first request"
+        boolean_expression="(ip.src == ip.src.1) &amp;&amp; (http.dest_port == http.dest_port.1))"/>
+</property>
+```
+
+In this new XML property, we define an attack scenario where an attacker is sending HTTP GET requests with a specific User-Agent header to potentially exploit a vulnerability in a web server software. The first event checks for the HTTP GET request with the User-Agent header set to 'curl/7.64.1', and the second event ensures that the source IP and destination port match those of the first request, indicating repeated requests from the same attacker.

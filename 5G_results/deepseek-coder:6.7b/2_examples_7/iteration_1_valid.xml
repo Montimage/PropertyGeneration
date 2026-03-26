@@ -1,0 +1,11 @@
+<beginning>
+    <property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="98" type_property="ATTACK" 
+        description="SCTP packet from a specific source IP and destination port.">
+        <event value="COMPUTE" event_id="1" 
+            description="SCTP packet with a specific source IP address."
+            boolean_expression="(ip.src == 'specific_source_IP')"/>
+        <event value="COMPUTE" event_id="2" 
+            description="SCTP packet with a specific destination port number."
+            boolean_expression="(sctp.dest_port == specific_destination_port)"/>
+    </property>
+</beginning>

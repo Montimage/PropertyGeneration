@@ -1,0 +1,38 @@
+<beginning>
+  <!-- Property 101: High-Rate PDU Session Establishment/Release Churn -->
+  <property value="THEN" delay_units="ms" delay_min="-1+" delay_max="0" property_id="101" type_property="SECURITY_RULE" description="High-rate PDU session establishment/release churn">
+    <event value="COMPUTE" event_id="1" description="PDU Session Establishment Request">
+      <boolean_expression>ngap.procedure_code == 2 AND ngap.pdu_present == TRUE</boolean_expression>
+    </event>
+    <event value="COMPUTE" event_id="2" description="PDU Session Release Request">
+      <boolean_expression>ngap.procedure_code == 4 AND ngap.pdu_present == TRUE</boolean_expression>
+    </event>
+    <embedded_functions>
+      <![CDATA[
+        #include "mmt_lib.h"
+        void on_load() {
+          // Initialize counters and thresholds here
+        }
+        void on_unload() {
+          // Reset or save state here
+        }
+
+        mmt_rule_satisfied_callback em_on_rule_satisfied = NULL;
+        int64_t ue_session_churn_threshold = 50; // Set threshold to 50 sessions per second as an example
+
+        void on_rule_satisfied(const rule_t *rule, int verdict, uint64_t timestamp, uint64_t counter, const mmt_array_t *trace) {
+          if (verdict == DETECTED) {
+            int64_t current_session_count = get_ue_session_count(trace); // Assume a function to count sessions from trace
+            if (current_session_count > ue_session_churn_threshold) {
+              em_on_rule_satisfied(rule, verdict, timestamp, counter, trace);
+            }
+          }
+        }
+
+        void set_churn_threshold(int64_t threshold) {
+          ue_session_churn_threshold = threshold;
+        }
+      ]]>
+    </embedded_functions>
+  </property>
+</beginning>

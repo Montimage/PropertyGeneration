@@ -1,0 +1,25 @@
+<beginning>
+  <property value="THEN" delay_units="ms" delay_min="-1+" delay_max="0" property_id="45" type_property="ATTACK"
+    description="Abnormal PDU session establishment and release behavior">
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="5" 
+             description="NAS PDU Session Establishment Request message with a high rate of occurrences"
+             boolean_expression="(ngap.pdu_present == 1)&amp;&amp;(nas.pdu_session_establishment_request_procedure_code == 1)"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="6"
+             description="PFCP session establishment message with a high rate of occurrences"
+             boolean_expression="(pfcp.pfcp_session_establishment_procedure_code == 1)&amp;&amp;(pfcp.pfcp_session_establishment_message_present == 1)"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="7"
+             description="NAS PDU Session Release Request message with a high rate of occurrences"
+             boolean_expression="(ngap.pdu_present == 1)&amp;&amp;(nas.pdu_session_release_request_procedure_code == 1)"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="-1+" delay_max="0">
+      <event value="COMPUTE" event_id="8"
+             description="PFCP session deletion message with a high rate of occurrences"
+             boolean_expression="(pfcp.pfcp_session_deletion_procedure_code == 1)&amp;&amp;(pfcp.pfcp_session_deletion_message_present == 1)"/>
+    </operator>
+  </property>
+</beginning>

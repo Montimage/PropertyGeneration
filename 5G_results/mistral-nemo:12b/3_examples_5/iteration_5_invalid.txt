@@ -1,0 +1,27 @@
+Based on the provided scenario, I've created an XML property for detecting potential brute force attacks via SCTP association requests (similar to SYN packets in TCP). This property will trigger an alert if there are several attempts from the same source IP within a certain time frame. Here's the generated XML:
+
+```xml
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="5" property_id="101" type_property="ATTACK">
+  <description>Several attempts to associate via SCTP (brute force attack). Source address is either infected machine or attacker.</description>
+  <operator value="THEN" delay_units="s" delay_min="0+" delay_max="3">
+    <event value="COMPUTE" event_id="1"
+            description="SCTP association request (similar to SYN)"
+            boolean_expression="((sctp.verification_tag == 2) || (sctp.verification_tag == 4)) && ((sctp.dest_port == 359) || (sctp.dest_port == 360)))"/>
+    <event value="COMPUTE" event_id="2"
+            description="SCTP association indication"
+            boolean_expression="(sctp.verification_tag == 8) && ((ip.src == ip.dst.1) || (ip.dst == ip.src.1)) && ((sctp.src_port == sctp.dest_port.1) || (sctp.dest_port == sctp.src_port.1)))"/>
+  </operator>
+  <operator value="THEN" delay_units="s" delay_min="0+" delay_max="3">
+    <event value="COMPUTE" event_id="3"
+            description="2nd association attempt"
+            boolean_expression="( (sctp.verification_tag == 2) || (sctp.verification_tag == 4)) && ((ip.src == ip.src.1) || (ip.dst == ip.dst.1)))"/>
+    <event value="COMPUTE" event_id="4"
+            description="3rd association attempt"
+            boolean_expression="( (sctp.verification_tag == 2) || (sctp.verification_tag == 4)) && ((ip.src == ip.src.1) || (ip.dst == ip.dst.1)))"/>
+  </operator>
+</property>
+```
+
+This property defines two events: `SCTP association request` and `SCTP association indication`, similar to SYN and SYN-ACK packets in TCP. The second operator checks for the second and third attempts from the same source IP within a specified time frame.
+
+You can adjust the delay units, minimum delay (delay_min), maximum delay (delay_max), property ID (property_id), and other parameters according to your specific use case.

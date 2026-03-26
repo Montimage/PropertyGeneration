@@ -1,0 +1,31 @@
+<beginning>
+<!-- Property 101: Detect invalid or inconsistent GTP-U tunnels at UPF -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="101" type_property="SECURITY_RULE"
+          description="Detect GTP-U packets with unknown, stale, or inconsistent TEIDs">
+      <event value="COMPUTE" event_id="1"
+             description="GTP-U packet received on N3 interface"
+             boolean_expression="gtpu.packet_present &amp;&amp; gtpu.teid != 0"/>
+      <operator>AND</operator>
+      <event value="COMPUTE" event_id="2"
+             description="TEID not associated with any active PFCP session"
+             boolean_expression="#em_is_invalid_tunnel(gtpu.teid)"/>
+
+      <!-- Optional reactive function to log invalid TEIDs and affected interfaces -->
+      <if_satisfied>em_log_invalid_teid(gtpu.teid, gtpu.src_iface, gtpu.dst_iface)</if_satisfied>
+</property>
+
+<!-- Embedded functions for checking tunnel validity and logging invalid TEIDs -->
+<embedded_functions>
+#include "mmt_lib.h"
+#include "pre_embedded_functions.h"
+
+bool em_is_invalid_tunnel(uint32_t teid) {
+    // Implement logic to check if the TEID is associated with an active PFCP session
+    // Return true if invalid, false otherwise
+}
+
+void em_log_invalid_teid(uint32_t teid, const char* src_iface, const char* dst_iface) {
+    // Log invalid TEID and affected interfaces for further investigation
+}
+</embedded_functions>
+</beginning>

@@ -1,0 +1,17 @@
+<beginning>
+<!-- Detect Log4Shell attack: https://github.com/nhnghia/log4shell-pcaps -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="78" type_property="ATTACK" 
+    description="Detect Log4Shell attack that exploits a vulnerability of log4j, CVE-2021-44832, to get a remote code execution">
+      <event value="COMPUTE" event_id="1" 
+             description="HTTP request URI containing a malicious request"
+             boolean_expression="(#em_check_log4shell(http.uri))"/>
+      <event value="COMPUTE" event_id="2" 
+             description="Print IP source and destination addresses"
+             boolean_expression="(ip.src != ip.dst)"/>
+</property>
+
+<embedded_functions><![CDATA[
+/**
+ * ... same as in the previous example ...
+]]></embedded_functions>
+</beginning>

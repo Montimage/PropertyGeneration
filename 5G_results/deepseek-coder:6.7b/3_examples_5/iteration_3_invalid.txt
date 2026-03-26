@@ -1,0 +1,8 @@
+Sure, I can help you with that. However, I need more details about the scenario and the protocols involved. Could you provide me with the following information?
+1. Description of the scenario.
+2. Protocols involved in this scenario.
+3. The expected behavior or pattern to be detected by the property. 
+4. Any specific conditions or rules that should be considered while creating the property. 
+5. If there are any known attacks or evasions related to these protocols which could help in creating a more accurate property. 
+
+With this information, I can assist you better and generate an XML property for your scenario.

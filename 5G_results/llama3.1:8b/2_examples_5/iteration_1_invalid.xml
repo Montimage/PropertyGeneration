@@ -1,0 +1,51 @@
+<beginning>
+<!-- Property: Abnormal PDU Session Establishment and Release Churn -->
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="67" type_property="SECURITY_RULE" 
+    description="Abnormal PDU session establishment and release churn detection">
+  <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="5">
+    <!-- Event 1: NAS PDU Session Establishment Request message -->
+    <event value="COMPUTE" event_id="1" 
+           description="NAS PDU Session Establishment Request"
+           boolean_expression="(ngap.procedure_code == 'PDU-Session-Setup' &amp;&amp; ngap.pdu_present == true)">
+      <!-- Extract UE and session identifiers from the message -->
+      <event value="COMPUTE" event_id="1.1" 
+             description="Extract UE identifier"
+             boolean_expression="(ngap.amf_ue_id != '')"/>
+      <event value="COMPUTE" event_id="1.2" 
+             description="Extract session identifier"
+             boolean_expression="(ngap.ran_ue_id != '')"/>
+    </event>
+    
+    <!-- Event 2: NAS PDU Session Release Request message -->
+    <event value="COMPUTE" event_id="2" 
+           description="NAS PDU Session Release Request"
+           boolean_expression="(ngap.procedure_code == 'PDU-Session-Release' &amp;&amp; ngap.pdu_present == true)">
+      <!-- Extract UE and session identifiers from the message -->
+      <event value="COMPUTE" event_id="2.1" 
+             description="Extract UE identifier"
+             boolean_expression="(ngap.amf_ue_id != '')"/>
+      <event value="COMPUTE" event_id="2.2" 
+             description="Extract session identifier"
+             boolean_expression="(ngap.ran_ue_id != '')"/>
+    </event>
+    
+    <!-- Operator: Check for repeated session setup requests without sustained session duration -->
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="5">
+      <!-- Event 3: Repeated session setup requests without sustained session duration -->
+      <event value="COMPUTE" event_id="3" 
+             description="Repeated session setup requests without sustained session duration"
+             boolean_expression="(ngap.procedure_code == 'PDU-Session-Setup' &amp;&amp; ngap.pdu_present == true &amp;&amp; (ngap.ran_ue_id == '' or ngap.amf_ue_id == '')">
+        <!-- Check for high-frequency create/delete cycles over short time windows -->
+        <event value="COMPUTE" event_id="3.1" 
+               description="High-frequency create/delete cycles"
+               boolean_expression="(ngap.procedure_code == 'PDU-Session-Setup' &amp;&amp; ngap.pdu_present == true &amp;&amp; (ngap.ran_ue_id != '' or ngap.amf_ue_id != '')">
+          <!-- Check for temporal patterns: high-frequency create/delete cycles over short time windows -->
+          <event value="COMPUTE" event_id="3.1.1" 
+                 description="Temporal pattern: high-frequency create/delete cycles"
+                 boolean_expression="(ngap.procedure_code == 'PDU-Session-Setup' &amp;&amp; ngap.pdu_present == true &amp;&amp; (ngap.ran_ue_id != '' or ngap.amf_ue_id != '') &amp;&amp; (ngap.timestamp - ngap.timestamp.1 < 1000))"/>
+        </event>
+      </event>
+    </operator>
+  </operator>
+</property>
+</beginning>

@@ -1,0 +1,5 @@
+I apologize for the confusion, but I need more context to generate an appropriate response. Could you please provide me with more details about the scenario that we are trying to translate into an XML property? 
+
+For example, what is the purpose of this new rule? What kind of traffic should it be applied to (e.g., nas_5g, ngap, ip, sctp_data)? How does it differ from existing rules? Are there any specific conditions or boolean expressions that need to be met for the rule to trigger?
+
+With these details, I would be able to generate a more accurate XML property.

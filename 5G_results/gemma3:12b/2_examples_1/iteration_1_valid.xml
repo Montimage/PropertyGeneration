@@ -1,0 +1,35 @@
+<beginning>
+<!-- Property 1: High-frequency PDU Session Establishment and Release -->
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="200" property_id="1" type_property="ATTACK"
+    description="High-frequency PDU Session Establishment and Release Request messages.">
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="200">
+        <event value="COMPUTE" event_id="1"
+               description="NAS PDU Session Establishment Request message."
+               boolean_expression="ngap.procedure_code == 16"/>
+        <event value="COMPUTE" event_id="2"
+               description="NAS PDU Session Release Request message."
+               boolean_expression="ngap.procedure_code == 17"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="200">
+        <event value="COMPUTE" event_id="3"
+               description="NAS PDU Session Establishment Request message (repeated)."
+               boolean_expression="ngap.procedure_code == 16"/>
+        <event value="COMPUTE" event_id="4"
+               description="NAS PDU Session Release Request message (repeated)."
+               boolean_expression="ngap.procedure_code == 17"/>
+    </operator>
+</property>
+
+<!-- Property 2: Session Setup without Sustained Duration -->
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="500" property_id="2" type_property="ATTACK"
+    description="Session setup requests observed without sustained session duration.">
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="500">
+        <event value="COMPUTE" event_id="1"
+               description="NAS PDU Session Establishment Request message."
+               boolean_expression="ngap.procedure_code == 16"/>
+        <event value="COMPUTE" event_id="2"
+               description="NAS PDU Session Establishment Accept message (missing)."
+               boolean_expression="ngap.procedure_code == 18"/>
+    </operator>
+</property>
+</beginning>

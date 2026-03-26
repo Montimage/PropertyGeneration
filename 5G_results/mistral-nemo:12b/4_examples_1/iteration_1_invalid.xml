@@ -1,0 +1,47 @@
+<beginning>
+<!-- Property 123: Detect Abnormal Traffic Patterns on N3 Interface -->
+<property value="THEN" delay_units="s" delay_min="-5" delay_max="0" property_id="123" type_property="SECURITY_RULE"
+    description="Detect abnormal traffic patterns originating from UE(s) on the N3 interface (GTP-U)">
+    <event value="COMPUTE" event_id="1"
+           description="High GTP-U packet rate per UE"
+           boolean_expression="(gtpu.packet_rate &gt; 10000) &amp;&amp; (gtpu.ue_id != 0)" />
+    <event value="COMPUTE" event_id="2"
+           description="Sustained high traffic rate over time"
+           boolean_expression="#sustained_high_traffic(gtpu.packet_rate, 60)" />
+
+    <!-- Embedded Function: Check if the condition has been sustained for a specified duration -->
+    <embedded_functions>
+        void on_load() { }
+        void on_unload() { }
+
+        int sustained_high_traffic(double rate, int duration_in_seconds) {
+            static double prev_rate = 0;
+            static time_t last_time = 0;
+
+            time_t curr_time = time(NULL);
+            if (curr_time - last_time >= duration_in_seconds) {
+                prev_rate = rate;
+                last_time = curr_time;
+            }
+
+            return (rate > 10000 && prev_rate > 10000);
+        }
+    </embedded_functions>
+</property>
+
+<!-- Reactive Function: Generate alert on affected interfaces, traffic metrics, UE/session identifiers, and observation window -->
+<embedded_functions>
+    void on_load() { }
+    void on_unload() { }
+
+    void mmt_rule_satisfied_callback(const rule_t *rule, int verdict, uint64_t timestamp, uint64_t counter,
+                                     const mmt_array_t * const trace) {
+        if (verdict == DETECTED) {
+            char alert_msg[256];
+            snprintf(alert_msg, sizeof(alert_msg), "Abnormal traffic pattern detected on N3. Affected UE: %u",
+                     gtpu.ue_id);
+            mmt_log_info("MMT-Security", alert_msg);
+        }
+    }
+</embedded_functions>
+</beginning>

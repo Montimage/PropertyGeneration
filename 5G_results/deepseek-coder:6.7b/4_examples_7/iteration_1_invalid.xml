@@ -1,0 +1,21 @@
+<beginning>
+<!-- Property 23: IP fragmentation  : A fragment with a size less than 9 bytes (allowed but could be an evasion).-->
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="23" type_property="EVASION" 
+    description="IP fragmentation : A fragment with a size less than 9 bytes (allowed but could be an evasion).">
+      
+      <!-- Event 1: IP Fragment followed by another -->
+      <event value="COMPUTE" event_id="1" 
+             description="An IP fragment followed by another"
+             boolean_expression="(ip.identification &gt; 0) and (ip.mf_flag == 1) and ((ip.frag_offset &gt;= 0))"/>
+      
+      <!-- Event 2: IP Fragment with same identification and an offset less than 9 bytes -->
+      <event value="COMPUTE" event_id="2" 
+             description="IP fragment with the same identification and an offset less than 9 bytes"
+             boolean_expression="(ip.identification == ip.identification.1) and (ip.frag_offset &gt; ip.frag_offset.1) and ((ip.frag_offset - ip.frag_offset.1) < 9)"/>
+      
+      <!-- Event 3: Valid IP addresses -->
+      <event value="COMPUTE" event_id="3" 
+             description="IP addresses are valid"
+             boolean_expression="(ip.src != ip.dst)"/>
+</property>
+</beginning>

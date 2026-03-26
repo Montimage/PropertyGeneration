@@ -1,0 +1,16 @@
+prompt_file,model_name,iterations,valid_xml,elapsed_time
+1_examples_5.txt,gemma3:12b,1,True,71.89518594741821
+1_examples_7.txt,gemma3:12b,1,True,46.42941904067993
+1_examples_1.txt,gemma3:12b,3,True,80.82739901542664
+5_examples_7.txt,gemma3:12b,1,True,42.33970665931702
+2_examples_5.txt,gemma3:12b,1,True,52.21660017967224
+3_examples_1.txt,gemma3:12b,1,True,38.560096979141235
+2_examples_7.txt,gemma3:12b,2,True,71.77410006523132
+5_examples_5.txt,gemma3:12b,1,True,22.496913194656372
+4_examples_1.txt,gemma3:12b,1,True,17.452882289886475
+4_examples_5.txt,gemma3:12b,1,True,53.337738275527954
+5_examples_1.txt,gemma3:12b,1,True,20.543932914733887
+3_examples_7.txt,gemma3:12b,5,False,203.3909466266632
+3_examples_5.txt,gemma3:12b,5,False,118.84351778030396
+2_examples_1.txt,gemma3:12b,1,True,28.414779901504517
+4_examples_7.txt,gemma3:12b,1,True,46.38886594772339

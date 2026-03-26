@@ -1,0 +1,12 @@
+<beginning>
+<!-- Property 99: Unexpected GTP-U packet size -->
+<property value="THEN" delay_units="s" delay_min="0" delay_max="0" property_id="99" type_property="EVASION"
+    description="Unexpected GTP-U packet size">
+    <event value="COMPUTE" event_id="1"
+           description="GTP-U packet with incorrect length"
+           boolean_expression="(gtpu.length &lt; 34)"/>
+    <event value="COMPUTE" event_id="2"
+           description="GTP-U packet"
+           boolean_expression="(gtpu.proto == gtpu.proto)"/>
+</property>
+</beginning>

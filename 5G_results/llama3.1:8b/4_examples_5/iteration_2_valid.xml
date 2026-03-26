@@ -1,0 +1,35 @@
+<beginning>
+  <property value="THEN" delay_units="ms" delay_min="-1" delay_max="0" property_id="1234" type_property="SECURITY_RULE"
+    description="Detect abnormal traffic patterns originating from UE(s)">
+    <!-- GTP-U traffic on N3 reflects moderate, session-bound throughput per UE -->
+    <event value="COMPUTE" event_id="1" 
+      description="GTP-U packet rate exceeds threshold"
+           boolean_expression="((gtpu.packet_count > 1000) &amp;&amp; (gtpu.src != gtpu.dst))"/>
+    
+    <!-- Traffic on N6 remains within expected bandwidth and latency bounds -->
+    <event value="COMPUTE" event_id="2" 
+      description="IP packet loss indicators exceed threshold"
+           boolean_expression="((ip.packet_loss_rate > 0.1) &amp;&amp; (ip.src != ip.dst))"/>
+    
+    <!-- UPF forwarding state remains stable over time -->
+    <event value="COMPUTE" event_id="3" 
+      description="UPF forwarding state is unstable"
+           boolean_expression="((upf.forwarding_state != 'STABLE') &amp;&amp; (gtpu.src != gtpu.dst))"/>
+    
+    <!-- Sustained high traffic rates from specific UE(s) or sessions -->
+    <event value="COMPUTE" event_id="4" 
+      description="Sustained high GTP-U packet rate"
+           boolean_expression="(gtpu.packet_rate > 1000 &amp;&amp; gtpu.src != gtpu.dst.1)"/>
+    
+    <!-- Temporal patterns: sustained high traffic rates from specific UE(s) or sessions -->
+    <event value="COMPUTE" event_id="5" 
+      description="Sustained high GTP-U packet rate"
+           boolean_expression="(gtpu.packet_count > 1000 &amp;&amp; gtpu.src != gtpu.dst.1 &amp;&amp; upf.forwarding_state == 'STABLE')"/>
+    
+    <!-- Optional PFCP: session modification or teardown events if overload causes session flapping -->
+    <event value="COMPUTE" event_id="6" 
+      description="PFCP session modification or teardown events"
+           boolean_expression="(pfcp.session_modification &amp;&amp; pfcp.teardown_event &amp;&amp; gtpu.src != gtpu.dst)"/>
+    
+  </property>
+</beginning>

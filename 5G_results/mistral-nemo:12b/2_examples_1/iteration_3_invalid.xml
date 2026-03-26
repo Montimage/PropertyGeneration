@@ -1,0 +1,18 @@
+<beginning>
+  <!-- Property 123: Abnormal PDU Session Establishment/Release Churn -->
+  <property value="THEN" delay_units="ms" delay_min="-1" delay_max="0" property_id="123"
+            type_property="SECURITY_RULE" description="Abnormal PDU Session Establishment/Release Churn">
+    <operator value="AND">
+      <!-- Context: Repeated PDU Session Establishment Requests -->
+      <event value="COMPUTE" event_id="1"
+             boolean_expression="(ngap.procedure_code == 6) &amp;&amp; (ngap.pdu_present == 1)"
+             description="PDU Session Establishment Request detected"/>
+      <!-- Trigger: High rate of PDU Session Establishment and Release within a short time window -->
+      <event value="COMPUTE" event_id="2"
+             boolean_expression="#em_check_high_rate(trace, ngap.amf_ue_id, 1000ms, 5)"
+             description="High rate of PDU Session Establishment/Release operations"/>
+    </operator>
+    <!-- Reactive function to generate alert -->
+    <if_satisfied>#em_generate_alert("Session Churn Alert", trace)</if_satisfied>
+  </property>
+</beginning>

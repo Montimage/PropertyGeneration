@@ -1,0 +1,11 @@
+<beginning>
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="52" type_property="ATTACK" 
+            description="Invalid or stale GTP-U tunnel detection">
+    <event value="COMPUTE" event_id="1" 
+           description="GTP-U packet with unknown TEID"
+           boolean_expression="#is_unknown_teid(gtp-teid)"/>
+    <event value="COMPUTE" event_id="2" 
+           description="GTP-U packet with stale or inconsistent TEID"
+           boolean_expression="#is_stale_or_inconsistent_teid(gtp-teid, pfcp-session-state)"/>
+  </property>
+</beginning>

@@ -1,0 +1,10 @@
+<beginning>
+    <!-- Property 40: Invalid GTP-U TEID values.-->
+    <property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="40" type_property="SECURITY_RULE"
+             description="UPF must forward user-plane traffic only through valid and active GTP-U tunnels.">
+        <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10"/>
+        <event value="COMPUTE" event_id="1" 
+               description="GTP-U packet with invalid TEID"
+               boolean_expression="(gtp-teid != gtp-teid.1)"/>
+    </property>
+</beginning>

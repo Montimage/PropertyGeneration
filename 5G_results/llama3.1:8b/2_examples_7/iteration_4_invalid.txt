@@ -1,0 +1,21 @@
+Here is an example of a new XML property that matches the scenario description:
+
+**Scenario:** Detection of 5G RAN FOG vulnerability (CVE-2022-22965)
+
+**Protocol(s):** ngap, sctp, ip
+
+**XML Property:**
+```xml
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="123" type_property="VULNERABILITY" 
+  description="5G RAN FOG vulnerability (CVE-2022-22965) detection">
+  <event value="COMPUTE" event_id="1" 
+    description="NGAP packet with invalid SCTP association parameter"
+    boolean_expression="(ngap.sctp_assoc_param != 0 &amp;&amp; ngap.sctp_assoc_param == sctp.assoc_param)"/>
+  
+  <event value="COMPUTE" event_id="2" 
+    description="SCTP packet with invalid sequence number"
+    boolean_expression="(sctp.seq_num != 0 &amp;&amp; sctp.seq_num == ip.src_seq_num)"/>
+  
+</property>
+```
+This XML property detects the presence of an NGAP packet with an invalid SCTP association parameter, and a SCTP packet with an invalid sequence number. These conditions are indicative of the 5G RAN FOG vulnerability (CVE-2022-22965).

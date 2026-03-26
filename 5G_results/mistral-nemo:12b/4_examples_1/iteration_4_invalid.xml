@@ -1,0 +1,15 @@
+<beginning>
+<!-- Property 123: Detection of excessive GTP-U traffic leading to resource exhaustion. -->
+<property value="THEN" delay_units="s" delay_min="-1" delay_max="0" property_id="123" type_property="SECURITY_RULE"
+    description="Detects sustained high-rate GTP-U flows towards UPF and external data networks.">
+    <event value="COMPUTE" event_id="1"
+           description="GTP-U packet rate exceeds threshold."
+           boolean_expression="(gtpu.packet_rate > 10000)"/>
+    <event value="COMPUTE" event_id="2"
+           description="High GTP-U traffic persists for more than 60 seconds."
+           boolean_expression="((gtpu.byte_volume > 1000000) &amp;&amp; (gtpu.duration > 60))"/>
+    <if_satisfied>
+        <action>Generate alert with affected interfaces, traffic metrics, involved UE/session identifiers, and observation window.</action>
+    </if_satisfied>
+</property>
+</beginning>

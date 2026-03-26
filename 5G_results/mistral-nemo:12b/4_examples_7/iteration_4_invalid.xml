@@ -1,0 +1,8 @@
+<beginning>
+  <!-- Property: Detect excessive GTP-U traffic towards UPF -->
+  <property value="THEN" delay_units="s" delay_min="-1" delay_max="0" property_id="1" type_property="SECURITY_RULE"
+    description="Detect excessive GTP-U traffic towards UPF, indicating potential data-plane saturation or resource exhaustion">
+    <event event_id="1" value="COMPUTE" boolean_expression="(gre.proto == 47) AND (ip.packet_count > 0))"/>
+    <event event_id="2" value="COMPUTE" boolean_expression="(tcp.payload_len > 1000 AND tcp.flags != 2) OR (udp.dport == 2152 AND udp.payload_len > 1000))"/>
+  </property>
+</beginning>

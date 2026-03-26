@@ -1,0 +1,27 @@
+<beginning>
+  <!-- Property: Abnormal Traffic Patterns on N3 -->
+  <property value="THEN" delay_units="ms" delay_min="0+" delay_max="5000" property_id="1234" type_property="SECURITY_RULE" description="Abnormal traffic patterns originating from UEs causing data-plane saturation or resource exhaustion in UPF.">
+    <event value="COMPUTE" event_id="1" description="GTP-U packet rate threshold exceeded">
+      boolean_expression="(gtpu.packet_rate > #{high_packet_rate_threshold})"
+    </event>
+
+    <event value="COMPUTE" event_id="2" description="Sustained high throughput per UE">
+      boolean_expression="((gtpu.throughput_per_ue > #{high_throughput_threshold}) AND (meta.packet_count_since_last_alert > #{packet_count_threshold})))"
+    </event>
+
+    <if condition="(event_id == 1) OR (event_id == 2))">
+      <then>
+        <!-- Trigger alert when either event_id is triggered -->
+        <action type="ALERT" message="Abnormal traffic patterns detected from UE {{gtpu.teid}}}. Packet rate: {{gtpu.packet_rate}}, Throughput per UE: {{gtpu.throughput_per_ue}}."/>
+      </then>
+    </if>
+  </property>
+
+  <!-- Property-specific variables -->
+  <variables>
+    <high_packet_rate_threshold>1000</high_packet_rate_threshold>
+    <high_throughput_threshold>5000</high_throughput_threshold>
+    <packet_count_threshold>1000</packet_count_threshold> <!-- Number of packets since last alert before triggering another -->
+  </variables>
+
+</beginning>

@@ -1,0 +1,8 @@
+<beginning>
+    <!-- Property 26: Log4Shell attack detection -->
+    <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="26" type_property="ATTACK">
+        <event value="COMPUTE" event_id="1" 
+               description="HTTP request containing malicious request"
+               boolean_expression="#em_check_log4shell(http.uri)"/>
+    </property>
+</beginning>

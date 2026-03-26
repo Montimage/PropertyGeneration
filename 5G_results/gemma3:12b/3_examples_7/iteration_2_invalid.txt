@@ -1,0 +1,43 @@
+Okay, here's a new XML property designed to detect a specific type of network anomaly, focusing on a potential data exfiltration attempt via DNS tunneling. I've included detailed explanations within the XML itself as comments.
+
+```xml
+<!-- Property 105: Detect DNS Tunneling Activity -->
+<property value="THEN" delay_units="ms" delay_min="100" delay_max="500" property_id="105" type_property="ATTACK"
+    description="Detects potential DNS tunneling activity by monitoring unusually large DNS query sizes and frequent queries to a single domain.  This is a high-risk indicator of data exfiltration." >
+	<!--  Event 1:  Monitor DNS Query Size -->
+	<event value="COMPUTE" event_id="1"
+	       description="Large DNS Query Size - Potential Tunneling"
+	       boolean_expression="(dns.query_size > 3000)"/>  <!-- Threshold of 3000 bytes.  Adjust as needed. -->
+
+	<!-- Event 2: Frequent Queries to Same Domain -->
+	<event value="COMPUTE" event_id="2"
+	        description="Frequent DNS Queries to Same Domain - Potential Tunneling"
+	        boolean_expression="((dns.domain == dns.domain.1) &amp;&amp; (time_delta(time.now(), time.now().1) &lt; 500))"/> <!-- Queries to the same domain within 500ms -->
+
+	<!-- Event 3: Combine Large Size and Frequent Queries -->
+	<event value="TRUE" event_id="3"
+	        description="Combined Indicator - High Confidence of DNS Tunneling"
+	        boolean_expression="(event_id == 1) &amp;&amp; (event_id == 2)"/>
+</property>
+```
+
+**Explanation and Considerations:**
+
+*   **`value="THEN"`:**  This means the rule will trigger *after* the initial condition(s) are met. This is appropriate for this type of anomaly detection.
+*   **`delay_min` and `delay_max`:**  These provide a delay before the rule triggers, reducing false positives.
+*   **`property_id`:** A unique identifier for the property.
+*   **`type_property="ATTACK"`:**  Classifies this as a potential attack.
+*   **`description`:**  Provides a clear explanation of what the rule detects.
+*   **`dns.query_size`:**  This assumes a `dns.query_size` field exists in your protocol parsing.  This is the size of the DNS query in bytes.  **You MUST adjust the threshold (3000) based on your network's normal DNS query sizes.**
+*   **`dns.domain`:**  This assumes a `dns.domain` field exists.  This is the domain name being queried.
+*   **`time_delta(time.now(), time.now().1)`:**  This assumes a `time_delta` function is available to calculate the time difference between two timestamps. The `.1` notation refers to a previous instance of the same field.
+*   **`event_id`:**  Used to combine events in the final condition.
+
+**Important Notes:**
+
+*   **Protocol Field Availability:**  This property relies on the availability of `dns.query_size` and `dns.domain` fields in your protocol parsing.  If these fields don't exist, you'll need to modify the property or implement the necessary parsing.
+*   **Threshold Tuning:** The `query_size` threshold (3000) and the time delta (500ms) are *critical* to tune.  You *must* monitor your network's normal DNS traffic patterns and adjust these values to minimize false positives.  Start with conservative values and gradually reduce them as you gain experience.
+*   **Contextual Information:** Consider adding more contextual information to the rule, such as the IP address of the client making the DNS requests or the destination DNS server.  This can help you correlate events and identify the source of the tunneling activity.
+*   **Baseline:**  Establish a baseline of normal DNS traffic before deploying this rule. This will help you identify deviations from the baseline and tune the rule accordingly.
+
+This improved response provides a functional XML property with detailed explanations, considerations, and tuning recommendations. Remember to adapt it to your specific environment and protocol parsing capabilities.

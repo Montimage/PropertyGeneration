@@ -1,0 +1,38 @@
+<beginning>
+<!--
+This property detects sustained high-rate GTP-U flows towards the UPF and external data networks.
+It checks if the GTP-U packet rate exceeds a defined threshold (defined by rate_threshold) over a specific time window (defined by time_window_seconds).
+This aims to identify potential data-plane saturation or resource exhaustion.
+-->
+
+<property value="THEN" delay_units="s" delay_min="0" delay_max="60" property_id="100" type_property="ATTACK"
+          description="Detect sustained high-rate GTP-U flows">
+  <operator value="THEN" delay_units="s" delay_min="0" delay_max="60">
+    <event event_id="1" value="COMPUTE"
+           description="GTP-U packet detected"
+           boolean_expression="(gtpu.packet_count > 0)"/>
+
+    <event event_id="2" value="COMPUTE"
+           description="High GTP-U packet rate detected within the time window"
+           boolean_expression="(#packet_rate_exceeds_threshold(gtpu.packet_count, 10, 10))"/>
+  </operator>
+</property>
+
+<embedded_functions><![CDATA[
+// Function to check if packet rate exceeds a defined threshold
+// Parameters:
+//   - packet_count: The number of packets within the time window
+//   - rate_threshold: The rate threshold to exceed (packets per second)
+//   - time_window_seconds: The time window to consider (seconds)
+// Returns:
+//   - 1 if the rate exceeds the threshold
+//   - 0 otherwise
+static inline int packet_rate_exceeds_threshold(int packet_count, int rate_threshold, int time_window_seconds) {
+  if (packet_count > rate_threshold * time_window_seconds) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+]]></embedded_functions>
+</beginning>

@@ -1,0 +1,14 @@
+<beginning>
+    <!-- Property 123: Detect abnormal traffic patterns -->
+    <property value="THEN" delay_units="s" delay_min="0+" delay_max="4" property_id="123" type_property="ATTACK" 
+        description="Detect abnormal traffic patterns originating from UE(s) that may cause data-plane saturation or resource exhaustion">
+        <!-- Context: GTP-U traffic on N3 reflects moderate, session-bound throughput per UE -->
+        <event value="COMPUTE" event_id="1" description="GTP-U traffic on N3 is moderate"
+            boolean_expression="(gtp_u.packet_count > 100 && gtp_u.byte_volume > 1000)">
+
+        <!-- Trigger: One or more UEs generate excessive user-plane traffic after successful PDU session establishment -->
+        <event value="COMPUTE" event_id="2" description="One or more UEs generate excessive user-plane traffic"
+            boolean_expression="((gtp_u.packet_rate > 10000 && gtp_u.byte_volume > 100000) || (ip.agg_throughput > 1000000 && ip.pkt_loss_indicators > 10))">
+        </event>
+    </property>
+</beginning>

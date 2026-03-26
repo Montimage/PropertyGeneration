@@ -1,0 +1,26 @@
+<beginning>
+  <embedded_functions><![CDATA[
+    void on_load() {
+      // Initialize variables to store NG setup attempts and reconnect frequency
+    }
+
+    void on_unload() {
+      // Reset or save relevant variables upon unloading the rules
+    }
+  ]]></embedded_functions>
+
+  <!-- Property ID: 1 -->
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="1"
+            type_property="SECURITY_RULE"
+            description="Detect repeated NG setup procedures or frequent SCTP reconnects">
+    <event event_id="1" value="COMPUTE"
+           description="NG SetupRequest message"
+           boolean_expression="(ngap.pdu_present &amp;&amp; ngap.procedure_code == NGAP_NGSetupRequest)"/>
+    <event event_id="2" value="COMPUTE"
+           description="SCTP association setup"
+           boolean_expression="sctp.event_type == SCTP_ASSOCIATION_UP"/>
+    <event event_id="3" value="COMPUTE"
+           description="SCTP association teardown"
+           boolean_expression="sctp.event_type == SCTP_ASSOCIATION_DOWN"/>
+  </property>
+</beginning>

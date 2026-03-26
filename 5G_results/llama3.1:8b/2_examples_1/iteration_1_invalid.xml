@@ -1,0 +1,30 @@
+<beginning>
+  <!-- Property 123: Abnormal PDU Session Establishment and Release Churn -->
+  <property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="123" type_property="SECURITY_RULE" 
+    description="Detects abnormal PDU session establishment and release churn">
+    <!-- Context: NAS PDU Session Establishment Request message observed -->
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="1" 
+             description="NAS PDU Session Establishment Request message"
+             boolean_expression="(nas.pdu_type == 'PDU_SESSION_ESTABLISHMENT_REQUEST')"/>
+    </operator>
+    <!-- Trigger: High-frequency create/delete cycles over short time windows -->
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="2" 
+             description="Repeated NAS PDU Session Establishment Request messages"
+             boolean_expression="(count(nas.pdu_type == 'PDU_SESSION_ESTABLISHMENT_REQUEST') > 3)"/>
+    </operator>
+    <!-- Additional Trigger: Rapid creation and teardown of session state in SMF and UPF -->
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="3" 
+             description="PFCP session establishment and deletion messages"
+             boolean_expression="(pfcp.session_establishment_count > 5) && (pfcp.session_deletion_count > 5)"/>
+    </operator>
+    <!-- Additional Trigger: Excessive churn -->
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="4" 
+             description="Repeated session setup requests without sustained session duration"
+             boolean_expression="(count(nas.pdu_type == 'PDU_SESSION_ESTABLISHMENT_REQUEST') > 3) && (pfcp.session_establishment_count - pfcp.session_deletion_count < 2)"/>
+    </operator>
+  </property>
+</beginning>

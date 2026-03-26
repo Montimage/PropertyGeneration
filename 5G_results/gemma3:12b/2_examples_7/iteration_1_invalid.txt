@@ -1,0 +1,8 @@
+Okay, I'm ready to generate an XML property. Please provide the scenario description you're referring to. I need the details of what you want the rule to detect.  For example, tell me:
+
+*   **What specific behavior are you trying to detect?** (e.g., a specific type of attack, a configuration error, unusual traffic patterns)
+*   **Which protocols are involved?** (e.g., IP, TCP, UDP, HTTP, TLS, etc.)
+*   **What are the key characteristics of the event you want to trigger the rule?** (e.g., specific field values, sequence of events, time windows)
+*   **Are there any known false positives that should be avoided?**
+
+Once I have this information, I can create a suitable XML property.

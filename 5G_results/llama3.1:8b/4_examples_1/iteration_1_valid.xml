@@ -1,0 +1,14 @@
+<beginning>
+    <!-- Property: Detection of abnormal traffic patterns causing data-plane saturation -->
+    <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="35" type_property="SECURITY_RULE"
+        description="Detection of abnormal traffic patterns causing data-plane saturation">
+        <!-- Event 1: GTP-U traffic on N3 exceeds moderate throughput per UE -->
+        <event value="COMPUTE" event_id="5" 
+            description="GTP-U traffic on N3 exceeds moderate throughput per UE."
+            boolean_expression="((gtp_u.packet_rate > 1000000) &amp;&amp; (gtp_u.ue_session_correlation == 'true'))"/>
+        <!-- Event 2: IP traffic on N6 shows packet loss indicators -->
+        <event value="COMPUTE" event_id="6" 
+            description="IP traffic on N6 shows packet loss indicators."
+            boolean_expression="((ip.packet_loss_rate > 0.1) &amp;&amp; (gtp_u.teid_distribution == 'unbalanced'))"/>
+    </property>
+</beginning>

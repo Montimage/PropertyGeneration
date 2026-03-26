@@ -1,0 +1,10 @@
+<beginning>
+  <!-- Property 51: Invalid GTP-U tunnels or traffic after session deletion -->
+  <property value="THEN" delay_units="ms" delay_min="-1+" delay_max="0" property_id="51" type_property="SECURITY_RULE"
+    description="Invalid GTP-U tunnels or traffic after session deletion">
+    <event value="COMPUTE" event_id="1" description="Unknown or stale TEID in GTP-U packet"
+      boolean_expression="(gtpu.teid not in pcfg_session.active_teids)"/>
+    <event value="COMPUTE" event_id="2" description="GTP-U traffic after session deletion"
+      boolean_expression="(pcfg_session.deleted and gtpu.teid in pcfg_session.deleted_teids)"/>
+  </property>
+</beginning>

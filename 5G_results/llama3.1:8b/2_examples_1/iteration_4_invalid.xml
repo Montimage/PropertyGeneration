@@ -1,0 +1,33 @@
+<beginning>
+  <!-- Property ID: Session Churn Detection -->
+  <property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" 
+            property_id="123" type_property="SECURITY_RULE" description="Session churn detection">
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <!-- Event 1: NAS PDU Session Establishment Request -->
+      <event value="COMPUTE" event_id="1" 
+             description="NAS PDU Session Establishment Request"
+             boolean_expression="(nas.message_type == 4)"/>
+      
+      <!-- Event 2: NAS PDU Session Release Request -->
+      <event value="COMPUTE" event_id="2" 
+             description="NAS PDU Session Release Request"
+             boolean_expression="(nas.message_type == 5)"/>
+
+      <!-- Trigger condition: High-frequency create/delete cycles over short time window -->
+      <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+        <!-- Event 3: Rapid session setup requests without sustained session duration -->
+        <event value="COMPUTE" event_id="3" 
+               description="Rapid session setup requests"
+               boolean_expression="(nas.message_type == 4)&amp;&amp;(timestamp.diff(nas.timestamp) < 100ms)"/>
+        
+        <!-- Event 4: Excessive churn rate (e.g., > 10 sessions/second) -->
+        <event value="COMPUTE" event_id="4" 
+               description="Excessive churn rate"
+               boolean_expression="(count(nas.message_type == 4) > 10)&amp;&amp;(timestamp.diff(nas.timestamp) < 1s)"/>
+      </operator>
+    </operator>
+
+    <!-- Reactive function: Generate an alert when the trigger condition is met -->
+    <if_satisfied>em_alert_session_churn(mmt_rule_satisfied_callback)</if_satisfied>
+  </property>
+</beginning>

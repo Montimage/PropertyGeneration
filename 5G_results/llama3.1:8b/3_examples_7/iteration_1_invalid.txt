@@ -1,0 +1,56 @@
+Here is the generated code in C/C++ format for the given XML property:
+
+```c
+// Forwarding NAS security mode COMPLETE that answers to NAS security mode COMMAND.
+void on_load(){
+    mmt_debug("Rule 90.botcc: Created a table for checking bootnet having %d IPs", length );
+    
+    // Create a new hash table
+    table = mmt_hash_create( length );
+    
+    // Add items to the hash table
+    uint32_t key;
+    struct in_addr addr;
+    
+    // Event 1: NAS Security mode COMPLETE
+    for(int i=0; i<length; i++){
+        ip  = list_ips[i];
+        
+        // Convert IP string to uint32_t
+        if(inet_aton(ip, &addr) == 0){
+            mmt_error( "Invalid IP address: %s", ip );
+            continue;
+        }
+        
+        key = addr.s_addr;
+        
+        mmt_hash_add(table, &key, 4, (void*) ip, false);
+    }
+    
+    // Event 2: NAS Security mode COMPLETE msg, coming from the same UE but with different payload
+    for(int i=0; i<length; i++){
+        ip  = list_ips[i];
+        
+        // Convert IP string to uint32_t
+        if(inet_aton(ip, &addr) == 0){
+            mmt_error( "Invalid IP address: %s", ip );
+            continue;
+        }
+        
+        key = addr.s_addr;
+        
+        // Check if the same UE and different payload
+        if(mmt_hash_check(table, &key, 4)){
+            mmt_alert("Replay attack detected!");
+        }
+    }
+}
+
+void on_unload(){
+    mmt_hash_free( table );
+}
+```
+
+Note that this code assumes the existence of `list_ips`, a predefined array of IP addresses. The actual IP address values should be replaced with the ones provided in the original XML property.
+
+Also, the `mmt_hash_check()` function is used to check if an IP address is already present in the hash table, indicating a potential replay attack. This function is not defined here and should be implemented according to the specific requirements of your system.

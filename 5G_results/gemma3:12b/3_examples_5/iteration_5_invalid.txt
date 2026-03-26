@@ -1,0 +1,12 @@
+```xml
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="5" property_id="6" type_property="EVASION">
+  <event value="COMPUTE" event_id="1">
+    <boolean_expression>(ip.src != ip.dst) &amp;&amp; (tcp.dest_port == 443)</boolean_expression>
+    <description>Initial TLS connection attempt</description>
+  </event>
+  <event value="COMPUTE" event_id="2">
+    <boolean_expression>(ip.src == ip.src.1) &amp;&amp; (ip.dst == ip.dst.1) &amp;&amp; (tcp.dest_port == 443) &amp;&amp; (tcp.flags == 16)</boolean_expression>
+    <description>Subsequent TLS connection attempt from the same source</description>
+  </event>
+</property>
+```

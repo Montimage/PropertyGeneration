@@ -1,0 +1,29 @@
+<beginning>
+  <!-- Property 101: High Rate PDU Session Establishment/Release Churn -->
+  <property value="THEN" delay_units="s" delay_min="0+" delay_max="0" property_id="101"
+            type_property="SECURITY_RULE" description="High Rate PDU Session Establishment/Release Churn">
+    <operator value="AND">
+      <event value="COMPUTE" event_id="1" description="NAS PDU Session Establishment Request received"
+             boolean_expression="(ngap.procedure_code == 'PDUSessionEstablishmentRequest' AND ngap.pdu_present == 'PduSessionResourceSetupRequestList')"/>
+      <event value="COMPUTE" event_id="2" description="NAS PDU Session Release Request received"
+             boolean_expression="(ngap.procedure_code == 'PDUSessionReleaseRequest' AND ngap.pdu_present == 'PduSessionResourceReleaseCommandList')" />
+    </operator>
+    <embedded_functions>
+      <!-- Implement a reactive function to generate an alert -->
+      void on_load() {
+        register_rule_satisfied_callback(em_generate_alert);
+      }
+
+      void on_unload() {
+        unregister_rule_satisfied_callback(em_generate_alert);
+      }
+
+      mmt_array_t *em_generate_alert(const rule_t *rule, int verdict, uint64_t timestamp,
+                                    uint64_t counter, const mmt_array_t *trace) {
+        // Generate alert based on session churn rate, affected UE contexts, interfaces, and message types
+        printf("Alert: High Rate PDU Session Establishment/Release Churn\n");
+        return NULL;
+      }
+    </embedded_functions>
+  </property>
+</beginning>

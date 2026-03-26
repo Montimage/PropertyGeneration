@@ -1,0 +1,18 @@
+<beginning>
+
+<!-- Property ID: 101 -->
+<property value="THEN" delay_units="s" delay_min="-1" delay_max="0" property_id="101" type_property="SECURITY_RULE"
+          description="Detect excessive user-plane traffic from UEs causing GTP-U flow saturation">
+
+  <!-- Event ID: 1 - High Rate GTP-U Traffic -->
+  <event value="COMPUTE" event_id="1" description="High rate GTP-U traffic">
+    boolean_expression="((gtpu.packet_count > 500) &amp;&amp; (gtpu.sn == gtpu.sn.1))"
+  </event>
+
+  <!-- Event ID: 2 - UE Session Correlation -->
+  <event value="COMPUTE" event_id="2" description="UE session correlation">
+    boolean_expression="(gtpu.teid == gtpu.teid.1)"
+  </event>
+
+</property>
+</beginning>

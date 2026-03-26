@@ -1,0 +1,23 @@
+<beginning>
+<!-- Embedded function to check if a procedure is NGSetupRequest -->
+<embedded_functions><![CDATA[
+static inline int em_is_ngsetup_request(const char *procedure_code){
+    return strcmp(procedure_code, "NGSetupRequest") == 0;
+}
+]]></embedded_functions>
+<!-- Property: Detect Anomalous gNB Behavior -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="123" type_property="SECURITY_RULE"
+     description="Detect anomalous gNB behavior with repeated NG setup procedures or frequent SCTP association changes">
+   <event event_id="1" value="COMPUTE"
+           description="NGAP packet received"
+           boolean_expression="(ngap.pdu_present == 0xFF)"/>
+   <event event_id="2" value="COMPUTE"
+           description="gNB initiates NG setup procedure"
+           boolean_expression="#em_is_ngsetup_request(ngap.procedure_code)"
+           if_satisfied="alert_gnb_instability()"/>
+   <!-- Event to track SCTP association teardown -->
+   <event event_id="3" value="COMPUTE"
+           description="SCTP association teardown"
+           boolean_expression="(sctp.event == 'teardown')"/>
+</property>
+</beginning>

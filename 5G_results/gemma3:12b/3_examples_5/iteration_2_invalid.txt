@@ -1,0 +1,14 @@
+```xml
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="5" property_id="6" type_property="EVASION">
+    <operator value="THEN" delay_units="s" delay_min="0+" delay_max="1">
+      <event value="COMPUTE" event_id="1"
+             description="Initial TCP SYN packet"
+             boolean_expression="(tcp.flags == 2 &amp;&amp; tcp.dest_port == 80 &amp;&amp; ip.src != ip.dst)"/>
+    </operator>
+    <operator value="THEN" delay_units="s" delay_min="0+" delay_max="1">
+      <event value="COMPUTE" event_id="2"
+             description="Subsequent TCP SYN packets from the same source"
+             boolean_expression="(tcp.flags == 2 &amp;&amp; tcp.dest_port == 80 &amp;&amp; ip.src == ip.src.1 &amp;&amp; ip.src != ip.dst)"/>
+    </operator>
+</property>
+```

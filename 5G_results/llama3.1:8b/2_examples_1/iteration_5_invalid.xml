@@ -1,0 +1,57 @@
+<beginning>
+  <!-- Property ID: Session Churn Detection -->
+  <property value="THEN" delay_units="ms" delay_min="-1" delay_max="+10" 
+    property_id="session_churn_detection" type_property="SECURITY_RULE"
+    description="Detect abnormal PDU session establishment and release churn">
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <!-- Event 1: NAS PDU Session Establishment Request -->
+      <event value="COMPUTE" event_id="nas_establishment_request"
+        description="NAS PDU Session Establishment Request message received"
+        boolean_expression="#ngap_nas_message_check('procedure_code', 'session-establishment-request')"/>
+      
+      <!-- Event 2: NAS PDU Session Release Request -->
+      <event value="COMPUTE" event_id="nas_release_request"
+        description="NAS PDU Session Release Request message received"
+        boolean_expression="#ngap_nas_message_check('procedure_code', 'session-release-request')"/>
+    </operator>
+    
+    <!-- Operator 2: Counting NAS PDU Session Establishment and Release Requests -->
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <!-- Event 3: Count of NAS PDU Session Establishment Requests within time window -->
+      <event value="COMPUTE" event_id="nas_establishment_count"
+        description="Count of NAS PDU Session Establishment Requests within time window"
+        boolean_expression="#count_ngap_nas_messages('procedure_code', 'session-establishment-request')"/>
+      
+      <!-- Event 4: Count of NAS PDU Session Release Requests within time window -->
+      <event value="COMPUTE" event_id="nas_release_count"
+        description="Count of NAS PDU Session Release Requests within time window"
+        boolean_expression="#count_ngap_nas_messages('procedure_code', 'session-release-request')"/>
+    </operator>
+    
+    <!-- Operator 3: Checking if session duration is short -->
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <!-- Event 5: Check if PDU Session Establishment Accept message received within time window -->
+      <event value="COMPUTE" event_id="pdu_session_accept"
+        description="PDU Session Establishment Accept message received within time window"
+        boolean_expression="#ngap_nas_message_check('procedure_code', 'session-establishment-accept')"/>
+      
+      <!-- Event 6: Check if PDU Session Release Request message received before session establishment accept -->
+      <event value="COMPUTE" event_id="pdu_session_release_before_accept"
+        description="PDU Session Release Request message received before session establishment accept"
+        boolean_expression="#ngap_nas_message_check('procedure_code', 'session-release-request') &amp;&amp; (#ngap_nas_message_check('procedure_code', 'session-establishment-accept') == 0)"/>
+    </operator>
+    
+    <!-- Operator 4: Checking if PDU Session Release Request is received without sustained session duration -->
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <!-- Event 7: Check if PDU Session Establishment Accept message received within time window -->
+      <event value="COMPUTE" event_id="pdu_session_accept"
+        description="PDU Session Establishment Accept message received within time window"
+        boolean_expression="#ngap_nas_message_check('procedure_code', 'session-establishment-accept')"/>
+      
+      <!-- Event 8: Check if PDU Session Release Request message received without sustained session duration -->
+      <event value="COMPUTE" event_id="pdu_session_release_without_sustained_duration"
+        description="PDU Session Release Request message received without sustained session duration"
+        boolean_expression="#ngap_nas_message_check('procedure_code', 'session-release-request') &amp;&amp; (#ngap_nas_message_check('procedure_code', 'session-establishment-accept') == 0)"/>
+    </operator>
+  </property>
+</beginning>

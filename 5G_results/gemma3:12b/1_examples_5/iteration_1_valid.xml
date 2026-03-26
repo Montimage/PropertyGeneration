@@ -1,0 +1,20 @@
+<beginning>
+<!--
+This property detects repeated NAS RegistrationRequest messages exceeding a defined threshold within a time window, 
+indicating a potential control-plane denial-of-service condition.  It checks for a rapid succession of 
+RegistrationRequest messages encapsulated in NGAP InitialUEMessage or UplinkNASTransport.
+-->
+
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="500" property_id="101" type_property="ATTACK" 
+    description="Detect repeated UE RegistrationRequest messages exceeding threshold">
+    <event value="COMPUTE" event_id="1" 
+           description="InitialUEMessage with RegistrationRequest"
+           boolean_expression="(ngap.message_type == 1 &amp;&amp; nas.registration_request_present)"/>
+    <event value="COMPUTE" event_id="2" 
+           description="UplinkNASTransport with RegistrationRequest"
+           boolean_expression="(ngap.message_type == 2 &amp;&amp; nas.registration_request_present)"/>
+    <event value="COMPUTE" event_id="3" 
+           description="Threshold exceeded within time window"
+           boolean_expression="(meta.packet_count_last_500ms > 5)"/>
+</property>
+</beginning>

@@ -1,0 +1,32 @@
+<beginning>
+  <!-- Property: Detect excessive user-plane traffic from UE(s) -->
+  <property value="THEN" delay_units="s" delay_min="0+" delay_max="60" property_id="101" type_property="ATTACK" description="Excessive GTP-U traffic from UE(s)">
+    <event value="COMPUTE" event_id="1" description="GTP-U packet">
+      (gtpu.teid != 0) AND (ip.src != ip.dst)
+    </event>
+    <event value="COMPUTE" event_id="2" description="Abnormal traffic rate">
+      (#em_check_traffic_rate(gtpu.teid, gtpu.payload_len)) > 1000
+    </event>
+  </property>
+
+  <!-- Embedded function to check traffic rate -->
+  <embedded_functions><![CDATA[
+    static inline int em_check_traffic_rate(int teid, int payload_len) {
+      // Assume we have a global variable 'traffic_rates' to store the traffic rates for each TEID
+      if (teid in traffic_rates.keys()) {
+        traffic_rates[teid] += payload_len
+        if (time.time() - last_update[teid] > 1) { // Check rate every second
+          rate = traffic_rates[teid] / (time.time() - last_update[teid])
+          if rate > threshold:
+            return 1
+          else:
+            return 0
+        }
+      } else {
+        // Initialize new TEID with zero traffic rate and current time as last update time
+        traffic_rates[teid] = 0
+        last_update[teid] = time.time()
+      }
+    }
+    ]]></embedded_functions>
+</beginning>

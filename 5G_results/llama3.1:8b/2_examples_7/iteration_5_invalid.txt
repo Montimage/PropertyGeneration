@@ -1,0 +1,21 @@
+Based on the provided examples, I will create a new XML property that matches the following scenario description:
+
+**Scenario:** Detecting Non-standard SCTP Payload
+**Protocol(s):** sctp, ip
+**Description:** This rule detects whether SCTP packets contain payload other than what is expected.
+
+Here's the new XML property:
+```xml
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="10" property_id="97" type_property="ATTACK" 
+    description="Non-standard SCTP Payload Detection">
+    <event value="COMPUTE" event_id="1" 
+        description="SCTP packet with non-standard payload"
+        boolean_expression="(sctp.packet_count != 0) &amp;&amp; ((sctp.data_ppid != 60) &amp;&amp; (sctp.data_ppid != 46))"/>
+    <event value="COMPUTE" event_id="2" 
+        description="Print source and destination of IP"
+        boolean_expression="(ip.src != ip.dst)"/>
+</property>
+```
+Please note that this is a simple example, and you may need to adjust the `boolean_expression` based on your specific requirements. Additionally, make sure to update the `delay_units`, `delay_min`, and `delay_max` attributes according to your needs.
+
+Let me know if you'd like me to modify or expand upon this example!

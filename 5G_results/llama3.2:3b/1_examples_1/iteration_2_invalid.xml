@@ -1,0 +1,15 @@
+<beginning>
+  <property value="THEN" delay_units="s" delay_min="-1" delay_max="+10" property_id="x2" type_property="ATTACK"
+    description="AMF handling UE registration procedures in stable manner and detecting abnormal surges">
+      <event value="COMPUTE" event_id="101" 
+             description="UE initiates repeated NAS RegistrationRequest messages, exceeding normal operational thresholds"
+             boolean_expression="(nas.registration_request_count > 5) and (timestamp - previous_nas_registration > 10)">
+          <embedded_functions>
+            void on_load(){ console.log("AMF registration detection enabled") }
+          </embedded_functions>
+      </event>
+      <event value="COMPUTE" event_id="102" 
+             description="NGAP InitialUEMessage carrying NAS RegistrationRequest"
+             boolean_expression="(ngap.protocol == 'InitialUEMessage') and (nas.registration_request_present)"/>
+    </property>
+  </beginning>

@@ -1,0 +1,31 @@
+The system under test is a 5G Standalone (SA) core network where user-plane traffic is forwarded through the User Plane Function (UPF) using GTP-U tunnels on the N3 interface, with tunnel lifecycle and forwarding rules controlled by the Session Management Function (SMF) via PFCP on the N4 interface. 
+Monitoring is performed at the 5G core, observing user-plane traffic and its consistency with control-plane session state.
+
+Protocols and interfaces:
+- Interfaces: N3 (gNB <-> UPF), N4 (SMF <-> UPF)
+- Protocols: GTP-U (N3), PFCP (N4)
+
+Property: The UPF must forward user-plane traffic only through valid and active GTP-U tunnels and detect inconsistencies between observed GTP-U packets and the tunnel state established by the SMF.
+
+Trigger: The UPF receives GTP-U packets associated with unknown, stale, or inconsistent Tunnel Endpoint Identifiers (TEIDs), or traffic that does not correspond to any active PDU session according to the SMF-managed PFCP state.
+
+Expected message ordering (baseline):
+Under normal conditions:
+1. SMF establishes a user-plane session via PFCP (Session Establishment Request/Response)
+2. The UPF installs forwarding rules and binds them to a valid TEID
+3. GTP-U packets on N3 match an active tunnel and session state
+4. Upon session release, PFCP teardown occurs and GTP-U traffic for the TEID ceases
+
+Observable evidence:
+The monitoring system must inspect:
+- GTP-U (N3): TEID values, packet direction, rate, and payload presence
+- PFCP (N4): session establishment, modification, and deletion messages
+- State correlation: mismatch between observed TEIDs and active PFCP session state
+
+Detection Condition
+An alert must be raised when:
+- GTP-U packets are observed with TEIDs that are not associated with any active PFCP session, or
+- user-plane traffic persists after the corresponding PFCP session has been deleted.
+
+Response
+Upon detection, the system must generate an alert identifying the invalid TEID(s), affected interfaces, associated timing information, and the inconsistency between user-plane traffic and control-plane state, enabling investigation of misconfiguration, malfunction, or integrity violations.

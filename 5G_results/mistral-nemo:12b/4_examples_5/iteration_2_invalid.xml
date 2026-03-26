@@ -1,0 +1,18 @@
+<beginning>
+  <!-- Property: Detect Excessive User-Plane Traffic -->
+  <property value="THEN" delay_units="s" delay_min="0+" delay_max="60" property_id="101" type_property="SECURITY_RULE"
+    description="Detect excessive user-plane traffic leading to potential UPF resource exhaustion">
+    <!-- Context: Moderate traffic on N3 and stable UPF forwarding state -->
+    <event value="COMPUTE" event_id="1" description="Moderate GTP-U traffic on N3">
+      boolean_expression="(gtpu.packet_count > 0) &amp;& (gtpu.byte_count <= threshold_gtpu_byte) &amp; (gtpu.packet_loss <= threshold_gtpu_loss)"
+    </event>
+    <!-- Trigger: Sustained high-rate GTP-U flows toward UPF and external data networks -->
+    <event value="COMPUTE" event_id="2" description="Excessive GTP-U traffic on N3">
+      boolean_expression="(gtpu.packet_count > threshold_gtpu_packet_rate) | (gtpu.byte_count > threshold_gtpu_byte_rate)"
+    </event>
+    <!-- Correlation with increased packet loss or latency at UPF -->
+    <event value="COMPUTE" event_id="3" description="Increased IP traffic loss or latency on N6">
+      boolean_expression="(ip.packet_loss > threshold_ip_loss) | (ip.latency_variation > threshold_ip_latency)"
+    </event>
+  </property>
+</beginning>

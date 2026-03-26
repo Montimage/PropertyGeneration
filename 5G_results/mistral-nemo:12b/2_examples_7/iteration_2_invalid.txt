@@ -1,0 +1,23 @@
+**Scenario Description:** A malicious actor is sending UDP packets with random IP addresses, likely attempting to flood a network or cause other disruption.
+
+**Protocol(s):** udp, ip
+
+**XML Property:**
+
+```xml
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="97" type_property="ATTACK"
+    description="Probable UDP Flooding Attack with Random IP Addresses">
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="1"
+             description="UDP packet with random source IP address (1)"
+             boolean_expression="(udp.src != udp.dst) &amp;&amp; (ip.src != ip.dst.1))"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="2"
+             description="UDP packet with random source IP address (2)"
+             boolean_expression="(udp.src != udp.dst) &amp;&amp; ((ip.src != ip.dst.1) &amp;&amp; (ip.src != ip.dst))"/>
+    </operator>
+</property>
+```
+
+This XML property defines a new attack recognition rule that checks for UDP packets with random source IP addresses, which could indicate a flooding attack. The property uses two operators to check for two consecutive UDP packets with different random source IP addresses targeting the same destination address. If this condition is met within the specified delay range (10 milliseconds), an alert or other action can be triggered based on the configured "THEN" clause.

@@ -1,0 +1,21 @@
+<beginning>
+    <!-- Property 44: High-frequency PDU session establishment and release churn on N1/N2 interface. -->
+    <property value="THEN" delay_units="s" delay_min="-10" delay_max="0" property_id="44" type_property="ATTACK"
+        description="High-frequency PDU session establishment and release churn on N1/N2 interface."
+        if_satisfied="on_load(){ printf('PDU session churn detected!'); }">
+        <operator value="THEN" delay_units="s" delay_min="-10" delay_max="0"/>
+            <event value="COMPUTE" event_id="5"
+                description="NGAP PDU Session Establishment Request (N1/N2) on SMF"
+                boolean_expression="(ngap.procedure_code == 1)&amp;&amp;(ngap.pdu_present == 1)&amp;&amp;(ngap.amf_ue_id != ngap.ran UE_id)"
+                <embedded_functions>
+                    #mmt_lib_function_1(ngap_message);
+                </embedded_functions>"/>
+            <event value="COMPUTE" event_id="6"
+                description="NGAP PDU Session Release Request (N1/N2) on SMF"
+                boolean_expression="(ngap.procedure_code == 2)&amp;&amp;(ngap.pdu_present == 0)"
+                <embedded_functions>
+                    #mmt_lib_function_2(ngap_message);
+                </embedded_functions>"/>
+        </operator>
+    </property>
+</beginning>

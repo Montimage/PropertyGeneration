@@ -1,0 +1,26 @@
+<beginning>
+  <!-- Property: Detect excessive user-plane traffic -->
+  <property value="THEN" delay_units="s" delay_min="0+" delay_max="60" property_id="12345" type_property="SECURITY_RULE" description="Excessive user-plane traffic from UEs">
+    <event value="COMPUTE" event_id="1" description="Successful PDU session establishment">
+      <boolean_expression>
+        ((gtpu.teid != 0) &amp;&amp; (ip.src != ip.dst))
+      </boolean_expression>
+    </event>
+
+    <event value="TRIGGER" event_id="2" description="Excessive traffic rate threshold exceeded">
+      <threshold>
+        <!-- Set appropriate thresholds based on your network's normal traffic -->
+        min_rate: 100
+        max_rate: 5000
+        time_window: 60
+      </threshold>
+    </event>
+
+    <event value="COMPUTE" event_id="3" description="Traffic rate calculation">
+      <boolean_expression>
+        (gtpu.teid == gtpu.teid.1) &amp;&amp; ((ip.src != ip.dst).1 | ip.src = ip.dst)
+      </boolean_expression>
+    </event>
+
+  </property>
+</beginning>

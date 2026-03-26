@@ -1,0 +1,31 @@
+The system under test is a 5G Standalone (SA) core network where a gNB communicates with the Access and Mobility Management Function (AMF) over the N2 interface using NGAP over SCTP. 
+UE registration procedures are initiated via NAS messages encapsulated in NGAP. Monitoring is performed on the 5G core side, observing control-plane signaling toward the AMF.
+
+Protocol and interfaces:
+- Interfaces: N2 (gNB <-> AMF)
+- Protocols: SCTP, NGAP, NAS (5GS Mobility Management)
+
+Property: The AMF must handle UE registration procedures in a stable manner and detect abnormal surges of registration signaling that may indicate a control-plane denial-of-service condition.
+
+Trigger: One or more UEs initiate repeated NAS RegistrationRequest messages, encapsulated in NGAP InitialUEMessage or UplinkNASTransport, at a rate exceeding normal operational thresholds.
+
+Expected message ordering (baseline):
+Under normal conditions, a registration attempt follows this sequence:
+1. InitialUEMessage (NGAP) carrying NAS RegistrationRequest
+2. DownlinkNASTransport carrying NAS AuthenticationRequest
+3. UplinkNASTransport carrying NAS AuthenticationResponse
+4. Registration completion messages (e.g., RegistrationAccept, RegistrationComplete)
+
+Observable Evidence:
+The monitoring system must inspect:
+SCTP: source/destination IPs and ports, association context, timestamps
+NGAP: message type (InitialUEMessage, UplinkNASTransport), RAN-UE-NGAP-ID, AMF-UE-NGAP-ID, gNB identifier
+NAS: presence of RegistrationRequest (when decodable)
+
+Detected condition:
+An alert must be raised when either:
+- The number of RegistrationRequest messages exceeds a defined threshold within a time window (per gNB and/or per UE context), or
+- repeated registration attempts are observed without completion of the expected registration procedure within a bounded time interval.
+
+Response:
+Upon detection, the system must generate an alert containing the time window, observed rate, affected identifiers (UE context and/or gNB), and the triggering NGAP/NAS message types, enabling correlation with AMF load and authentication failures.

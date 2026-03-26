@@ -1,0 +1,25 @@
+<beginning>
+<!-- Property 101: Detection of excessive GTP-U traffic from UE(s).-->
+<property value="THEN" delay_units="s" delay_min="-1" delay_max="0" property_id="101" type_property="SECURITY_RULE"
+    description="Detection of excessive GTP-U traffic from UE(s) that may cause data-plane saturation or resource exhaustion.">
+    <event value="COMPUTE" event_id="1"
+           description="High GTP-U packet rate from a specific UE."
+           boolean_expression="(gtpu.packet_rate > 10000)&amp;&amp;(gtpu.teid != 0)&amp;&amp;(#last(ngap.amf_ue_id) == ngap.amf_ue_id)" />
+    <event value="COMPUTE" event_id="2"
+           description="Sustained high traffic rate from the UE over time."
+           boolean_expression="(gtpu.packet_rate > 5000)&amp;&amp;(#last(ngap.amf_ue_id) == ngap.amf_ue_id)&amp;&amp;(#timestamp - #last_timestamp < 60)" />
+</property>
+<embedded_functions>
+#include <stdio.h>
+#include <stdlib.h>
+#include "mmt_lib.h"
+
+void on_load() {
+    // Implement any initialization logic here
+}
+
+void on_unload() {
+    // Implement any cleanup logic here
+}
+</embedded_functions>
+</beginning>

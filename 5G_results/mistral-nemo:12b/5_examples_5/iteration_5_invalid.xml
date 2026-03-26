@@ -1,0 +1,14 @@
+<beginning>
+  <!-- Property 101: Invalid GTP-U Tunnel Endpoint Identifier (TEID) -->
+  <property value="THEN" delay_units="ms" delay_min="-1+" delay_max="0" property_id="101" type_property="SECURITY_RULE"
+    description="Invalid GTP-U Tunnel Endpoint Identifier (TEID)">
+    <event value="COMPUTE" event_id="1" description="GTP-U packet received">
+      <boolean_expression>
+        ((gtpu.t == 1) &amp;&amp;
+         ((!gtpu.teid_present || !ngap.session_established(gtpu.teid)) ||
+          ngap.pdu_present != 'PduSessionResourceSetupRequest' ||
+          (ngap.procedure_code != 'SM_NSSAI_PDU_SESSION_MODIFICATION_REQUEST' && ngap.procedure_code != 'SM_NSSAI_PDU_SESSION_RELEASE_COMMAND')))
+      </boolean_expression>
+    </event>
+  </property>
+</beginning>

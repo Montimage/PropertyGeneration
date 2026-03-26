@@ -1,0 +1,19 @@
+<beginning>
+  <property value="THEN" delay_units="ms" delay_min="0+" delay_max="100" property_id="123" type_property="SECURITY_RULE" 
+    description="Detect abnormal surges of registration signaling">
+    <!-- Event 1: Check for repeated NAS RegistrationRequest messages -->
+    <event value="COMPUTE" event_id="1" 
+           description="Repeated NAS RegistrationRequest"
+           boolean_expression="(ngap.message_type == 'InitialUEMessage' &amp;&amp; ngap.pdu_present == 'RegistrationRequest')"/>
+    
+    <!-- Event 2: Check for rate exceeding normal operational thresholds -->
+    <event value="COMPUTE" event_id="2" 
+           description="Rate exceeding normal thresholds"
+           boolean_expression="(ngap.ran_ue_id != ngap.amf_ue_id &amp;&amp; (sctp.src_ip == sctp.dst_ip) &amp;&amp; (sctp.src_port != sctp.dst_port))"/>
+    
+    <!-- Event 3: Check for absence of registration completion messages -->
+    <event value="COMPUTE" event_id="3" 
+           description="Registration not completed"
+           boolean_expression="(ngap.message_type == 'DownlinkNASTransport' &amp;&amp; ngap.pdu_present != 'AuthenticationRequest')"/>
+  </property>
+</beginning>

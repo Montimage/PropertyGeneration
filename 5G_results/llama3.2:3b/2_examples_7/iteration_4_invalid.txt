@@ -1,0 +1,42 @@
+Based on the provided examples, I will create a new XML property that detects Non-standard ICMPv6 packets with an invalid Type field. Here is the generated code:
+
+**Property 100: Non-standard ICMPv6 packet**
+
+```xml
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="100" type_property="ATTACK"
+    description="Non-standard ICMPv6 packet with invalid Type field">
+    <event value="COMPUTE" event_id="1"
+        description="ICMPv6 packet with non-standard Type field."
+        boolean_expression="( #em_check_icmpv6_type( meta.icmpv6_type ) == 1 )"/>
+</property>
+```
+
+**Embedded Functions:**
+
+```c
+//each function name should be prefixed by em_
+
+static inline int em_check_icmpv6_type(int i){
+  //printf("ICMP Type field:%d\n", i);
+  switch (i) {
+    case 128:
+    case 129:
+    case 130:
+    case 131:
+    case 132:
+    case 133:
+    case 134:
+    case 135:
+    case 136:
+    case 137:
+    case 138:
+      return 0;
+    default:
+  		return 1;    
+  }
+}
+```
+
+This new property will detect ICMPv6 packets with a non-standard Type field (i.e., not one of the standard values defined in RFC 2460). The `em_check_icmpv6_type` function checks if the provided value is within the valid range. If it is, the packet is considered non-standard.
+
+Note that this property assumes the presence of an `icmptype` field in the packet's metadata (`meta.icmpv6_type`).

@@ -1,0 +1,34 @@
+The system under test is a 5G Standalone (SA) core network where UEs establish and release PDU sessions through the Session Management Function (SMF), with data-plane resources configured in the User Plane Function (UPF). 
+Session control signaling is carried over NAS messages transported via NGAP over SCTP on the N1/N2 interfaces, while session rule installation and removal between SMF and UPF is performed over the N4 interface using PFCP. 
+Monitoring is performed at the 5G core, observing both control and user-plane control signaling.
+
+Protocol and interfaces:
+- Interfaces: N1/N2 (UE/gNB <-> AMF/SMF), N4 (SMF <-> UPF)
+- Protocols: SCTP, NGAP, NAS (PDU Session Management), PFCP
+
+Property: The 5G core must maintain stable session management behavior and detect abnormal PDU session establishment and release churn that may overload session tables, control-plane signaling, or UPF rule management.
+
+Trigger: One or more UEs repeatedly initiate NAS PDU Session Establishment Request and PDU Session Release Request messages at a high rate, causing rapid creation and teardown of session state in the SMF and UPF.
+
+Expected message ordering (baseline):
+Under normal conditions, a PDU session lifecycle follows:
+1. NAS PDU Session Establishment Request (via NGAP)
+2. Session acceptance and resource setup signaling
+3. PFCP session establishment between SMF and UPF
+4. NAS PDU Session Establishment Accept
+5. NAS PDU Session Release Request
+6. PFCP session deletion and resource cleanup
+
+Observable Evidence:
+The monitoring system must inspect:
+- NGAP/NAS: PDU session establishment and release messages, UE and session identifiers, timestamps
+- PFCP: session establishment and deletion messages, rule install/remove operations, session IDs
+- Temporal patterns: high-frequency create/delete cycles over short time windows
+
+Detection condition:
+An alert must be raised when:
+- the rate of PDU session establishment and release operations exceeds defined thresholds within a time window, or
+- repeated session setup requests are observed without sustained session duration, indicating excessive churn.
+
+Response:
+Upon detection, the system must generate an alert summarizing the session churn rate, affected UE contexts, involved interfaces (N1/N2, N4), and the corresponding NAS and PFCP message types, enabling correlation with SMF and UPF load indicators.

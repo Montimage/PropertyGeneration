@@ -1,0 +1,21 @@
+<beginning>
+    <!-- Property 26: Detect DNS Rebinding (DNSR) -->
+    <property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="26" type_property="EVASION">
+        <description>Detect DNS Rebinding (DNSR): Attempting to connect to the same server using a different hostname after an initial connection.</description>
+        
+        <!-- Event 1: Initial UDP request with unknown hostname -->
+        <event value="COMPUTE" event_id="1" 
+               description="UDP request"
+               boolean_expression="((udp.port == 53)&amp;&amp;((ip.dst != ip.src)))"/>
+        
+        <!-- Event 2: DNS query for the same hostname after an initial connection -->
+        <event value="COMPUTE" event_id="2" 
+               description="DNS query with same hostname"
+               boolean_expression="(((dns.query == 1)&amp;&amp;(dns.hostname == dns.query.hostname.1))&amp;&amp;((dns.query.time > 0)))"/>
+        
+        <!-- Event 3: Response from the DNS query -->
+        <event value="COMPUTE" event_id="3" 
+               description="DNS response"
+               boolean_expression="(((udp.port == 53)&amp;&amp;(ip.dst != ip.src.1))&amp;&amp;((dns.query.time > 0)))"/>
+    </property>
+</beginning>

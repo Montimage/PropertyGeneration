@@ -1,0 +1,4 @@
+model_name,num_examples,SVR,Avg_Iterations,TVR
+gemma3:12b,1,80.0,1.4,100.0
+gemma3:12b,5,80.0,1.0,80.0
+gemma3:12b,7,60.0,1.25,80.0

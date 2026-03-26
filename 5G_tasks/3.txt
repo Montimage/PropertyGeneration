@@ -1,0 +1,33 @@
+The system under test is a 5G Standalone (SA) core network where a gNB connects to the Access and Mobility Management Function (AMF) over the N2 interface using NGAP over SCTP. 
+The AMF is responsible for maintaining gNB and UE contexts across control-plane connections. 
+Monitoring is performed on the 5G core side, observing N2 signaling and transport-layer behavior.
+
+Protocol and interfaces:
+- Interfaces: N2 (gNB <-> AMF)
+- Protocols: SCTP, NGAP
+
+Property: The AMF must correctly handle gNB connection instability or misconfiguration, distinguishing benign reconnection behavior from malicious activity and preserving consistent NGAP state without causing cascading control-plane failures.
+
+Trigger: A gNB exhibits unstable or incorrect behavior, such as repeatedly tearing down and re-establishing its SCTP association toward the AMF, leading to recurrent NGAP setup procedures.
+
+Expected message ordering (baseline):
+Under normal conditions, gNB connectivity follows:
+1. SCTP association establishment
+2. NGAP NGSetupRequest
+3. NGAP NGSetupResponse
+4. Stable N2 signaling for UE procedures
+In the anomalous case, this sequence is repeated frequently, possibly interleaved with NGAP NGReset messages or abrupt SCTP association termination.
+
+Observable evidence:
+The monitoring system must inspect:
+- SCTP: association setup/teardown events, reconnect frequency, timestamps
+- NGAP: repeated NGSetupRequest, NGSetupResponse, and NGReset messages
+- Temporal patterns: short-lived associations and cyclic reconnect behavior
+
+Detection Condition
+An alert must be raised when:
+- the same gNB repeatedly initiates NG setup procedures within a bounded time window, or
+- SCTP associations toward the AMF are created and torn down at an abnormal rate.
+
+Response
+Upon detection, the system must generate an alert indicating gNB instability, including the number of reconnects, NGAP setup attempts, affected gNB identifiers, and the observation window, enabling operators to correlate the anomaly with configuration or transport-layer issues.

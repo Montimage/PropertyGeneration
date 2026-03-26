@@ -1,0 +1,28 @@
+Based on the provided scenario, here's an XML property designed to detect repeated connection attempts to an SSH server (port 22), which could indicate a brute force attack. This property considers both source IP address and port number to identify multiple attempts from the same origin within a specified time frame.
+
+```xml
+<property value="THEN" delay_units="s" delay_min="0+" delay_max="60">
+  <operator value="THEN" delay_units="s" delay_min="0+" delay_max="15">
+    <event value="COMPUTE" event_id="1"
+            description="SSH SYN request"
+            boolean_expression="(tcp.port == 22) &amp;&amp; (tcp.flags == 2) &amp;&amp; (ip.src != ip.dst))"/>
+    <event value="COMPUTE" event_id="2"
+            description="SSH SYN/ACK reply"
+            boolean_expression="(tcp.port == 22) &amp;&amp; (tcp.flags == 18) &amp;&amp; ((ip.src == ip.dst.1) &amp;&amp; (ip.dst == ip.src.1))))"/>
+  </operator>
+  <operator value="THEN" delay_units="s" delay_min="0+" delay_max="60">
+    <event value="COMPUTE" event_id="3"
+            description="Subsequent SSH SYN request"
+            boolean_expression="(tcp.port == 22) &amp;&amp; (tcp.flags == 2) &amp;&amp; ((ip.src == ip.src.1) &amp;&amp; (ip.dst == ip.dst.1))) &amp;&amp;
+                             ((tcp.src_port != tcp.src_port.1) || ((tcp.src_port == tcp.src_port.1) &amp;&amp; (time.now - tcp.time.1 > 60))))"/>
+    <event value="COMPUTE" event_id="4"
+            description="Further SSH SYN request after previous attempt"
+            boolean_expression="(tcp.port == 22) &amp;&amp; (tcp.flags == 2) &amp;&amp; ((ip.src == ip.src.1) &amp;&amp; (ip.dst == ip.dst.1))) &amp;&amp;
+                             ((tcp.src_port != tcp.src_port.1) || ((tcp.src_port == tcp.src_port.1) &amp;&amp; (time.now - tcp.time.1 > 60))))"/>
+  </operator>
+</property>
+```
+
+This property will trigger an alert when it detects at least three SYN requests for SSH connections from the same source IP address within a minute, with no more than 15 seconds between each request. This helps to identify potential brute force attacks while minimizing false positives due to legitimate connection retries or other network artifacts.
+
+You can adjust the time frames and event conditions according to your specific use case and network environment.

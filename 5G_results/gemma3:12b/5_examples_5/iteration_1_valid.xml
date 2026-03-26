@@ -1,0 +1,14 @@
+<beginning>
+<!-- Property: GTP-U packet with unknown TEID -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="100" property_id="100" type_property="ATTACK" 
+    description="GTP-U packet with unknown TEID.">
+    <operator value="THEN" delay_units="ms" delay_min="0" delay_max="10">
+      <event value="COMPUTE" event_id="1" 
+             description="GTP-U packet received on N3 interface"
+             boolean_expression="((base.protocol_id == 47)&amp;&amp;(base.interface == 'N3'))"/>
+      <event value="COMPUTE" event_id="2"
+             description="GTP-U packet with unknown TEID"
+             boolean_expression="((gtpu.teid == 0))"/>
+    </operator>
+</property>
+</beginning>

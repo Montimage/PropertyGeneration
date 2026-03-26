@@ -1,0 +1,8 @@
+<beginning>
+  <!-- Property 65: High rate of RegistrationRequest -->
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="65" type_property="SECURITY_RULE" description="High rate of RegistrationRequest">
+    <event value="COMPUTE" event_id="1" 
+           description="Count the number of RegistrationRequest messages"
+           boolean_expression="(ngap.procedure_code == 'RegistrationRequest')"/>
+  </property>
+</beginning>

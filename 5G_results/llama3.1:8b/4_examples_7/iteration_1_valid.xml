@@ -1,0 +1,53 @@
+<beginning>
+
+<!--
+This rule detects whether the number of GTP-U packets per second exceeds the limit fixed by the MMT_SEC_GTPU_PACKETS_PER_SECOND environment variable
+-->
+
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="97" type_property="ATTACK" 
+    description="GTP-U traffic saturation: number of GTP-U packets per second exceeds the limit fixed by MMT_SEC_GTPU_PACKETS_PER_SECOND environment variable">
+    <event value="COMPUTE" event_id="1" description="GTP-U packet" boolean_expression="(gtpu.packets > 0)"/>
+    
+    <!-- Calculate total GTP-U packets per second -->
+    <event value="COMPUTE" event_id="2" description="Calculate total GTP-U packets per second" 
+           boolean_expression="( #em_gtpu_check_msg_throughput( meta.utime ) )"/>
+</property>
+
+<embedded_functions><![CDATA[
+#include <stdlib.h>
+#include <mmt_core.h>
+#include <tcpip/mmt_tcpip.h>
+
+static unsigned long int limit_gtpu_packets_per_second = 0;
+
+void on_load(){
+	const char *str = getenv("MMT_SEC_GTPU_PACKETS_PER_SECOND");
+	if( str == NULL ){
+		mmt_info("Rule 97: no value of MMT_SEC_GTPU_PACKETS_PER_SECOND" );
+		return;
+	}
+	limit_gtpu_packets_per_second = strtoul( str, NULL, 0 );
+	mmt_info("Rule 97: set limit to %lu", limit_gtpu_packets_per_second);
+}
+
+/**
+* Return:
+* - 0: ok
+* - 1: invalid (exceeds the limit)
+* - 2: NULL
+*/
+static inline int em_gtpu_check_msg_throughput(const char *str){
+   
+   const char* c = str;
+   //new second => reset the counter
+   if( round( meta.utime.tv_sec ) != last_second ){
+      packets = 0;
+      last_second = round( meta.utime.tv_sec );
+   }
+
+   packets ++;
+   return (packets >= limit_gtpu_packets_per_second);
+}
+]]></embedded_functions>
+
+</beginning>

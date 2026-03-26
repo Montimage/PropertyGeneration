@@ -1,0 +1,15 @@
+<beginning>
+    <property value="THEN" delay_units="s" delay_min="-60-" delay_max="-1" property_id="101" type_property="ATTACK"
+        description="Rapid PDU Session Establishment Rate">
+        <operator value="THEN" delay_units="s" delay_min="-60-" delay_max="-1" />
+            <event value="COMPUTE" event_id="1" 
+                description="Rate of PDU Session Establishment Request messages within 5 seconds exceeds threshold (50)"
+                boolean_expression="(ngap.pdu_present == true)&amp;&amp;(nas.procedure_code == 0x12)"/>
+        </operator>
+        <operator value="THEN" delay_units="s" delay_min="-60-" delay_max="-1">
+            <event value="COMPUTE" event_id="2" 
+                description="Rate of PDU Session Release Request messages within 5 seconds exceeds threshold (50)"
+                boolean_expression="(ngap.pdu_present == true)&amp;&amp;(nas.procedure_code == 0x13)"/>
+        </operator>
+    </property>
+</beginning>

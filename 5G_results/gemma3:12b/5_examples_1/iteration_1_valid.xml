@@ -1,0 +1,23 @@
+<beginning>
+<!-- Property 1: Detect GTP-U packets with TEIDs not associated with active PFCP sessions. -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="1" type_property="ATTACK"
+          description="GTP-U packet with unknown TEID">
+  <event value="COMPUTE" event_id="1"
+         description="GTP-U packet received"
+         boolean_expression="gtpu.packet_present"/>
+  <event value="COMPUTE" event_id="2"
+         description="TEID is not associated with active PFCP session"
+         boolean_expression="!(pfcp.session_state.teid == gtpu.teid)"/>
+</property>
+
+<!-- Property 2: Detect user-plane traffic persisting after PFCP session deletion -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="2" type_property="ATTACK"
+          description="User-plane traffic persists after PFCP session deletion">
+  <event value="COMPUTE" event_id="1"
+         description="PFCP session deleted"
+         boolean_expression="pfcp.session_deletion_received"/>
+  <event value="COMPUTE" event_id="2"
+         description="GTP-U packet received after PFCP session deletion"
+         boolean_expression="gtpu.packet_present"/>
+</property>
+</beginning>

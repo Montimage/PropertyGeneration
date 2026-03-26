@@ -1,0 +1,10 @@
+Sure, I'll need more information about the scenario you want me to generate an XML property for. Could you please provide details such as:
+
+1. Description of the scenario. 
+2. Protocol(s) in which it operates.
+3. The number of attempts or events that are involved in this scenario.
+4. The time frame for each event.
+5. Whether this is an attack, evasion, anomaly etc.
+6. Any specific conditions or flags that need to be checked during the detection process? 
+
+With these details, I'll be able to generate a more accurate XML property.

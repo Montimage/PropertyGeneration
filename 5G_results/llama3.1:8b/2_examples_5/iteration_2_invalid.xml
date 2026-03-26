@@ -1,0 +1,30 @@
+<beginning>
+  <!-- Property ID: 123 (temporary) -->
+  <property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="123" type_property="SECURITY_RULE"
+    description="Detect abnormal PDU session establishment and release churn">
+      <operator value="AND" delay_units="ms" delay_min="0+" delay_max="100">
+        <!-- First operator: High rate of PDU session establishment requests -->
+        <event value="COMPUTE" event_id="1" 
+               description="PDU Session Establishment Request"
+               boolean_expression="(nas.message_type == 5)"/>
+        <operator value="AND" delay_units="ms" delay_min="0+" delay_max="50">
+          <!-- Second operator: High rate of PDU session release requests -->
+          <event value="COMPUTE" event_id="2" 
+                 description="PDU Session Release Request"
+                 boolean_expression="(nas.message_type == 6)"/>
+          <!-- Third operator: Repeated session setup requests without sustained session duration -->
+          <operator value="AND" delay_units="ms" delay_min="0+" delay_max="20">
+            <event value="COMPUTE" event_id="3" 
+                   description="Repeated PDU Session Establishment Request"
+                   boolean_expression="(nas.message_type == 5) && (timestamp.diff(nas.timestamp, 1 minute) &lt; 100)"/>
+            <!-- Fourth operator: Temporal patterns - high-frequency create/delete cycles over short time windows -->
+            <operator value="AND" delay_units="ms" delay_min="0+" delay_max="10">
+              <event value="COMPUTE" event_id="4" 
+                     description="High-frequency PDU Session Establishment and Release"
+                     boolean_expression="(nas.message_type == 5) && (nas.message_type == 6) && (timestamp.diff(nas.timestamp, 1 minute) &lt; 100)"/>
+            </operator>
+          </operator>
+        </operator>
+      </operator>
+    </property>
+</beginning>

@@ -1,0 +1,22 @@
+<beginning>
+<!-- Property 101: Excessive PDU session establishment and release churn in 5G SA core -->
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="1000" property_id="101" type_property="SECURITY_RULE"
+    description="Excessive PDU session establishment and release churn in 5G SA core">
+    <operator value="AND" delay_units="ms" delay_min="0+" delay_max="0">
+      <!-- UE repeatedly initiates PDU Session Establishment Request -->
+      <event value="COMPUTE" event_id="1"
+             description="PDU Session Establishment Request from the same UE within a short time interval"
+             boolean_expression="(ngap.procedure_code == 3) AND (ngap.amf_ue_id == ngap.amf_ue_id.1) AND ((meta.timestamp - meta.timestamp.1) &lt;= 1000 ms)"/>
+      <!-- UE repeatedly initiates PDU Session Release Request -->
+      <event value="COMPUTE" event_id="2"
+             description="PDU Session Release Request from the same UE within a short time interval"
+             boolean_expression="(ngap.procedure_code == 4) AND (ngap.amf_ue_id == ngap.amf_ue_id.1) AND ((meta.timestamp - meta.timestamp.1) &lt;= 1000 ms)"/>
+    </operator>
+    <!-- Check if the rate of PDU session operations exceeds defined thresholds within a time window -->
+    <event value="COMPUTE" event_id="3"
+           description="Excessive PDU session establishment and release churn"
+           boolean_expression="(COUNTIF(ngap.procedure_code IN [3, 4], ngap.amf_ue_id == ngap.amf_ue_id.1, meta.timestamp - meta.timestamp.1 <= 500 ms) &gt;= 5)"/>
+    <!-- Print affected UE contexts and involved interfaces -->
+    <if_satisfied>PRINT "Affected UE: ", ngap.amf_ue_id, "; Interfaces: N1/N2, N4";</if_satisfied>
+</property>
+</beginning>

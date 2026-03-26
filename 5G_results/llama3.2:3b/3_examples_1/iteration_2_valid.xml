@@ -1,0 +1,11 @@
+<beginning>
+<property value="THEN" delay_units="ms" delay_min="-1" delay_max="0" property_id="123" type_property="ATTACK" 
+     description="Detect gNB instability in SCTP association setup/teardown events">
+   <event event_id="1" value="COMPUTE" 
+           description="SCTP association establishment"
+           boolean_expression="((sctp.assoc_established_at != 0) &amp;&amp; (sctp.assoc_teardown_time != 0))"/>
+   <event event_id="2" value="COMPUTE" 
+           description="Recurring NGAP setup attempts"
+           boolean_expression="(#(ngap.ngsetuprequest_count > 5) &amp;&amp; (ngap.ngsetupresponse_count > 5))"/>
+ </property>
+</beginning>

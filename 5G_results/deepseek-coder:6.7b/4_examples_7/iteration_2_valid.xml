@@ -1,0 +1,6 @@
+<beginning>
+    <property value="THEN" delay_units="ms" delay_min="0" delay_max="10" property_id="26" type_property="EVASION" description="IP fragmentation – a fragment with an offset less than the length of the original packet (allowed but could be an evasion).">
+        <event value="COMPUTE" event_id="1" description="IP fragment followed by another" boolean_expression="(ip.identification &gt; 0) AND ((ip.mf_flag == 1) AND ((ip.frag_offset &gt;= 0)) AND (ip.src != ip.dst))"/>
+        <event value="COMPUTE" event_id="2" description="IP fragment with same identification and an offset less than the length of the original packet" boolean_expression="(ip.identification == ip.identification.1) AND ((ip.frag_offset &gt; ip.frag_offset.1) AND ((ip.frag_offset - ip.frag_offset.1) &lt; meta.packet_len)) AND (ip.src != ip.dst)"/>
+    </property>
+</beginning>

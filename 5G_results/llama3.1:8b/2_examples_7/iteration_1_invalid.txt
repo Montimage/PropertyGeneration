@@ -1,0 +1,22 @@
+Based on the provided examples, I will generate a new XML property for a specific scenario. Let's say we want to detect a "5G Diameter RO" attack.
+
+**Scenario Description:** Detect when a 5G Diameter RO message is sent with an incorrect destination IP address.
+
+**Protocol(s):** diameter, ip
+
+Here is the generated XML code:
+
+```xml
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="102" type_property="ATTACK" 
+    description="5G Diameter RO with incorrect destination IP address">
+  <event value="COMPUTE" event_id="1" 
+         description="Diameter packet with RO message"
+         boolean_expression="(diameter.message_type == 2)"/>
+  
+  <event value="COMPUTE" event_id="2" 
+         description="Incorrect destination IP address"
+         boolean_expression="((ip.src != ip.dst) &amp;&amp; (diameter.dest_ip != ip.dst))"/>
+</property>
+```
+
+This XML property will trigger when a Diameter packet with an RO message is sent to an incorrect destination IP address. The first event checks if the Diameter packet contains an RO message, and the second event checks if the source IP address is different from the destination IP address (indicating an incorrect destination).

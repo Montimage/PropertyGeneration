@@ -1,0 +1,8 @@
+Sure, I'll need some information about the scenario you want to match in order to generate an appropriate XML property. Here are the details we would need:
+
+1. Description of the scenario: What is the purpose or intent of this scenario? For example, it could be a network intrusion attempt, a brute force attack on SSH services, etc.
+2. Protocol(s) context: Which protocol(s) does this scenario relate to? Could be TCP/IP, HTTP, FTP, DNS, etc.
+3. Expected behavior: How should the system react in response to instances of this scenario? For example, it could be a block action, alerting action, logging action, etc.
+4. Thresholds and time frames: What are the acceptable thresholds and time frames for detecting instances of this scenario? 
+
+With these details, I can generate an XML property that matches your description and adheres to the protocol(s) context. Please provide me with the information mentioned above so I can assist you further.

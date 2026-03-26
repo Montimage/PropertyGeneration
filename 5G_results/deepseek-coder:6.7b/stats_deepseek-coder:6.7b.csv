@@ -1,0 +1,16 @@
+prompt_file,model_name,iterations,valid_xml,elapsed_time
+1_examples_5.txt,deepseek-coder:6.7b,1,True,18.04234504699707
+1_examples_7.txt,deepseek-coder:6.7b,1,True,28.30331802368164
+1_examples_1.txt,deepseek-coder:6.7b,1,True,9.063268184661865
+5_examples_7.txt,deepseek-coder:6.7b,5,False,82.73548316955566
+2_examples_5.txt,deepseek-coder:6.7b,1,True,16.888065099716187
+3_examples_1.txt,deepseek-coder:6.7b,1,True,17.26181197166443
+2_examples_7.txt,deepseek-coder:6.7b,1,True,18.08734679222107
+5_examples_5.txt,deepseek-coder:6.7b,1,True,21.015787839889526
+4_examples_1.txt,deepseek-coder:6.7b,1,True,14.523732900619507
+4_examples_5.txt,deepseek-coder:6.7b,1,True,17.308581829071045
+5_examples_1.txt,deepseek-coder:6.7b,1,True,13.241923093795776
+3_examples_7.txt,deepseek-coder:6.7b,5,False,85.27051496505737
+3_examples_5.txt,deepseek-coder:6.7b,5,False,56.47905111312866
+2_examples_1.txt,deepseek-coder:6.7b,1,True,15.667970895767212
+4_examples_7.txt,deepseek-coder:6.7b,2,True,40.361902713775635

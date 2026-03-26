@@ -1,0 +1,12 @@
+<beginning>
+<!-- Property 78: Detect EICAR virus test file within the HTTP payload -->
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="100" property_id="78" type_property="ATTACK" 
+     description="Detect EICAR virus test file within the HTTP payload">
+    <event event_id="1" value="COMPUTE"
+           description="An IP packet with HTTP headers"
+           boolean_expression="((ip.packet_count != 0) &amp;&amp; (tcp.flags == 3))"/>
+    <event event_id="2" value="COMPUTE"
+           description="EICAR virus test file in the HTTP payload"
+           boolean_expression="(#em_check_eicar_virus_http(tcp.p_payload)==1)"/>
+</property>
+</beginning>

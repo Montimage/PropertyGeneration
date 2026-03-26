@@ -1,0 +1,39 @@
+Based on the provided examples, I will create a new XML property that matches the following scenario:
+
+**Scenario:** Detecting 5G RAN security vulnerabilities using 3GPP protocols (NGAP, DIAMETER, SCTP)
+
+**Protocol(s):** NGAP, DIAMETER, SCTP
+
+**Description:** This rule detects potential security vulnerabilities in the 5G RAN by monitoring for unusual patterns of traffic related to authentication and authorization.
+
+Here is the new XML property:
+
+```xml
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="100" type_property="VULNERABILITY" 
+    description="Potential 5G RAN security vulnerability detected">
+    <event value="COMPUTE" event_id="1" 
+        description="NGAP packet with unusual authentication message"
+        boolean_expression="(ngap.auth_type != 0)"/>
+        
+   <event value="COMPUTE" event_id="2" 
+        description="DIAMETER packet with unusual authentication request"
+        boolean_expression="(diameter.auth_request_type != 0)"/>
+  
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="10">
+      <event value="COMPUTE" event_id="3" 
+             description="SCTP packet with unusual association setup"
+             boolean_expression="(sctp.association_setup_result != 0)"/>
+      <event value="COMPUTE" event_id="4" 
+             description="SCTP packet with unusual authentication tag"
+             boolean_expression="(sctp.auth_tag != 0)"/>
+    </operator>
+</property>
+```
+
+This new property includes three events:
+
+1. The first event checks for NGAP packets with unusual authentication messages (i.e., auth_type not equal to 0).
+2. The second event checks for DIAMETER packets with unusual authentication requests (i.e., auth_request_type not equal to 0).
+3. The operator contains two more events that check for SCTP packets with unusual association setup results (i.e., association_setup_result not equal to 0) and authentication tags (i.e., auth_tag not equal to 0).
+
+Note that this is just one possible implementation, and the specific conditions used in each event may need to be adjusted based on the actual requirements of your system.

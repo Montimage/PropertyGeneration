@@ -1,0 +1,16 @@
+prompt_file,model_name,iterations,valid_xml,elapsed_time
+1_examples_5.txt,llama3.1:8b,1,True,23.951205015182495
+1_examples_7.txt,llama3.1:8b,1,True,32.14029788970947
+1_examples_1.txt,llama3.1:8b,1,True,16.45735001564026
+5_examples_7.txt,llama3.1:8b,1,True,26.63193392753601
+2_examples_5.txt,llama3.1:8b,3,True,74.21620607376099
+3_examples_1.txt,llama3.1:8b,1,True,26.81682515144348
+2_examples_7.txt,llama3.1:8b,5,False,97.87525415420532
+5_examples_5.txt,llama3.1:8b,3,True,71.20310926437378
+4_examples_1.txt,llama3.1:8b,1,True,11.931844711303711
+4_examples_5.txt,llama3.1:8b,2,True,39.0597198009491
+5_examples_1.txt,llama3.1:8b,1,True,17.268841981887817
+3_examples_7.txt,llama3.1:8b,5,False,108.89869523048401
+3_examples_5.txt,llama3.1:8b,1,True,19.16901206970215
+2_examples_1.txt,llama3.1:8b,5,False,96.90661597251892
+4_examples_7.txt,llama3.1:8b,1,True,27.19841194152832

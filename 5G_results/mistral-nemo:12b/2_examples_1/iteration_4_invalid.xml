@@ -1,0 +1,27 @@
+<beginning>
+  <!-- Property 101: Excessive PDU session churn in 5G core -->
+  <property value="THEN" delay_units="s" delay_min="-1" delay_max="0" property_id="101" type_property="SECURITY_RULE"
+    description="Detect excessive PDU session establishment and release requests causing rapid creation/deletion of session state">
+    <operator value="AND" delay_units="s" delay_min="0+" delay_max="5">
+      <!-- NGAP/NAS: PDU Session Establishment Request -->
+      <event value="COMPUTE" event_id="1"
+             description="NGAP: PDU Session Establishment Request"
+             boolean_expression="(ngap.procedure_code == 1)"/>
+      <!-- NGAP/NAS: PDU Session Release Request -->
+      <event value="COMPUTE" event_id="2"
+             description="NGAP: PDU Session Release Request"
+             boolean_expression="(ngap.procedure_code == 4)"/>
+    </operator>
+    <!-- PFCP: Session Establishment and Deletion -->
+    <operator value="OR" delay_units="s" delay_min="-5+" delay_max="0">
+      <event value="COMPUTE" event_id="3"
+             description="PFCP: Session Establishment"
+             boolean_expression="(pfcp.message_type == 1)"/>
+      <event value="COMPUTE" event_id="4"
+             description="PFCP: Session Deletion"
+             boolean_expression="(pfcp.message_type == 7)"/>
+    </operator>
+    <!-- Reactive function to generate alert -->
+    <if_satisfied>em_alert_session_churn(rule, verdict, timestamp, counter, trace)</if_satisfied>
+  </property>
+</beginning>

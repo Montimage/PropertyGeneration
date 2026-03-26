@@ -1,0 +1,18 @@
+**Scenario Description:** Detect unusually large IP fragments.
+
+**Protocol(s):** ip
+
+**XML Property:**
+
+```xml
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="97" type_property="EVASION"
+    description="Unusually large IP fragments">
+    <event value="COMPUTE" event_id="1"
+        description="IP fragment size greater than 500 bytes"
+        boolean_expression="(ip.fragment_size > 500)"/>
+</property>
+```
+
+This property will trigger when it detects an IP fragment size that is larger than the typical Maximum Transmission Unit (MTU), which is usually around 500 bytes. This could indicate an attempt at IP fragmentation attack, where an attacker sends IP fragments larger than the MTU to cause network congestion or other types of disruption.
+
+As always, make sure to adjust the threshold and delay settings according to your specific use case and environment.

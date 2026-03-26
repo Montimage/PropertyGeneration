@@ -1,0 +1,22 @@
+<beginning>
+  <!-- Property 43: Inconsistent GTP-U packets with unknown or stale TEIDs -->
+  <property value="THEN" delay_units="ms" delay_min="0+" delay_max="10" property_id="43" type_property="SECURITY_RULE"
+    description="Inconsistent GTP-U packets with unknown or stale Tunnel Endpoint Identifiers (TEIDs)">
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="5">
+      <event value="COMPUTE" event_id="1" 
+             description="GTP-U packet with unknown TEID"
+             boolean_expression="(gtpu.teid == 0)"/>
+      <event value="COMPUTE" event_id="2" 
+             description="GTP-U packet with stale TEID"
+             boolean_expression="((gtpu.teid != gtpu.teid.1)&amp;&amp;(gtpu.teid != gtpu.teid.2))"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="5">
+      <event value="COMPUTE" event_id="3" 
+             description="PFCP session state indicates TEID is stale"
+             boolean_expression="(pfcpsession.state == 'stale')"/>
+      <event value="COMPUTE" event_id="4" 
+             description="GTP-U packet with TEID not matching active PFCP session state"
+             boolean_expression="((gtpu.teid != pfcpsession.teid)&amp;&amp;(pfcpsession.state == 'active'))"/>
+    </operator>
+  </property>
+</beginning>
