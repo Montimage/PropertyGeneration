@@ -2,6 +2,8 @@ import { useState, useEffect, useRef } from 'react';
 import ChatBubble from './components/ChatBubble';
 import ChatInput from './components/ChatInput';
 
+import { API_BASE_URL } from './config';
+
 function App() {
   const [messages, setMessages] = useState([]);
   const bottomRef = useRef(null);
@@ -23,7 +25,7 @@ function App() {
     setMessages((prev) => [...prev, thinkingMessage]);
 
     try {
-      const response = await fetch('http://localhost:8000/generate-property', {
+      const response = await fetch(`${API_BASE_URL}/generate-property`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ input_text: text, protocol_list: protocols }),
@@ -49,7 +51,7 @@ function App() {
   useEffect(() => {
     const interval = setInterval(async () => {
       try {
-        const response = await fetch('http://localhost:8000/pending-messages');
+        const response = await fetch(`${API_BASE_URL}/pending-messages`);
         if (!response.ok) return;
 
         const data = await response.json();

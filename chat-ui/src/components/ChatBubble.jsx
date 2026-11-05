@@ -1,5 +1,7 @@
 import React, { useState, useEffect, use } from 'react';
 
+import { API_BASE_URL } from '../config';
+
 const ChatBubble = ({ 
   sender, 
   text, // Content of the message
@@ -52,7 +54,7 @@ const ChatBubble = ({
 
     try {
       setSubmitStatus(null);
-      const response = await fetch('http://localhost:8000/save-property', {
+      const response = await fetch(`${API_BASE_URL}/save-property`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -81,7 +83,7 @@ const ChatBubble = ({
       content: editedText,
     };
     try {
-      const response = await fetch('http://localhost:8000/send-to-monitoring', {
+      const response = await fetch(`${API_BASE_URL}/send-to-monitoring`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
