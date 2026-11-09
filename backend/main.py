@@ -13,10 +13,16 @@ sys.path.append(str(Path(__file__).resolve().parent.parent / "src"))
 
 from generator import generate_property_from_text
 from save_property import save_property_to_db
+import time
+from datetime import datetime, timezone
+from uuid import uuid4
 
 RECEIVER_URL = "http://192.168.64.37:8000"
 
 generated_messages = []
+RESULTS_DIR = Path(__file__).resolve().parent / "results"
+RESULTS_DIR.mkdir(parents=True, exist_ok=True)
+
 
 app = FastAPI()
 
@@ -34,7 +40,16 @@ async def generate_property(request: PromptRequest):
     scenario = request.input_text
     protocols = request.protocol_list
 
-    result = generate_property_from_text(scenario, protocols)
+    start_time = time.perf_counter()
+    try:
+        result = generate_property_from_text(scenario, protocols)
+    finally:
+        generation_time = time.perf_counter() - start_time
+
+        print(
+            f"Generation time: {generation_time:.3f} seconds",
+            flush=True
+        )
 
     if result["success"]:
         if result["is_valid"]:
@@ -149,7 +164,39 @@ def process_received_event(source: str, event: dict):
         )
         protocols = []
 
+        start_time = time.perf_counter()
+
         result = generate_property_from_text(scenario, protocols)
+
+        generation_time = time.perf_counter() - start_time
+
+        print(
+            f"[CTI Evaluation] Generation time: {generation_time:.3f} seconds",
+            flush=True
+        )
+
+        # Save every generated property, including invalid ones
+        xml_content = result.get("xml")
+
+        if isinstance(xml_content, str) and xml_content.strip():
+            validation_status = "valid" if result.get("is_valid") else "invalid"
+
+            timestamp = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S_%f")
+            unique_id = uuid4().hex
+
+            filename = (
+                f"property_{timestamp}_{unique_id}_{validation_status}.xml"
+            )
+
+            output_path = RESULTS_DIR / filename
+
+            with output_path.open("x", encoding="utf-8") as file:
+                file.write(xml_content)
+
+            print(
+                f"[CTI Evaluation] Property saved: {output_path}",
+                flush=True
+            )
 
         if result["success"]:
             if result["is_valid"]:
