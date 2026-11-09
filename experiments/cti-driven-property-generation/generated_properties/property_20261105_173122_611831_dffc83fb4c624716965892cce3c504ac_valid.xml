@@ -1,0 +1,49 @@
+<beginning>
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="101" type_property="ATTACK" description="NGAP NG Setup Storm targeting AMF: Detects repeated NGSetupRequest messages from a gNB to the AMF within a short time interval.">
+    <event value="COMPUTE" event_id="1" description="NGAP NG Setup Request" boolean_expression="ngap.ng_setup_request == TRUE"/>
+    <event value="COMPUTE" event_id="2" description="Check for repeated requests within a short time window" boolean_expression="#em_check_ngap_setup_request_frequency(meta.utime)"/>
+  </property>
+
+  <embedded_functions><![CDATA[
+#include <stdlib.h>
+#include <mmt_core.h>
+#include <tcpip/mmt_tcpip.h>
+#include <string.h>
+
+static unsigned long int ngap_setup_request_limit = 5; // Default limit, can be configured via environment variable.
+
+void on_load(){
+    const char *str = getenv("MMT_SEC_NGAP_SETUP_REQUEST_LIMIT");
+    if( str != NULL ){
+        ngap_setup_request_limit = strtoul(str, NULL, 0);
+        mmt_info("Rule 101: Set NGAP_SETUP_REQUEST_LIMIT to %lu", ngap_setup_request_limit);
+    } else {
+        mmt_info("Rule 101: Using default NGAP_SETUP_REQUEST_LIMIT: %lu", ngap_setup_request_limit);
+    }
+}
+
+/*
+This function checks the frequency of NG Setup Request messages within a short time window (e.g., 1 second).
+It uses a static variable to track the number of requests within the window.
+*/
+static inline bool em_check_ngap_setup_request_frequency(const void *data) {
+    static unsigned long int request_count = 0;
+    static struct timeval last_request_time = {0, 0};
+    struct timeval *current_time = (struct timeval *)data;
+    long long time_diff_ms = (current_time->tv_sec - last_request_time.tv_sec) * 1000 + (current_time->tv_usec - last_request_time.tv_usec) / 1000;
+
+    if (time_diff_ms < 1000) { // Check within 1 second
+        request_count++;
+        if (request_count >= ngap_setup_request_limit) {
+            last_request_time = *current_time;
+            request_count = 0;
+            return TRUE;
+        }
+    } else {
+        request_count = 1;
+        last_request_time = *current_time;
+    }
+    return FALSE;
+}
+]]></embedded_functions>
+</beginning>

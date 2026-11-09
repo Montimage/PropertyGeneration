@@ -1,0 +1,12 @@
+<beginning>
+<!-- Property 101: 5G NGAP - NG Setup storm targeting the AMF -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="1000" property_id="101" type_property="ATTACK"
+    description="5G NGAP - NG Setup storm targeting the AMF">
+    <event value="COMPUTE" event_id="1"
+           description="NGSetupRequest messages received from the same gNB within a short time interval"
+           boolean_expression="count(ngap.ng_setup_request.src_gNB_id) &gt; 3 within 500ms"/>
+    <event value="COMPUTE" event_id="2"
+           description="High number of NGSetupRequest messages targeting the AMF"
+           boolean_expression="count(ngap.ng_setup_request) &gt; 10 within 1000ms"/>
+</property>
+</beginning>

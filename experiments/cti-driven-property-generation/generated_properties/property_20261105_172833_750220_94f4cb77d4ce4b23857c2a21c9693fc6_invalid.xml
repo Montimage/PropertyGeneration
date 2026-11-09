@@ -1,0 +1,12 @@
+<beginning>
+<!-- Property 1: NG Setup Storm targeting AMF -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="1" type_property="ATTACK"
+    description="NG Setup Storm targeting the AMF - Repeated NGSetupRequest messages from gNB to AMF within a short time interval.">
+    <event value="COMPUTE" event_id="1"
+           description="Detect repeated NGSetupRequest messages"
+           boolean_expression="(ngap.ngsetuprequest_count > 5)"/>
+    <event value="COMPUTE" event_id="2"
+           description="Check message frequency"
+           boolean_expression="(time_between_ngsetuprequest < 100)"/>
+</property>
+</beginning>

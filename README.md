@@ -13,10 +13,16 @@ The system supports:
 This project is organized into the following directories and files:
 ```
 project-root/
-├── 5G_prompts/                        # Generated prompts for 5G scenarios
-├── 5G_results/                        # Experimental results per model/scenario
-├── 5G_stats/                          # Aggregated statistics
-├── 5G_tasks/                          # Scenario descriptions (5G network scenarios)
+├── experiments/                                # Evaluation experiments and their results
+│   ├── 5g-scenario-generation/                 # Property generation from 5G scenario descriptions
+│   │   ├── 5G_tasks/                           # Scenario descriptions (5G network scenarios)
+│   │   ├── 5G_prompts/                         # Generated prompts for 5G scenarios
+│   │   ├── 5G_results/                         # Experimental results per model/scenario
+│   │   └── 5G_stats/                           # Aggregated statistics
+│   │
+│   └── cti-driven-property-generation/         # CTI integration (remote events endpoint)
+│       ├── configuration.json                  # Experiment setup (scenario, model, repetitions)
+│       └── generated_properties/               # Properties generated from incoming MISP events
 │
 ├── backend/                           # FastAPI backend (web + APIs)
 │   ├── main.py                        # API entry point
@@ -186,11 +192,21 @@ POST /receive-event
 ```
 
 ## Experiments
-### 5G Scenario Evaluation
+All experiments live in the `experiments/` folder, one subfolder per experiment.
+
+### 5G Scenario Generation (`experiments/5g-scenario-generation/`)
+Evaluates property generation from natural-language 5G network scenarios across several LLMs and few-shot configurations.
 - `5G_tasks/`: scenario descriptions
-- `5G_prompts/`: generated outputs
-- `5G_results/`: model outputs
+- `5G_prompts/`: generated few-shot prompts
+- `5G_results/`: model outputs (valid/invalid properties per model, scenario and iteration)
 - `5G_stats/`: aggregated metrics
+
+### CTI-Driven Property Generation (`experiments/cti-driven-property-generation/`)
+Evaluates the CTI4BC-to-property generation integration through the remote events endpoint (`POST /receive-event`). An external MISP incident describing a **5G NG Setup storm targeting the AMF** is sent to the backend repeatedly, and a property is generated for each received event.
+- `configuration.json`: experiment setup — input scenario, 100 repetitions, one generation attempt per event (no iterative repair), and model parameters (`gemma3:12b` via Ollama, temperature 0.7, top_p 0.9, max 1024 tokens)
+- `generated_properties/`: every XML property produced, valid or not, named `property_<UTC timestamp>_<uuid>_<valid|invalid>.xml`
+
+During this experiment the backend logs the generation time of each event and writes each generated property to `backend/results/`; these files were then copied into `generated_properties/`.
 
 # Getting Started
 1. Set up your PostgreSQL database and `.env` file (see above).

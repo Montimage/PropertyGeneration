@@ -1,0 +1,50 @@
+<beginning>
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="101" type_property="ATTACK" description="NGAP NG Setup Storm targeting AMF - Repeated NGSetupRequest messages">
+    <event value="COMPUTE" event_id="1" description="NGAP NG Setup Request" boolean_expression="ngap.procedure_code == 1"/>
+    <event value="COMPUTE" event_id="2" description="Check for repeated NGSetupRequest within a short time window" boolean_expression="#em_check_ngap_setup_storm(ngap.timestamp)"/>
+  </property>
+
+  <embedded_functions><![CDATA[
+#include <stdlib.h>
+#include <mmt_core.h>
+#include <tcpip/mmt_tcpip.h>
+#include <string.h>
+
+static unsigned long int ngap_setup_storm_window_ms = 1000; // Default 1 second window
+static unsigned int ngap_setup_storm_threshold = 5; // Default threshold of 5 requests
+
+void on_load(){
+  const char *window_str = getenv("MMT_SEC_NGAP_SETUP_STORM_WINDOW_MS");
+  if (window_str != NULL) {
+    ngap_setup_storm_window_ms = strtoul(window_str, NULL, 0);
+    mmt_info("Rule 101: Setting NGAP setup storm window to %lu ms", ngap_setup_storm_window_ms);
+  }
+
+  const char *threshold_str = getenv("MMT_SEC_NGAP_SETUP_STORM_THRESHOLD");
+  if (threshold_str != NULL) {
+    ngap_setup_storm_threshold = strtoul(threshold_str, NULL, 0);
+    mmt_info("Rule 101: Setting NGAP setup storm threshold to %u", ngap_setup_storm_threshold);
+  }
+}
+
+static inline bool em_check_ngap_setup_storm(const void *data) {
+  static uint64_t last_timestamp = 0;
+  static unsigned int request_count = 0;
+  struct timeval *timestamp = (struct timeval *)data;
+  uint64_t current_timestamp = timestamp->tv_sec * 1000000 + timestamp->tv_usec; //convert to milliseconds
+
+  if (current_timestamp - last_timestamp < ngap_setup_storm_window_ms) {
+    request_count++;
+    if (request_count >= ngap_setup_storm_threshold) {
+      return true;
+    }
+  } else {
+    request_count = 1;
+    last_timestamp = current_timestamp;
+  }
+
+  last_timestamp = current_timestamp;
+  return false;
+}
+]]></embedded_functions>
+</beginning>

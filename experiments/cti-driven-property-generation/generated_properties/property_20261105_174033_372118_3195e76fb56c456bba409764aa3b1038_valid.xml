@@ -1,0 +1,24 @@
+<beginning>
+<!-- Property 100: NG Setup Storm targeting the AMF -->
+<property value="THEN" delay_units="ms" delay_min="0+" delay_max="100" property_id="100" type_property="ATTACK"
+    description="NG Setup storm targeting the AMF - Repeated NGSetupRequest messages from a gNB to the AMF within a short time interval.">
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="100">
+        <event value="COMPUTE" event_id="1"
+               description="NGSetupRequest message received."
+               boolean_expression="ngap.message_type == 10"/>
+        <event value="COMPUTE" event_id="2"
+               description="Another NGSetupRequest message received within a short time window."
+               boolean_expression="(ngap.message_type == 10 &amp;&amp; (base.time_stamp - event.time_stamp.1) &lt; 500"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="100">
+        <event value="COMPUTE" event_id="3"
+               description="Yet another NGSetupRequest message received within a short time window."
+               boolean_expression="(ngap.message_type == 10 &amp;&amp; (base.time_stamp - event.time_stamp.2) &lt; 500"/>
+    </operator>
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="100">
+        <event value="COMPUTE" event_id="4"
+               description="One more NGSetupRequest message received within a short time window."
+               boolean_expression="(ngap.message_type == 10 &amp;&amp; (base.time_stamp - event.time_stamp.3) &lt; 500"/>
+    </operator>
+</property>
+</beginning>

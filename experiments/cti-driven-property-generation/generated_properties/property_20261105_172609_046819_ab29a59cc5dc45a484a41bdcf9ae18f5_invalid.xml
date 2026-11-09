@@ -1,0 +1,6 @@
+<beginning>
+  <property value="THEN" delay_min="0" delay_max="0" property_id="1001" type_property="ATTACK" description="Detect 5G NG Setup storm targeting the AMF">
+    <event event_id="1" value="COMPUTE" description="NGAP message count within a short time interval" boolean_expression="(base.protocol_id == 263 && base.time_delta &lt; 1000)"/>
+    <event event_id="2" value="COMPUTE" description="Repeated NGSetupRequest messages" boolean_expression="(ngap.ng_setup_request_count &gt; 5)"/>
+  </property>
+</beginning>

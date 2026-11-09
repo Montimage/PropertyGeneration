@@ -1,0 +1,14 @@
+<beginning>
+<!-- Property 101: NG Setup Storm targeting the AMF -->
+	<property value="THEN" delay_units="ms" delay_min="0+" delay_max="100" property_id="101" type_property="ATTACK"
+    description="NG Setup storm targeting the AMF - Repeated NGSetupRequest messages from gNB to AMF within a short time interval.">
+    <operator value="THEN" delay_units="ms" delay_min="0+" delay_max="50">
+      <event value="COMPUTE" event_id="1"
+             description="NGSetupRequest message"
+             boolean_expression="((base.protocol_id == 45)&amp;&amp;(base.sctp == TRUE))"/>
+      <event value="COMPUTE" event_id="2"
+             description="Subsequent NGSetupRequest message within a short timeframe"
+             boolean_expression="((base.protocol_id == 45)&amp;&amp;(base.sctp == TRUE))"/>
+    </operator>
+</property>
+</beginning>

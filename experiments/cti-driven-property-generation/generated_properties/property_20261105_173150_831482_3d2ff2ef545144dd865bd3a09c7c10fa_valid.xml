@@ -1,0 +1,8 @@
+<beginning>
+<!-- Property: Detects NG Setup Storm targeting the AMF -->
+<!-- Description: Identifies repeated NGSetupRequest messages from a gNB to the AMF within a short time interval, indicative of a NG Setup storm attack. -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="1001" type_property="ATTACK" description="Detect NG Setup Storm targeting the AMF">
+  <event value="COMPUTE" event_id="1" description="NGSetupRequest message" boolean_expression="(ngap.ng_setup_request != 0)"/>
+  <event value="COMPUTE" event_id="2" description="Repeated NGSetupRequest messages within a short time interval" boolean_expression="(meta.packet_rate &gt; 10)"/>
+</property>
+</beginning>

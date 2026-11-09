@@ -1,0 +1,49 @@
+<beginning>
+  <property value="THEN" delay_min="0" delay_max="0" property_id="101" type_property="ATTACK" description="NGAP NG Setup Storm targeting the AMF - Detect repeated NGSetupRequest messages.">
+    <event value="COMPUTE" event_id="1" description="NGAP NG Setup Request" boolean_expression="ngap.procedure_code == 3"/>
+    <event value="COMPUTE" event_id="2" description="Check for repeated messages within a short time interval" boolean_expression="#em_check_ngap_setup_storm(meta.utime)"/>
+  </property>
+
+  <embedded_functions><![CDATA[
+#include <stdio.h>
+#include <stdlib.h>
+#include <mmt_lib.h>
+#include <time.h>
+
+static int storm_threshold = 5; // Number of messages to consider a storm
+static unsigned long int last_message_time = 0;
+
+bool em_check_ngap_setup_storm(const void *data) {
+    struct timeval *current_time = (struct timeval *)data;
+    unsigned long int current_time_seconds = current_time->tv_sec;
+
+    if (last_message_time == 0) {
+        last_message_time = current_time_seconds;
+        return false;
+    }
+
+    if (current_time_seconds - last_message_time < 2) { // Check within a 2-second window
+        static int message_count = 0;
+        message_count++;
+        if (message_count >= storm_threshold) {
+            return true;
+        }
+    } else {
+        message_count = 1;
+        last_message_time = current_time_seconds;
+    }
+
+    return false;
+}
+
+void on_load() {
+    const char *threshold_str = getenv("NGAP_SETUP_STORM_THRESHOLD");
+    if (threshold_str != NULL) {
+        storm_threshold = atoi(threshold_str);
+        mmt_info("NGAP Setup Storm Threshold set to %d", storm_threshold);
+    } else {
+        mmt_info("NGAP Setup Storm Threshold using default value of 5");
+    }
+}
+]]></embedded_functions>
+</beginning>

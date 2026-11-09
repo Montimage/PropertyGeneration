@@ -1,0 +1,15 @@
+<beginning>
+<!--
+This rule detects a 5G NG Setup storm targeting the AMF, characterized by repeated NGSetupRequest messages from a gNB toward the AMF within a short time interval.  It monitors the frequency of NGSetupRequest messages.
+-->
+<embedded_functions><![CDATA[
+// No embedded functions needed for this basic rule.  Could add more complex logic later.
+]]></embedded_functions>
+
+<property value="THEN" property_id="101" type_property="ATTACK" 
+    description="5G NG Setup Storm Targeting AMF">
+    <event value="COMPUTE" event_id="1" 
+        description="NGSetupRequest Frequency Check"
+        boolean_expression="count(ngap.ng_setup_request) > 5 within 5 seconds"/>
+</property>
+</beginning>

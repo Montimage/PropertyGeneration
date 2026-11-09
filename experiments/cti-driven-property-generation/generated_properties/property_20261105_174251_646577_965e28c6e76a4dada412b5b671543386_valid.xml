@@ -1,0 +1,49 @@
+<beginning>
+<!-- This rule detects repeated NGSetupRequest messages from a gNB toward the AMF within a short time interval, indicative of an NG Setup storm attack. -->
+<embedded_functions><![CDATA[
+#include <stdio.h>
+#include <mmt_lib.h>
+#include "pre_embedded_functions.h"
+
+// Define a threshold for the number of NGSetupRequest messages within a time window.
+static unsigned int ngsetup_request_threshold = 5;
+
+void on_load() {
+    const char *threshold_str = getenv("MMT_SEC_5G_NGSETUP_THRESHOLD");
+    if (threshold_str != NULL) {
+        ngsetup_request_threshold = strtoul(threshold_str, NULL, 0);
+        mmt_info("Rule: Using user-defined threshold for NGSetupRequest: %u", ngsetup_request_threshold);
+    } else {
+        mmt_info("Rule: Using default threshold for NGSetupRequest: %u", ngsetup_request_threshold);
+    }
+}
+
+// Embedded function to count NGSetupRequest messages within a sliding time window.
+static inline bool em_count_ngsetup_requests(const void *data) {
+    static unsigned int request_count = 0;
+    static unsigned long long last_timestamp = 0;
+
+    struct timeval *timestamp = (struct timeval *)data;
+    unsigned long long current_timestamp = timestamp->tv_sec * 1000000 + timestamp->tv_usec; // Convert to microseconds
+
+    // Check if the current message is within the time window.
+    if (current_timestamp - last_timestamp < 500000) { // 500ms window
+        request_count++;
+        if (request_count >= ngsetup_request_threshold) {
+            return true; // Threshold exceeded
+        }
+    } else {
+        // Reset the counter for a new time window.
+        request_count = 1;
+    }
+
+    last_timestamp = current_timestamp;
+    return false;
+}
+]]></embedded_functions>
+
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="500" property_id="101" type_property="ATTACK" description="Detects NG Setup Storm targeting the AMF">
+    <event value="COMPUTE" event_id="1" description="NGSetupRequest message check" boolean_expression="ngap.ng_setup_request"/>
+    <event value="COMPUTE" event_id="2" description="Count NGSetupRequest messages within a time window" boolean_expression="#em_count_ngsetup_requests(meta.utime)"/>
+</property>
+</beginning>

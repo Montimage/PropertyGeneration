@@ -1,0 +1,21 @@
+<beginning>
+<!-- 
+This rule detects a 5G NG Setup storm targeting the AMF. Repeated NGSetupRequest messages are sent from a gNB toward the AMF within a short time interval, resulting in abnormal NG setup activity. This can lead to increased AMF signaling load and potential disruption of gNB-AMF association management.
+-->
+<embedded_functions><![CDATA[
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include "mmt_lib.h"
+#include "pre_embedded_functions.h"
+
+static int em_is_ngsetuprequest(uint8_t ngap_message_type) {
+    // NGSetupRequest message type is 13
+    return ngap_message_type == 13;
+}
+]]></embedded_functions>
+
+<property value="THEN" property_id="101" type_property="ATTACK" description="Detects 5G NG Setup Storm targeting the AMF" if_satisfied="">
+    <event value="COMPUTE" event_id="1" description="Checks for repeated NGSetupRequest messages within a short time window." boolean_expression="( em_is_ngsetuprequest(ngap.ngap_message_type) &amp;&amp; (BASE.message_count &gt; 5) &amp;&amp; (BASE.time_delta &lt; 5) )"/>
+</property>
+</beginning>

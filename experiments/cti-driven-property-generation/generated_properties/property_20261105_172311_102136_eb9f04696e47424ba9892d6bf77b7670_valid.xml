@@ -1,0 +1,12 @@
+<beginning>
+<!-- Property 1: C4_NGAP_NGSetupStorm : NG Setup storm targeting the AMF. -->
+<property value="THEN" delay_units="s" delay_min="0" delay_max="0" property_id="1" type_property="ATTACK"
+    description="NG Setup storm targeting the AMF. Repeated NGSetupRequest messages are sent from a gNB toward the AMF within a short time interval, resulting in abnormal NG setup activity.">
+    <event value="COMPUTE" event_id="1"
+           description="NGSetupRequest messages"
+           boolean_expression="ngap.message_type == 1"/>
+    <event value="COMPUTE" event_id="2"
+           description="Rapid repetition of NGSetupRequest messages"
+           boolean_expression="mmt_lib.count_messages_within_time_window(ngap.message_type == 1, 5, 1) &gt; 3"/>
+</property>
+</beginning>

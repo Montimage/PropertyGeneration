@@ -1,0 +1,12 @@
+<beginning>
+<!-- Property: NG Setup Storm targeting the AMF -->
+<property value="THEN" delay_units="s" delay_min="0" delay_max="1" property_id="1001" type_property="ATTACK" 
+    description="Detects NG Setup Storm targeting the AMF - Repeated NGSetupRequest messages from gNB to AMF within a short time interval.">
+    <event value="COMPUTE" event_id="1" 
+           description="Initial NGSetupRequest message"
+           boolean_expression="ngap.ng_setup_request.present == TRUE"/>
+    <event value="COMPUTE" event_id="2" 
+           description="Subsequent NGSetupRequest messages within a short timeframe"
+           boolean_expression="mmt_time_since(ngap.ng_setup_request.timestamp) &lt; 1 AND ngap.ng_setup_request.present == TRUE"/>
+</property>
+</beginning>

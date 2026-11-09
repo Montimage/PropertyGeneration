@@ -1,0 +1,37 @@
+<beginning>
+<!-- Property: Detection of 5G NG Setup Storm Targeting AMF -->
+<property value="THEN" delay_units="s" delay_min="0" delay_max="0" property_id="1001" type_property="ATTACK"
+    description="Detection of 5G NG Setup Storm Targeting AMF">
+    <event value="COMPUTE" event_id="1"
+           description="Multiple NGSetupRequest messages within a short time interval"
+           boolean_expression="(mmt_count_messages_in_time_window(ngap.ng_setup_request, 1, 5) > 3)"/>
+    <event value="COMPUTE" event_id="2"
+           description="Source gNB IP address is repeated"
+           boolean_expression="(ip.src == ip.src[1])"/>
+</property>
+
+<embedded_functions><![CDATA[
+// Function to count the number of messages of a specific type within a time window
+int mmt_count_messages_in_time_window(const char *message_type, uint64_t min_time, uint64_t max_time) {
+    int count = 0;
+    mmt_array_t *trace = mmt_get_current_trace();
+    if (trace) {
+        for (int i = 0; i < trace->size; ++i) {
+            rule_t *rule = trace->data[i];
+            if (rule && rule->events && rule->events->size > 0) {
+                for (int j = 0; j < rule->events->size; ++j) {
+                    event_t *event = rule->events->data[j];
+                    if (event && strcmp(event->boolean_expression, message_type) == 0) {
+                        uint64_t timestamp = rule->timestamp;
+                        if (timestamp >= min_time && timestamp <= max_time) {
+                            count++;
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return count;
+}
+]]></embedded_functions>
+</beginning>

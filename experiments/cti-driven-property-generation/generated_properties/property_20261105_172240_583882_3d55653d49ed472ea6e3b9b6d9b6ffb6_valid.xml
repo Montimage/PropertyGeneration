@@ -1,0 +1,27 @@
+<beginning>
+<embedded_functions><![CDATA[
+#include <mmt_core.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+
+// Function to check for repeated NGSetupRequest messages within a short time interval.
+// This is a placeholder and would require more sophisticated logic to be truly effective.
+static inline int em_check_ngsetup_storm(const void *data) {
+    // Assuming 'data' is a pointer to a structure containing message timestamps.
+    // This example simply checks if the number of messages within a time window exceeds a threshold.
+    //  In reality, this would involve analyzing the timestamp data.
+    //  The timestamp data structure and threshold value would need to be defined elsewhere.
+    
+    // Placeholder logic:  Check if the number of messages is greater than 5 in 1 second.
+    //  Requires a message counter and timestamp data.
+    
+    return 0; // Placeholder:  Always returns false for now.
+}
+]]></embedded_functions>
+<!-- Property 101: Detect NG Setup Storm targeting the AMF -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="101" type_property="ATTACK" description="Detect NG Setup Storm targeting the AMF">
+    <event event_id="1" value="COMPUTE" description="NGAP Protocol Detected" boolean_expression="ngap.present"/>
+    <event event_id="2" value="COMPUTE" description="Check for repeated NGSetupRequest messages" boolean_expression="#em_check_ngsetup_storm(meta.timestamp_data)"/>
+</property>
+</beginning>

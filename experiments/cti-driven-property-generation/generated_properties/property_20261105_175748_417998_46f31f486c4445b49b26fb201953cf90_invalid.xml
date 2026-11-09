@@ -1,0 +1,36 @@
+<beginning>
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="1001" type_property="ATTACK" description="Detect 5G NG Setup storm targeting the AMF.">
+    <event value="COMPUTE" event_id="1" description="NGSetupRequest messages are received from a gNB towards the AMF." boolean_expression="base.protocol_id == 296 && base.packet_type == 'NGSetupRequest'"/>
+    <event value="COMPUTE" event_id="2" description="Multiple NGSetupRequest messages are received from the same gNB within a short time interval." boolean_expression="em_check_ngsetup_storm(base.source_ip, base.time_slot, 5000)"/>
+  </property>
+
+  <embedded_functions><![CDATA[
+/**
+ * Checks if a gNB has sent multiple NGSetupRequest messages within a short time interval.
+ * @param source_ip The IP address of the gNB.
+ * @param time_slot The time slot of the message.
+ * @param time_interval The time interval in milliseconds.
+ * @return True if the gNB has sent multiple NGSetupRequest messages within the time interval, False otherwise.
+ */
+static inline int em_check_ngsetup_storm(uint32_t source_ip, uint64_t time_slot, uint32_t time_interval) {
+  static uint64_t last_time_slot[65535];
+  static uint32_t last_source_ip[65535];
+  static int count[65535];
+  int i;
+
+  for (i = 0; i < 65535; i++) {
+    if (last_source_ip[i] == source_ip && time_slot - last_time_slot[i] <= time_interval) {
+      count[i]++;
+      if (count[i] > 3) {
+        return 1;
+      }
+    } else {
+      count[i] = 1;
+    }
+    last_time_slot[i] = time_slot;
+    last_source_ip[i] = source_ip;
+  }
+  return 0;
+}
+]]></embedded_functions>
+</beginning>

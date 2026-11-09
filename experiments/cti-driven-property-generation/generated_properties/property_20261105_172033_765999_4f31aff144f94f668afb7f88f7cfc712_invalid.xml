@@ -1,0 +1,11 @@
+<beginning>
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="1001" type_property="ATTACK" 
+            description="Detect 5G NG Setup storm targeting the AMF.">
+    <event value="COMPUTE" event_id="1" 
+           description="NGSetupRequest messages sent repeatedly within a short time interval."
+           boolean_expression="count(BASE.protocol_id == 41) within 5s > 10"/>
+    <event value="COMPUTE" event_id="2" 
+           description="Check for abnormal NG setup activity."
+           boolean_expression="((BASE.protocol_id == 41) && (SPHY_DATA_REQ.sctp_stream_id == 1))"/>
+  </property>
+</beginning>

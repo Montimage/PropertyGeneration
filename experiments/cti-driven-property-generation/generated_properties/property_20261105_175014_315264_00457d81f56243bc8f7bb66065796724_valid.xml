@@ -1,0 +1,19 @@
+<beginning>
+<!-- Property: NGAP NG Setup Storm Detection -->
+<!-- Detects repeated NGSetupRequest messages from a gNB toward the AMF within a short time interval, indicating a potential NG setup storm attack. -->
+
+<property value="THEN" delay_units="s" delay_min="0" delay_max="5" property_id="100" type_property="ATTACK" description="Detects NGAP NG Setup Storm targeting the AMF">
+  <operator value="THEN" delay_units="s" delay_min="0" delay_max="1">
+    <event value="COMPUTE" event_id="1" description="Context: NGSetupRequest message" boolean_expression="(ngap.message_type == 1)"/>
+  </operator>
+  <operator value="THEN" delay_units="s" delay_min="0" delay_max="1">
+    <event value="COMPUTE" event_id="2" description="Trigger: Second consecutive NGSetupRequest message from the same gNB" boolean_expression="(ngap.message_type == 1 &amp;&amp; ngap.gNB_id == ngap.gNB_id.1)"/>
+  </operator>
+  <operator value="THEN" delay_units="s" delay_min="0" delay_max="1">
+    <event value="COMPUTE" event_id="3" description="Trigger: Third consecutive NGSetupRequest message from the same gNB" boolean_expression="(ngap.message_type == 1 &amp;&amp; ngap.gNB_id == ngap.gNB_id.1)"/>
+  </operator>
+  <operator value="THEN" delay_units="s" delay_min="0" delay_max="1">
+    <event value="COMPUTE" event_id="4" description="Trigger: Fourth consecutive NGSetupRequest message from the same gNB" boolean_expression="(ngap.message_type == 1 &amp;&amp; ngap.gNB_id == ngap.gNB_id.1)"/>
+  </operator>
+</property>
+</beginning>

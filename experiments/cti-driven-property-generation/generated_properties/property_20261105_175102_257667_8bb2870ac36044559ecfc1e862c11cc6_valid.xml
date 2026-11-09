@@ -1,0 +1,15 @@
+<beginning>
+<!--
+This rule detects a NG Setup storm targeting the AMF.
+It checks for repeated NGSetupRequest messages from a gNB toward the AMF within a short time interval.
+-->
+<property value="THEN" delay_units="mms" delay_min="0" delay_max="500" property_id="101" type_property="ATTACK" 
+    description="Detects a 5G NG Setup storm targeting the AMF.">
+    <event value="COMPUTE" event_id="1" 
+        description="NGSetupRequest message received"
+        boolean_expression="ngap.procedure_code == 13"/>
+    <event value="COMPUTE" event_id="2" 
+        description="Another NGSetupRequest message received shortly after the first"
+        boolean_expression="ngap.procedure_code == 13"/>
+</property>
+</beginning>

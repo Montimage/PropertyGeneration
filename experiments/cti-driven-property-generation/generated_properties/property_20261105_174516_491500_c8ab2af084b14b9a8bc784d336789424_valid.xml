@@ -1,0 +1,31 @@
+<beginning>
+<embedded_functions><![CDATA[
+//each function name should be prefixed by em_
+/**
+* This function checks if the NGSetupRequest message count exceeds a threshold within a short time window.
+* @param packet_count The number of NGSetupRequest messages received.
+* @param time_window_ms The time window in milliseconds.
+* @return 1 if the packet count exceeds the threshold, 0 otherwise.
+*/
+static inline int em_check_ngsetup_storm(uint32_t packet_count, uint32_t time_window_ms) {
+  // Define a threshold for the number of NGSetupRequest messages
+  uint32_t threshold = 5; 
+
+  if (packet_count > threshold) {
+    return 1;
+  } else {
+    return 0;
+  }
+}
+]]></embedded_functions>
+<!-- Property 101: Detect 5G NG Setup Storm targeting the AMF -->
+<property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="101" type_property="ATTACK"
+     description="Detect 5G NG Setup storm targeting the AMF" >
+   <event event_id="1" value="COMPUTE"
+           description="Check for NGSetupRequest messages"
+           boolean_expression="(ngap.ng_setup_request != 0)"/>
+   <event event_id="2" value="COMPUTE"
+           description="Check for NG Setup Storm"
+           boolean_expression="(#em_check_ngsetup_storm(ngap.ng_setup_request_count, 1000))"/>
+</property>
+</beginning>

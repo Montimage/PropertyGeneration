@@ -1,0 +1,20 @@
+<beginning>
+<!-- Property: NGAP NG Setup Storm Detection -->
+<!-- Detects repeated NGSetupRequest messages from a gNB to the AMF, indicating a potential NG Setup storm attack. -->
+
+<property value="THEN" delay_units="s" delay_min="0" delay_max="5" property_id="100" type_property="ATTACK" description="Detects repeated NGSetupRequest messages indicating a potential NG Setup storm attack." if_satisfied="em_ngap_setup_storm_mitigation()">
+    <operator value="THEN" delay_units="s" delay_min="0" delay_max="1">
+        <event value="COMPUTE" event_id="1" description="Context: NGSetupRequest message received" boolean_expression="(ngap.message_type == 10)"/>
+    </operator>
+    <operator value="THEN" delay_units="s" delay_min="0" delay_max="2">
+        <event value="COMPUTE" event_id="2" description="Trigger: Second NGSetupRequest message within a short timeframe" boolean_expression="(ngap.message_type == 10)"/>
+    </operator>
+    <operator value="THEN" delay_units="s" delay_min="0" delay_max="2">
+        <event value="COMPUTE" event_id="3" description="Trigger: Third NGSetupRequest message within a short timeframe" boolean_expression="(ngap.message_type == 10)"/>
+    </operator>
+    <operator value="THEN" delay_units="s" delay_min="0" delay_max="2">
+        <event value="COMPUTE" event_id="4" description="Trigger: Fourth NGSetupRequest message within a short timeframe" boolean_expression="(ngap.message_type == 10)"/>
+    </operator>
+</property>
+
+</beginning>

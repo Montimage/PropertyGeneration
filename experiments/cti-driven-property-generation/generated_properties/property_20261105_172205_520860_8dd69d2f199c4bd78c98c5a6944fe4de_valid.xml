@@ -1,0 +1,15 @@
+<beginning>
+
+<property value="THEN" delay_units="s" delay_min="0" delay_max="5" property_id="101" type_property="ATTACK" 
+    description="5G NG Setup storm targeting the AMF - Repeated NGSetupRequest messages from a gNB toward the AMF.">
+    <event value="COMPUTE" event_id="1" 
+        description="NGSetupRequest message received"
+        boolean_expression="ngap.procedure_code == 18"/>
+    
+    <event value="COMPUTE" event_id="2" 
+        description="Subsequent NGSetupRequest messages within a short time interval"
+        boolean_expression="(BASE.time_slot - BASE.time_slot.1) &lt; 2"/>
+    
+</property>
+
+</beginning>

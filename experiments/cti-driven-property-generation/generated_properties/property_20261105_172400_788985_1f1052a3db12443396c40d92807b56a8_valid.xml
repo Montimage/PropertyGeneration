@@ -1,0 +1,17 @@
+<beginning>
+  <property value="THEN" delay_units="ms" delay_min="0" delay_max="0" property_id="1001" type_property="ATTACK" description="NGAP Setup Storm targeting the AMF">
+    <event value="COMPUTE" event_id="1" description="Repeated NGSetupRequest messages" boolean_expression="(BASE.protocol_id == 296) &amp;&amp; (BASE.message_type == 1) &amp;&amp; (mmt_count_messages(BASE.protocol_id, 296, 1, 1000) > 5)"/>
+    <event value="COMPUTE" event_id="2" description="Short Time Interval" boolean_expression="(mmt_time_delta(BASE.timestamp, previous_timestamp) &lt; 5000)"/>
+  </property>
+  <embedded_functions><![CDATA[
+static uint64_t previous_timestamp = 0;
+
+void on_load(){
+    previous_timestamp = 0;
+}
+
+void on_unload(){
+    previous_timestamp = 0;
+}
+]]></embedded_functions>
+</beginning>

@@ -1,0 +1,21 @@
+{
+  "experiment_id": "cti-driven-property-generation",
+  "description": "CTI4BC-to-Property Generation integration evaluated with an external MISP incident describing a 5G NG Setup storm",
+  "scenario": {
+    "name": "5G NG Setup storm targeting the AMF",
+    "input_format": "MISP event JSON",
+    "input_example_url": "https://github.com/Montimage/cti4bc-backend/tree/main/cti4bc-example/cti-driven-monitoring"
+  },
+  "execution": {
+    "repetitions": 100,
+    "generation_attempts_per_event": 1,
+    "iterative_repair_enabled": false
+  },
+  "model": {
+    "provider": "ollama",
+    "name": "gemma3:12b",
+    "temperature": 0.7,
+    "top_p": 0.9,
+    "max_tokens": 1024
+  }
+}
